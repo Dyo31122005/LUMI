@@ -45,8 +45,8 @@
 
 html, body, .stApp, [class*="st-"] { font-family: var(--font); }
 
-/* Streamlit draws its icons with Material Symbols; the rule above would
-   replace that font and turn every icon into raw text. */
+/* Streamlit draws its icons (nav, expander) with Material Symbols; the rule
+   above would replace that font and turn every icon into raw text. */
 [data-testid="stIconMaterial"],
 [class*="material-symbols"] {
   font-family: "Material Symbols Rounded", "Material Symbols Outlined" !important;
