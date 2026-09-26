@@ -1,6 +1,15 @@
 [server]
 headless = true
 
+# Streamlit giữ phiên trong bộ nhớ và mặc định xoá sau 120 giây mất kết nối.
+# Một lượt tư vấn mất vài giây chờ API, người dùng rất dễ khoá màn hình hoặc
+# chuyển tab trong lúc đó và mất sạch hội thoại. Nâng lên 30 phút.
+disconnectedSessionTTL = 1800
+
+# Railway phục vụ qua một lớp proxy; ping định kỳ giữ cho WebSocket không bị
+# ngắt khi nhàn rỗi, tức tránh mất kết nối ngay từ đầu.
+websocketPingInterval = 20
+
 [browser]
 gatherUsageStats = false
 
