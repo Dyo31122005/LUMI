@@ -294,7 +294,10 @@ def manual_mode() -> None:
         st.subheader(f"Hồ sơ của {session.profile.name or 'bạn'}")
         st.html(ui.completeness_bar((session.derived or {}).get("completeness", 0)))
         st.html(ui.profile_chips(session.profile, field_labels()))
-        st.html(ui.insight_cards(session.insights))
+        # Streamlit rejects an empty string passed to st.html.  A new live
+        # session has no insights until the first answer is processed.
+        if session.insights:
+            st.html(ui.insight_cards(session.insights))
         st.subheader("LUMI đang cân nhắc")
         latest = session.turn_decisions[-1] if session.turn_decisions else None
         st.html(ui.hypothesis_bars(

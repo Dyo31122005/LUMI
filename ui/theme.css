@@ -44,6 +44,11 @@
 .lumi-senior .lumi-caption { display: none; }
 
 html, body, .stApp, [class*="st-"] { font-family: var(--font); }
+/* Streamlit expander icons use Material Symbols. Do not override that font. */
+[data-testid="stIconMaterial"],
+[class*="material-symbols"] {
+  font-family: "Material Symbols Rounded", "Material Symbols Outlined" !important;
+}
 .stApp { background: var(--bg); color: var(--text); }
 .block-container { padding-top: 1.6rem; max-width: 1180px; }
 
