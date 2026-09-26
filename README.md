@@ -57,9 +57,10 @@ DECISION_ENGINE=openai        # hoặc rule để chạy offline
 streamlit run app.py
 ```
 
-Gồm 4 trang: Giới thiệu, Tư vấn, Báo cáo và 3 hành trình. Chế độ **Phát lại** đọc
-các phiên trong `data/recordings/` nên **chạy được khi không có mạng và không cần
-API key**.
+Gồm 4 trang: Trang chủ, Tư vấn, Báo cáo và Hành trình mẫu. Giao diện dùng thanh
+điều hướng gọn ở đầu trang, mascot LUMI và một luồng chính từ tìm hiểu sản phẩm
+đến bắt đầu tư vấn, xem đề xuất rồi mở báo cáo. Chế độ **Phát lại** đọc các phiên
+trong `data/recordings/` nên **chạy được khi không có mạng và không cần API key**.
 
 **Chạy một phiên trong terminal:**
 

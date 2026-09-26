@@ -16,7 +16,7 @@ from ui.components import load_css  # noqa: E402
 
 st.set_page_config(
     page_title="LUMI — Hiểu bạn trước, rồi mới đề xuất",
-    page_icon="🔵",
+    page_icon=":material/shield:",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -40,10 +40,10 @@ if not gate.render(st):
     st.stop()
 
 pages = [
-    st.Page("pages/landing.py", title="Giới thiệu", icon="🏠", default=True),
-    st.Page("pages/consult.py", title="Tư vấn", icon="💬"),
-    st.Page("pages/report.py", title="Báo cáo", icon="🖨"),
-    st.Page("pages/journeys.py", title="3 hành trình", icon="🧭"),
+    st.Page("pages/landing.py", title="Trang chủ", icon=":material/home:", default=True),
+    st.Page("pages/consult.py", title="Tư vấn", icon=":material/forum:"),
+    st.Page("pages/report.py", title="Báo cáo", icon=":material/description:"),
+    st.Page("pages/journeys.py", title="Hành trình mẫu", icon=":material/route:"),
 ]
 
-st.navigation(pages).run()
+st.navigation(pages, position="hidden").run()

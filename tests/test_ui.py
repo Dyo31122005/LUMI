@@ -21,7 +21,15 @@ def run(page: str, **session_state: object) -> AppTest:
 def test_landing_renders_without_exception() -> None:
     app = run("landing.py")
     assert not app.exception
-    assert any("ba hành trình" in item.value.lower() for item in app.subheader)
+    rendered = " ".join(str(item.value) for item in app.get("html"))
+    assert "ba hành trình" in rendered.lower()
+
+
+def test_landing_includes_the_production_mascot() -> None:
+    from ui.components import MASCOT_PATH
+
+    assert MASCOT_PATH.is_file()
+    assert MASCOT_PATH.name == "mascot.png"
 
 
 def test_landing_offers_a_button_per_persona() -> None:
@@ -35,7 +43,8 @@ def test_landing_offers_a_button_per_persona() -> None:
 def test_consult_start_screen_renders() -> None:
     app = run("consult.py")
     assert not app.exception
-    assert "bắt đầu thế nào" in app.title[0].value.lower()
+    rendered = " ".join(str(item.value) for item in app.get("html"))
+    assert "bắt đầu từ điều bạn đang quan tâm nhất" in rendered.lower()
 
 
 @pytest.mark.parametrize("persona_id", ["vuong", "mai", "duc"])
@@ -188,5 +197,5 @@ def test_manual_mode_explains_the_empty_profile_panel() -> None:
         lumi_live=_live_session_with_empty_profile(),
         lumi_engine_label="Rule",
     )
-    captions = " ".join(item.value for item in app.caption)
-    assert "điền dần" in captions
+    messages = " ".join(item.value for item in app.info)
+    assert "điền dần" in messages

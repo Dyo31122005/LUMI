@@ -1,59 +1,37 @@
-"""Static HTML for the landing page sections (lumi-ui-design.md §4).
-
-No testimonials, no user counts, no real insurer logos — the demo has no data
-to back any of those.
-"""
+"""Static, data-safe sections for the LUMI landing page."""
 
 from __future__ import annotations
 
-from ui.components import esc
+from ui.components import esc, material_icon
 
 PERSONAS = [
-    {
-        "id": "vuong",
-        "initial": "V",
-        "name": "Vương, 22",
-        "css": "persona-young",
-        "situation": "Vừa tốt nghiệp, sắp đi làm ở một startup.",
-        "insight": "Năm đầu đi làm chưa được bảo hiểm thất nghiệp bảo vệ.",
-        "recommendation": "Bảo vệ thu nhập khi mất việc",
-    },
-    {
-        "id": "mai",
-        "initial": "M",
-        "name": "Chị Mai, 44",
-        "css": "persona-mid",
-        "situation": "Kinh doanh tự do, có 8 năm BHXH cũ chưa rút.",
-        "insight": "Năm thứ hai của hợp đồng trùng năm con vào đại học.",
-        "recommendation": "Hưu trí",
-    },
-    {
-        "id": "duc",
-        "initial": "Đ",
-        "name": "Ông Đức, 60",
-        "css": "persona-senior",
-        "situation": "Sang năm nghỉ hưu, vợ không có thu nhập riêng.",
-        "insight": "Nếu ông mất, thu nhập của bà về 0.",
-        "recommendation": "Nhân thọ",
-    },
+    {"id": "vuong", "initial": "V", "name": "Vương, 22", "css": "persona-young", "situation": "Vừa tốt nghiệp, sắp đi làm ở một startup.", "insight": "Năm đầu đi làm chưa được bảo hiểm thất nghiệp bảo vệ.", "recommendation": "Bảo vệ thu nhập khi mất việc"},
+    {"id": "mai", "initial": "M", "name": "Chị Mai, 44", "css": "persona-mid", "situation": "Kinh doanh tự do, có 8 năm BHXH cũ chưa rút.", "insight": "Năm thứ hai của hợp đồng trùng năm con vào đại học.", "recommendation": "Hưu trí"},
+    {"id": "duc", "initial": "Đ", "name": "Ông Đức, 60", "css": "persona-senior", "situation": "Sang năm nghỉ hưu, vợ không có thu nhập riêng.", "insight": "Nếu ông mất, thu nhập của bà về 0.", "recommendation": "Nhân thọ"},
 ]
 
 COMMITMENTS = [
-    ("Giải thích vì sao", "LUMI nói rõ vì sao hỏi và vì sao đề xuất."),
-    ("Nêu cả điểm bất lợi", "Mỗi lựa chọn đều kèm điều cần lưu ý."),
-    ("Bạn quyết định", "LUMI không bán bảo hiểm."),
+    ("psychology", "Hỏi vừa đủ", "Mỗi câu hỏi đều có lý do và phục vụ trực tiếp cho đề xuất."),
+    ("balance", "So sánh minh bạch", "Điểm mạnh, điểm cần lưu ý và giả định được đặt cạnh nhau."),
+    ("verified_user", "Bạn giữ quyền quyết định", "LUMI không bán bảo hiểm và không thay thế tư vấn viên có chứng chỉ."),
 ]
 
 STEPS = [
-    ("Trò chuyện", "Trả lời vài câu hỏi như nói chuyện với người quen. LUMI chỉ hỏi điều cần cho hoàn cảnh của bạn."),
-    ("LUMI hiểu bạn", "Hồ sơ của bạn được điền dần, mỗi thông tin đều ghi rõ lấy từ câu nào bạn nói."),
-    ("Đề xuất 2 bước", "Trước hết là loại bảo hiểm phù hợp và lý do. Sau đó mới so sánh sản phẩm."),
+    ("forum", "Chia sẻ hoàn cảnh", "Bạn nói về công việc, gia đình, nỗi lo và ngân sách theo cách tự nhiên."),
+    ("manage_accounts", "Xem hồ sơ được hiểu", "Thông tin được điền dần và luôn gắn với câu nói gốc của bạn."),
+    ("fact_check", "Nhận đề xuất hai bước", "LUMI chọn loại bảo hiểm trước, rồi mới so sánh sản phẩm theo ưu tiên cá nhân."),
+]
+
+FEATURES = [
+    ("visibility", "Nhìn thấy cách LUMI suy luận", "Theo dõi hồ sơ, nhận định và các khả năng đang được cân nhắc trong suốt cuộc trò chuyện."),
+    ("tune", "So sánh theo điều bạn quan tâm", "Các tiêu chí quan trọng với bạn được đưa lên trước thay vì dùng một bảng xếp hạng chung."),
+    ("calculate", "Con số có nguồn", "Mọi con số đến từ knowledge base hoặc phép tính trong code, không do mô hình tự đặt ra."),
 ]
 
 BEHIND = [
-    ("Ngôn ngữ", "Mô hình ngôn ngữ hiểu câu trả lời và viết lời tư vấn."),
-    ("Quyết định", "Một agent riêng chỉ được chọn trong các phương án định sẵn, kèm xác suất ước lượng."),
-    ("Tính toán", "Code lọc sản phẩm, tính trọng số và ước tính số tiền."),
+    ("chat", "Ngôn ngữ", "AI hiểu câu trả lời và diễn đạt lời tư vấn bằng tiếng Việt tự nhiên."),
+    ("account_tree", "Quyết định", "Một lớp riêng chỉ chọn trong tập phương án định sẵn và trả về dữ liệu có cấu trúc."),
+    ("functions", "Tính toán", "Code lọc điều kiện, tính trọng số, xếp hạng và ước tính số tiền."),
 ]
 
 FAQ = [
@@ -68,62 +46,88 @@ FAQ = [
 def hero() -> str:
     return (
         '<div class="lumi-hero">'
-        '<span class="lumi-demo-badge">Bản demo · dữ liệu minh hoạ</span>'
-        "<h1>Hiểu bạn trước,<br>rồi mới đề xuất.</h1>"
-        "<p>LUMI trò chuyện để hiểu hoàn cảnh của bạn — công việc, gia đình, nỗi lo và ngân sách — "
-        "rồi đề xuất loại bảo hiểm phù hợp và so sánh minh bạch các lựa chọn.</p>"
-        '<p class="lumi-caption">Miễn phí · Không cần đăng ký · Thông tin chỉ dùng cho buổi tư vấn này</p>'
-        "</div>"
+        '<span class="lumi-kicker">Bản demo tư vấn bảo hiểm cá nhân hoá</span>'
+        '<h1>Mỗi hoàn cảnh cần một cách bảo vệ khác nhau.</h1>'
+        '<p class="lumi-hero-lead">LUMI trò chuyện để hiểu điều bạn đang lo, khả năng tài chính và người bạn muốn bảo vệ. Sau đó mới đề xuất loại bảo hiểm và so sánh lựa chọn phù hợp.</p>'
+        '<div class="lumi-inline-proof">'
+        f'{material_icon("lock")} Không cần đăng ký<span aria-hidden="true"></span>'
+        f'{material_icon("schedule")} Khoảng 3–5 phút<span aria-hidden="true"></span>'
+        f'{material_icon("delete")} Có thể xoá hồ sơ'
+        '</div></div>'
     )
 
 
 def commitments() -> str:
     items = "".join(
-        f'<div class="lumi-step"><b>✓ {esc(title)}</b>'
-        f'<div class="lumi-caption" style="margin-top:6px">{esc(text)}</div></div>'
-        for title, text in COMMITMENTS
+        '<article class="lumi-proof-item">'
+        f'<span class="lumi-icon-box">{material_icon(icon)}</span>'
+        f'<div><b>{esc(title)}</b><p>{esc(text)}</p></div></article>'
+        for icon, title, text in COMMITMENTS
     )
-    return f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">{items}</div>'
+    return f'<div class="lumi-proof-strip">{items}</div>'
+
+
+def problem_statement() -> str:
+    return (
+        '<div class="lumi-statement"><div class="lumi-eyebrow">Một cách tiếp cận khác</div>'
+        '<h2>Bảo hiểm nên bắt đầu từ cuộc sống của bạn, không phải từ danh sách sản phẩm.</h2>'
+        '<p>LUMI tách rõ ba việc: lắng nghe, quyết định có cấu trúc và tính toán bằng code. Nhờ vậy, bạn có thể nhìn thấy vì sao một lựa chọn được đưa ra.</p></div>'
+    )
 
 
 def how_it_works() -> str:
     items = "".join(
-        f'<div class="lumi-step"><span class="lumi-step-number">{index}</span>'
-        f"<b>{esc(title)}</b><div class=\"lumi-caption\" style=\"margin-top:6px\">{esc(text)}</div></div>"
-        for index, (title, text) in enumerate(STEPS, start=1)
+        '<article class="lumi-step">'
+        f'<div class="lumi-step-head"><span class="lumi-step-number">{index}</span>{material_icon(icon)}</div>'
+        f'<h3>{esc(title)}</h3><p>{esc(text)}</p></article>'
+        for index, (icon, title, text) in enumerate(STEPS, start=1)
     )
-    return f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">{items}</div>'
+    return f'<div class="lumi-grid lumi-grid-3">{items}</div>'
 
 
 def persona_card(persona: dict[str, str]) -> str:
     return (
-        f'<div class="lumi-persona-card {persona["css"]}">'
+        f'<article class="lumi-persona-card {persona["css"]}">'
+        '<div class="lumi-persona-head">'
         f'<span class="lumi-avatar">{esc(persona["initial"])}</span>'
-        f'<div style="margin-top:10px"><b>{esc(persona["name"])}</b></div>'
-        f'<div class="lumi-caption" style="margin:6px 0">{esc(persona["situation"])}</div>'
-        f'<div class="lumi-insight" style="margin-top:8px">💡 LUMI nhận ra: {esc(persona["insight"])}</div>'
-        f'<div><span class="lumi-tag lumi-tag-note">{esc(persona["recommendation"])}</span></div>'
-        "</div>"
+        f'<div><h3>{esc(persona["name"])}</h3><p>{esc(persona["situation"])}</p></div></div>'
+        '<div class="lumi-persona-insight">'
+        f'{material_icon("lightbulb")}<div><small>LUMI nhận ra</small><p>{esc(persona["insight"])}</p></div></div>'
+        f'<span class="lumi-tag lumi-tag-note">{esc(persona["recommendation"])}</span>'
+        '</article>'
     )
+
+
+def feature_grid() -> str:
+    items = "".join(
+        '<article class="lumi-feature-card">'
+        f'<span class="lumi-icon-box">{material_icon(icon)}</span>'
+        f'<h3>{esc(title)}</h3><p>{esc(text)}</p></article>'
+        for icon, title, text in FEATURES
+    )
+    return f'<div class="lumi-grid lumi-grid-3">{items}</div>'
 
 
 def behind() -> str:
     items = "".join(
-        f'<div class="lumi-step"><b>{esc(title)}</b>'
-        f'<div class="lumi-caption" style="margin-top:6px">{esc(text)}</div></div>'
-        for title, text in BEHIND
+        '<article class="lumi-system-node">'
+        f'<span>{material_icon(icon)}</span><div><b>{esc(title)}</b><p>{esc(text)}</p></div></article>'
+        for icon, title, text in BEHIND
     )
+    return f'<div class="lumi-system-flow">{items}</div><p class="lumi-caption lumi-center">Con số trong lời tư vấn luôn đến từ dữ liệu hoặc phép tính, không do mô hình tự viết ra.</p>'
+
+
+def closing_cta() -> str:
     return (
-        f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">{items}</div>'
-        '<div class="lumi-caption" style="margin-top:10px">Con số trong lời tư vấn luôn đến từ dữ liệu '
-        "hoặc phép tính, không do mô hình tự viết ra.</div>"
+        '<div class="lumi-closing-cta"><div><div class="lumi-eyebrow">Bắt đầu khi bạn sẵn sàng</div>'
+        '<h2>Tìm lựa chọn phù hợp với chính hoàn cảnh của bạn.</h2>'
+        '<p>Không cần chuẩn bị hồ sơ. Hãy bắt đầu bằng điều bạn đang quan tâm nhất.</p></div></div>'
     )
 
 
 def footer() -> str:
     return (
-        '<div class="lumi-footer-note">'
-        "Thông tin trên LUMI chỉ mang tính tham khảo, không thay thế tư vấn của tư vấn viên có chứng chỉ. "
-        "Doanh nghiệp và sản phẩm trong bản demo là hư cấu."
-        "</div>"
+        '<footer class="lumi-footer"><div class="lumi-footer-brand"><span class="lumi-brand-mark" aria-hidden="true"></span><b>LUMI</b></div>'
+        '<p>Thông tin trên LUMI chỉ mang tính tham khảo, không thay thế tư vấn của tư vấn viên có chứng chỉ. Doanh nghiệp và sản phẩm trong bản demo là hư cấu.</p>'
+        '<small>Demo sản phẩm · 2026</small></footer>'
     )
