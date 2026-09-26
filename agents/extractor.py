@@ -24,8 +24,10 @@ def to_json_value(value: object) -> object:
     return value
 
 
-MONEY_UNITS = (
+# Scale words, longest prefix first so "nghìn" is not read as "ng".
+MONEY_SCALES = (
     ("tỷ", 1_000_000_000),
+    ("tỉ", 1_000_000_000),
     ("ty", 1_000_000_000),
     ("triệu", 1_000_000),
     ("trieu", 1_000_000),
@@ -33,19 +35,147 @@ MONEY_UNITS = (
     ("nghìn", 1_000),
     ("nghin", 1_000),
     ("ngàn", 1_000),
+    ("ngan", 1_000),
     ("k", 1_000),
 )
-_AMOUNT = re.compile(r"(\d+(?:[.,]\d+)?)\s*([a-zA-ZÀ-ỹ]*)")
+
+# Spoken digits. Vietnamese changes the word by position: "năm" becomes "lăm"
+# after a tens word, "một" becomes "mốt", "bốn" becomes "tư".
+NUMBER_WORDS = {
+    "không": 0, "khong": 0,
+    "một": 1, "mot": 1, "mốt": 1,
+    "hai": 2,
+    "ba": 3,
+    "bốn": 4, "bon": 4, "tư": 4,
+    "năm": 5, "nam": 5, "lăm": 5, "nhăm": 5,
+    "sáu": 6, "sau": 6,
+    "bảy": 7, "bay": 7, "bẩy": 7,
+    "tám": 8, "tam": 8,
+    "chín": 9, "chin": 9,
+}
+HUNDRED = {"trăm", "tram"}
+TEN_MULTIPLIER = {"mươi"}           # "hai mươi" = 2 × 10
+TEN = {"mười"}                      # "mười lăm" = 10 + 5
+# Without diacritics the two collapse into one word; the preceding digit tells
+# them apart ("hai muoi" is 20, a bare "muoi" is 10).
+TEN_AMBIGUOUS = {"muoi"}
+ZERO_FILLER = {"lẻ", "le", "linh"}  # "một trăm lẻ năm" = 105
+HALF = {"rưỡi", "ruoi"}             # half of the scale just spoken
+
+RANGE_SEPARATORS = re.compile(r"\s*(?:-|–|—|đến|den|tới|toi|hoặc|hoac)\s*")
+# A digit run (with . or , separators) or a word.
+_TOKEN = re.compile(r"\d[\d.,]*|[a-zà-ỹ]+", re.IGNORECASE)
+
+
+def _to_number(token: str) -> float | None:
+    """Read a digit token: '59.000' is 59000, '1,2' is 1.2."""
+
+    if "," in token:
+        cleaned = token.replace(".", "").replace(",", ".")
+    else:
+        cleaned = token.replace(".", "")
+    try:
+        return float(cleaned)
+    except ValueError:
+        return None
+
+
+def _parse_below_thousand(tokens: list[str]) -> float:
+    """Read the 0–999 part of a Vietnamese number, e.g. 'ba trăm năm mươi'."""
+
+    total = 0.0
+    pending = 0.0
+    for token in tokens:
+        if token in ZERO_FILLER:
+            continue
+        if token in HUNDRED:
+            total += (pending or 1) * 100
+            pending = 0.0
+        elif token in TEN_MULTIPLIER or (token in TEN_AMBIGUOUS and pending):
+            total += (pending or 1) * 10
+            pending = 0.0
+        elif token in TEN or token in TEN_AMBIGUOUS:
+            total += 10
+            pending = 0.0
+        elif token in NUMBER_WORDS:
+            pending = NUMBER_WORDS[token]
+        else:
+            number = _to_number(token)
+            if number is not None:
+                pending = number
+    return total + pending
+
+
+def _split_scale(token: str) -> tuple[str, float] | None:
+    """Match a scale word, tolerating '3tr' where digits and unit are joined."""
+
+    for prefix, factor in MONEY_SCALES:
+        if token == prefix:
+            return prefix, factor
+    return None
+
+
+def _parse_amount(text: str) -> float | None:
+    """One amount, spoken or written: 'ba triệu rưỡi', '150k', '1 tỷ 2'."""
+
+    raw = _TOKEN.findall(text)
+    if not raw:
+        return None
+
+    # Split joined forms such as "3tr" or "150k" into a number and a unit.
+    tokens: list[str] = []
+    for token in raw:
+        match = re.fullmatch(r"(\d[\d.,]*)([a-zà-ỹ]+)", token, re.IGNORECASE)
+        if match and _split_scale(match.group(2)):
+            tokens.extend(match.groups())
+        else:
+            tokens.append(token)
+
+    total = 0.0
+    segment: list[str] = []
+    last_scale: float | None = None
+    saw_scale = False
+
+    for token in tokens:
+        if token in HALF:
+            # "ba triệu rưỡi" adds half of the scale just used.
+            if last_scale:
+                total += last_scale / 2
+            continue
+        scale = _split_scale(token)
+        if scale:
+            total += (_parse_below_thousand(segment) or 1) * scale[1]
+            last_scale = scale[1]
+            saw_scale = True
+            segment = []
+        else:
+            segment.append(token)
+
+    tail = _parse_below_thousand(segment) if segment else 0.0
+    if tail:
+        if saw_scale and last_scale and tail < 10:
+            # "một tỷ hai" means 1.2 tỷ: a bare tail is tenths of the scale.
+            total += tail * last_scale / 10
+        else:
+            total += tail
+
+    return total if total > 0 else None
 
 
 def parse_money(value: object) -> float | None:
-    """Turn a Vietnamese money phrase into VND.
+    """Turn a Vietnamese money expression into VND.
 
-    A1 is told to emit integers, but a model occasionally returns "11 triệu
-    mỗi tháng". Coercing here keeps one bad field from ending the session.
+    Handles both written forms ("3tr", "100-150k", "59.000đ") and spoken ones
+    ("ba triệu rưỡi", "hai mươi triệu", "một tỷ hai"). Speech-to-text returns
+    numbers as words, so the spoken forms are not optional.
+
+    A range yields its upper bound, which is how customers state a budget
+    ceiling ("100-150k" means they can afford 150k).
     """
 
-    if isinstance(value, (int, float)) and not isinstance(value, bool):
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
         return float(value)
     if isinstance(value, Mapping):
         for key in ("max", "amount", "value", "min"):
@@ -55,38 +185,18 @@ def parse_money(value: object) -> float | None:
     if not isinstance(value, str):
         return None
 
-    text = value.strip().lower().replace("đ", "").replace("vnd", "")
-    pairs: list[tuple[str, float, int | None]] = []
-    for raw_number, raw_unit in _AMOUNT.findall(text):
-        digits = raw_number.replace(".", "").replace(",", ".") if "," in raw_number else raw_number.replace(".", "")
-        try:
-            number = float(digits)
-        except ValueError:
-            continue
-        unit = next((factor for prefix, factor in MONEY_UNITS if raw_unit.startswith(prefix)), None)
-        pairs.append((raw_number, number, unit))
-    if not pairs:
+    text = value.strip().lower()
+    for noise in ("đồng", "dong", "vnd", "vnđ", "đ/", "₫"):
+        text = text.replace(noise, " ")
+
+    amounts = [
+        amount
+        for part in RANGE_SEPARATORS.split(text)
+        if (amount := _parse_amount(part)) is not None
+    ]
+    if not amounts:
         return None
-
-    amounts: list[float] = []
-    for index, (raw_number, number, unit) in enumerate(pairs):
-        if unit is not None:
-            amounts.append(number * unit)
-            continue
-        later = next((item for _, _, item in pairs[index + 1 :] if item is not None), None)
-        if later is not None:
-            # A range such as "100-150k": the unit sits on the last number only.
-            amounts.append(number * later)
-            continue
-        earlier = next((item for _, _, item in reversed(pairs[:index]) if item is not None), None)
-        if earlier is not None and amounts:
-            # "1 tỷ 2" means 1.2 tỷ: a bare tail is a fraction of the unit before it.
-            amounts[-1] += number / (10 ** len(raw_number.lstrip("0") or "0")) * earlier
-            continue
-        amounts.append(number)
-
-    total = max(amounts)
-    return total if total > 0 else None
+    return max(amounts)
 
 
 class ExtractedField(BaseModel):
