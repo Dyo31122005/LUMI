@@ -139,7 +139,11 @@ def _live_session_with_empty_profile():
     kb = KnowledgeBase.load()
 
     class Stub:
-        def extract(self, *_: object) -> object: ...
+        def extract(self, *_: object):
+            from core.schemas import ProfilePatch
+
+            return ProfilePatch(updates={}, provenance={})
+
         def write_question(self, *, template: str, **__: object) -> str:
             return template
 
@@ -199,3 +203,97 @@ def test_manual_mode_explains_the_empty_profile_panel() -> None:
     )
     messages = " ".join(item.value for item in app.info)
     assert "điền dần" in messages
+
+
+# ----------------------------------------------------------- voice input
+
+
+class FakeSpeech:
+    """Stands in for SpeechClient inside the page."""
+
+    def __init__(self, text: str = "mình để ra được ba triệu rưỡi mỗi tháng", fail: str = "") -> None:
+        self.text, self.fail = text, fail
+        self.enabled = True
+        self.calls = 0
+
+    def transcribe(self, audio: bytes, **_: object) -> str:
+        self.calls += 1
+        if self.fail:
+            raise RuntimeError(self.fail)
+        return self.text
+
+
+def _voice_app(monkeypatch: pytest.MonkeyPatch, speech: object | None, **state: object):
+    from streamlit.testing.v1 import AppTest
+
+    orchestrator, session = _live_session_with_empty_profile()
+    app = AppTest.from_file(str(PAGES / "consult.py"), default_timeout=TIMEOUT)
+    app.session_state["lumi_mode"] = "manual"
+    app.session_state["lumi_live"] = (orchestrator, session)
+    app.session_state["lumi_engine_label"] = "Rule"
+    # live_session() and speech_client() both read straight from session state.
+    app.session_state["lumi_speech"] = speech
+    for key, value in state.items():
+        app.session_state[key] = value
+    return app.run()
+
+
+def test_voice_widget_is_absent_when_voice_is_off(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = _voice_app(monkeypatch, None)
+
+    assert not app.exception
+    assert not app.get("audio_input"), "Tắt giọng nói thì không được hiện micro"
+    assert app.chat_input, "Gõ phím vẫn phải dùng được"
+
+
+def test_voice_widget_appears_when_voice_is_on(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = _voice_app(monkeypatch, FakeSpeech())
+
+    assert not app.exception
+    assert app.get("audio_input")
+
+
+def test_transcript_is_shown_for_review_before_sending(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A misheard amount must never reach the advice unseen."""
+
+    draft = "mình để ra được ba triệu rưỡi mỗi tháng"
+    app = _voice_app(monkeypatch, FakeSpeech(), lumi_draft=draft)
+
+    assert not app.exception
+    boxes = [item for item in app.text_area if item.value == draft]
+    assert boxes, "Phải hiện văn bản đã phiên âm để khách kiểm tra"
+    assert not app.session_state.get("lumi_pending_prompt"), "Chưa bấm gửi thì chưa gửi"
+
+
+def test_the_edited_transcript_is_what_gets_sent(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = _voice_app(monkeypatch, FakeSpeech(), lumi_draft="ba triệu")
+
+    app.text_area(key="lumi_draft_text").set_value("ba triệu rưỡi")
+    next(item for item in app.button if item.label == "Gửi").click().run()
+
+    # The pending prompt is consumed on the next run, so check the session.
+    _, session = app.session_state["lumi_live"]
+    sent = [item.content for item in session.messages if item.role == "customer"]
+    assert sent == ["ba triệu rưỡi"], "Phải gửi bản đã sửa, không phải bản phiên âm gốc"
+    assert "lumi_draft" not in app.session_state
+
+
+def test_discarding_a_transcript_sends_nothing(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = _voice_app(monkeypatch, FakeSpeech(), lumi_draft="nghe nhầm hết rồi")
+
+    next(item for item in app.button if "Bỏ" in item.label).click().run()
+
+    assert not app.session_state.get("lumi_pending_prompt")
+    assert "lumi_draft" not in app.session_state
+
+
+def test_a_transcription_failure_keeps_typing_available(monkeypatch: pytest.MonkeyPatch) -> None:
+    app = _voice_app(
+        monkeypatch,
+        FakeSpeech(),
+        lumi_voice_error="Bản ghi quá ngắn, LUMI chưa nghe được gì.",
+    )
+
+    assert not app.exception
+    assert app.warning, "Phải nói rõ vì sao không nghe được"
+    assert app.chat_input, "Người dùng vẫn phải gõ được"

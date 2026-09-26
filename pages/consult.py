@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 from typing import Any
 
@@ -153,6 +154,7 @@ def reset_session() -> None:
     for key in (
         "lumi_mode", "lumi_persona", "lumi_manual_messages", "lumi_pending_prompt",
         "lumi_step", "lumi_live", "lumi_live_error", "lumi_turn_error",
+        "lumi_speech", "lumi_draft", "lumi_last_clip", "lumi_voice_error",
     ):
         st.session_state.pop(key, None)
 
@@ -363,6 +365,8 @@ def manual_mode() -> None:
                 st.divider()
                 results(live_session_data(session))
 
+        voice_input()
+
     with panel_column:
         with st.container(height=720, border=False, key="lumi_profile_panel"):
             st.subheader(f"Hồ sơ của {session.profile.name or 'bạn'}")
@@ -394,6 +398,91 @@ def live_session_data(session: Any) -> dict[str, Any]:
     from core.session_io import session_to_dict
 
     return session_to_dict(session)
+
+
+# --------------------------------------------------------------------- voice
+
+
+@st.cache_data(show_spinner=False)
+def _speech_hint() -> str:
+    from core.speech import transcription_prompt
+
+    return transcription_prompt(knowledge_base())
+
+
+def speech_client() -> Any | None:
+    """The speech client, or None when voice is off or unavailable."""
+
+    if "lumi_speech" in st.session_state:
+        return st.session_state["lumi_speech"]
+
+    client: Any | None
+    try:
+        from core.speech import SpeechClient
+
+        client = SpeechClient()
+        if not client.enabled:
+            client = None
+    except Exception:
+        # Voice is a second way in, never a requirement. Typing still works.
+        client = None
+    st.session_state["lumi_speech"] = client
+    return client
+
+
+def voice_input() -> None:
+    """Record, transcribe, then let the customer check the text before sending.
+
+    The transcript is never sent straight through: a misheard amount would
+    flow into the advice, and showing it is the cheapest way to stop that.
+    """
+
+    client = speech_client()
+    if client is None:
+        return
+
+    recording = st.audio_input("Hoặc nói với LUMI", key="lumi_mic")
+    if recording is not None:
+        data = recording.getvalue()
+        # Streamlit hands back the same recording on every rerun, so remember
+        # which clip has already been transcribed.
+        fingerprint = hashlib.sha1(data).hexdigest()
+        if fingerprint != st.session_state.get("lumi_last_clip"):
+            st.session_state["lumi_last_clip"] = fingerprint
+            st.session_state.pop("lumi_voice_error", None)
+            try:
+                with st.spinner("Đang nghe bạn nói…"):
+                    st.session_state["lumi_draft"] = client.transcribe(
+                        data,
+                        filename=getattr(recording, "name", None) or "speech.wav",
+                        prompt=_speech_hint(),
+                    )
+            except Exception as error:
+                st.session_state["lumi_voice_error"] = str(error)
+            st.rerun()
+
+    error = st.session_state.get("lumi_voice_error")
+    if error:
+        st.warning(f"{error} Bạn ghi lại hoặc gõ vào ô bên dưới nhé.", icon=":material/mic_off:")
+
+    draft = st.session_state.get("lumi_draft")
+    if not draft:
+        return
+
+    st.caption("LUMI nghe được thế này. Bạn sửa lại nếu chưa đúng rồi hãy gửi.")
+    edited = st.text_area("Nội dung sẽ gửi", value=draft, key="lumi_draft_text", height=100)
+    send, discard = st.columns(2)
+    with send:
+        if st.button("Gửi", type="primary", icon=":material/send:", use_container_width=True):
+            text = (edited or "").strip()
+            st.session_state.pop("lumi_draft", None)
+            if text:
+                st.session_state["lumi_pending_prompt"] = text
+            st.rerun()
+    with discard:
+        if st.button("Bỏ, ghi lại", icon=":material/close:", use_container_width=True):
+            st.session_state.pop("lumi_draft", None)
+            st.rerun()
 
 
 # --------------------------------------------------------------------- entry
