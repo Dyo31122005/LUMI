@@ -33,7 +33,13 @@ Trả về cùng lúc D1–D4:
 
 - `next_topic`: chủ đề cần làm rõ tiếp theo. Chọn `ready_to_recommend` khi đã đủ thông tin để đề xuất loại.
   - Ưu tiên chủ đề chứa các trường trong `missing_for_step2`: đó là những trường Bước 2 bắt buộc phải có cho loại đang dẫn đầu. Ví dụ loại `life` mà chưa biết `chronic_conditions` hay `smoker` thì chọn `health`.
-  - `questions_left` cho biết còn bao nhiêu câu trong hạn mức 8 câu. Còn ít câu thì hỏi những trường quan trọng nhất trước.
+  - Chọn `ready_to_recommend` khi khách tỏ ý muốn nghe đề xuất ngay: "tư vấn luôn đi", "gợi ý cho mình", "đủ rồi", "khỏi hỏi nữa".
+  - `questions_asked` cho biết đã hỏi bao nhiêu câu. **Không có hạn mức cứng**, nhưng hỏi càng nhiều thì càng nên tập trung vào trường thật sự quyết định và sớm chuyển sang `ready_to_recommend`. Đừng kéo dài phần hỏi khi hồ sơ đã đủ để đề xuất.
 - `risk_tolerance`, `need_flexibility`, `trust_concern`: suy ra từ cách khách nói; chọn `Unknown` khi chưa có căn cứ.
 - `insurance_type` và `type_probabilities`: giả thuyết hiện tại, cập nhật theo thông tin mới nhất.
-- `customer_intent`: đọc từ `last_customer_message`. Chỉ chọn `agree_continue` khi khách thật sự đồng ý xem so sánh.
+- `customer_intent` và `intent_confidence`: đọc từ `last_customer_message`.
+  - `agree_continue`: khách đồng ý xem tiếp hoặc chủ động xin đề xuất.
+  - `ask_question`: khách hỏi một điều gì đó.
+  - `add_or_correct_info`: khách kể thêm hoặc sửa thông tin. **Đây là lựa chọn mặc định** khi khách chỉ đang trả lời câu hỏi của LUMI.
+  - `end_conversation`: **chỉ chọn khi khách nói rõ là muốn dừng** ("thôi nhé", "để mình suy nghĩ đã", "cảm ơn, mình dừng đây"). Một câu trả lời bình thường, một lời cảm ơn giữa chừng, hay một câu hỏi mới đều **không phải** ý muốn dừng.
+  - `intent_confidence` là mức chắc chắn về `customer_intent`, tách biệt với `confidence` của loại bảo hiểm. Không chắc thì để thấp; hệ thống sẽ không kết thúc phiên khi giá trị này dưới ngưỡng.

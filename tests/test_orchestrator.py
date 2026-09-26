@@ -132,11 +132,18 @@ def test_questions_are_never_repeated(kb: KnowledgeBase) -> None:
     assert len(questions) == len(set(questions))
 
 
-def test_discovery_stops_at_the_question_limit(kb: KnowledgeBase) -> None:
-    # A patch that never fills anything would otherwise loop forever.
-    orchestrator = build(kb, [{}], ["vẫn thế"] * 20)
-    session = orchestrator.run_auto("vuong")
-    assert session.question_count <= kb.section("question_bank")["rules"]["max_questions"]
+def test_discovery_is_not_capped_by_a_turn_budget(kb: KnowledgeBase) -> None:
+    """There is no fixed question limit; discovery ends when the bank runs out."""
+
+    orchestrator = build(kb, [{}], ["vẫn thế"] * 60)
+    session = orchestrator.run_auto("vuong", max_questions=60)
+
+    bank_size = len(kb.section("question_bank")["questions"])
+    legacy_cap = kb.section("question_bank")["rules"]["max_questions"]
+    assert session.question_count > legacy_cap, "Không được dừng ở hạn mức cũ"
+    # A disambiguation question is counted but is not part of the bank.
+    assert len(session.asked_question_ids) <= bank_size, "Mỗi câu chỉ được hỏi một lần"
+    assert session.question_count - len(session.asked_question_ids) <= 1
 
 
 def test_every_extracted_field_keeps_its_quote(kb: KnowledgeBase) -> None:
@@ -255,11 +262,11 @@ def test_full_offline_run_reaches_a_ranked_comparison(kb: KnowledgeBase) -> None
 # ------------------------------------------------------------- follow-up
 
 
-def _intent_engine(kb: KnowledgeBase, intent: str) -> RuleEngine:
+def _intent_engine(kb: KnowledgeBase, intent: str, confidence: float = 0.9) -> RuleEngine:
     class Fixed(RuleEngine):
         def decide_turn(self, profile, derived=None, context=None) -> TurnDecision:  # type: ignore[override]
             return super().decide_turn(profile, derived, context).model_copy(
-                update={"customer_intent": intent}
+                update={"customer_intent": intent, "intent_confidence": confidence}
             )
 
     return Fixed(kb)
@@ -314,3 +321,57 @@ def test_a_closed_session_still_answers_rather_than_going_silent(kb: KnowledgeBa
 
     assert reply, "Khách nhắn tiếp sau lời kết vẫn phải được trả lời"
     assert session.state is ConversationState.FOLLOW_UP
+
+
+def test_an_unsure_end_intent_does_not_kill_the_conversation(kb: KnowledgeBase) -> None:
+    """decision_questions.D4.confidence_min: a hesitant read must not end the
+    session. Ending on a misread is how a chat "suddenly stops" on the user."""
+
+    threshold = float(kb.section("decision_questions")["D4"]["confidence_min"])
+    orchestrator, session = _session_past_step_two(kb)
+    orchestrator.engine = _intent_engine(kb, "end_conversation", confidence=threshold - 0.2)
+
+    reply = orchestrator.handle_customer_message(session, "cảm ơn bạn nhé")
+
+    assert session.state is ConversationState.FOLLOW_UP, "Đọc nhầm thì không được kết thúc"
+    assert reply
+
+
+def test_a_confident_end_intent_does_close(kb: KnowledgeBase) -> None:
+    threshold = float(kb.section("decision_questions")["D4"]["confidence_min"])
+    orchestrator, session = _session_past_step_two(kb)
+    orchestrator.engine = _intent_engine(kb, "end_conversation", confidence=threshold + 0.2)
+
+    orchestrator.handle_customer_message(session, "thôi mình dừng đây, cảm ơn")
+
+    assert session.state is ConversationState.CLOSING
+
+
+def test_customer_can_ask_for_the_recommendation_early(kb: KnowledgeBase) -> None:
+    """«tư vấn luôn đi» should end discovery even with a thin profile."""
+
+    orchestrator = build(kb, VUONG_PATCHES, ["ừ"])
+    orchestrator.engine = _intent_engine(kb, "agree_continue")
+    session = orchestrator.new_session("vuong", {"assistant_self": "mình", "customer": "Vương"})
+    session.profile = Profile(age=22, employment_status="job_seeking", primary_concerns=["job_loss"])
+    session.state = ConversationState.DISCOVERY
+
+    orchestrator.handle_customer_message(session, "thôi bạn tư vấn luôn đi")
+
+    assert session.type_decision is not None
+    assert session.state is ConversationState.CONFIRM
+
+
+def test_blocking_fields_still_gate_the_recommendation(kb: KnowledgeBase) -> None:
+    """Impatience must not produce advice without age, job and main worry."""
+
+    # An extractor that learns nothing, so the blocking fields stay empty.
+    orchestrator = build(kb, [{}], ["ừ"])
+    orchestrator.engine = _intent_engine(kb, "agree_continue")
+    session = orchestrator.new_session("vuong", {"assistant_self": "mình", "customer": "Vương"})
+    session.state = ConversationState.DISCOVERY
+
+    orchestrator.handle_customer_message(session, "tư vấn luôn đi")
+
+    assert session.type_decision is None
+    assert session.state is ConversationState.DISCOVERY

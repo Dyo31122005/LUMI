@@ -147,6 +147,7 @@ class RuleEngine:
             type_probabilities=final.type_probabilities,
             confidence=final.confidence,
             customer_intent="add_or_correct_info",
+            intent_confidence=0.5,
         )
 
     def score_product(self, profile: Profile, product: dict[str, Any]) -> ProductScores:

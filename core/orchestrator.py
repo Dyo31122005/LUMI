@@ -163,7 +163,7 @@ class Orchestrator:
                 "last_customer_message": message,
                 "missing_fields": self._missing_fields(session),
                 "missing_for_step2": self._missing_for_step_two(session),
-                "questions_left": max(0, self.max_questions - session.question_count),
+                "questions_asked": session.question_count,
             },
         )
         session.turn_decisions.append(decision)
@@ -173,9 +173,8 @@ class Orchestrator:
         if session.state is ConversationState.CONFIRM:
             return self._handle_confirmation(session, decision)
 
-        # After the recommendation the customer may keep asking as long as they
-        # like. The 8-question budget caps LUMI's own discovery questions, not
-        # the customer's.
+        # After the recommendation the customer may keep asking as long as
+        # they like; nothing here counts their turns.
         if session.state in {ConversationState.FOLLOW_UP, ConversationState.CLOSING}:
             return self._handle_follow_up(session, decision, message)
 
@@ -191,17 +190,38 @@ class Orchestrator:
         return self._ask(session, question, decision)
 
     def _ready_for_step_one(self, session: ConsultationSession, decision: TurnDecision) -> bool:
-        """profile_schema.readiness.step1_recommend_type."""
+        """When LUMI should stop asking and recommend a type.
 
-        if session.question_count >= self.max_questions:
-            return True
+        There is deliberately no cap on the number of turns. Discovery ends
+        when the profile is complete enough, when the decision agent says it
+        has what it needs, or when the customer asks for the recommendation.
+        It also ends naturally once the question bank has nothing left to ask,
+        which `_select_question` reports by returning None.
+        """
+
         blocking = self.kb.section("profile_schema")["readiness"]["step1_recommend_type"]["blocking"]
         known = session.profile.model_dump(exclude={"provenance"})
         if any(known.get(key) in (None, [], {}) for key in blocking):
+            # Never recommend without age, employment status and the main worry,
+            # however impatient the customer is.
             return False
+        if self._wants_recommendation(decision):
+            return True
         if session.derived.get("completeness", 0) >= float(self.thresholds["completeness_min"]):
             return True
         return decision.next_topic == "ready_to_recommend"
+
+    @staticmethod
+    def _wants_recommendation(decision: TurnDecision) -> bool:
+        """The customer asked to move on to the advice."""
+
+        return decision.customer_intent == "agree_continue"
+
+    def _wants_to_stop(self, decision: TurnDecision) -> bool:
+        """Only end on a confident read (decision_questions.D4.confidence_min)."""
+
+        threshold = float(self.kb.section("decision_questions")["D4"]["confidence_min"])
+        return decision.customer_intent == "end_conversation" and decision.intent_confidence >= threshold
 
     def _topics_for(self, session: ConsultationSession, keys: list[str]) -> list[str]:
         """Which question topics would fill the given profile fields."""
@@ -296,8 +316,8 @@ class Orchestrator:
         cross_check = self.rules.decide_type(session.profile, session.derived)
         threshold = float(self.thresholds["type_confidence_min"])
         unsure = decision.confidence < threshold or decision.insurance_type != cross_check.insurance_type
-        # Past the 8-question budget LUMI states an assumption instead of asking again.
-        may_ask_again = not session.disambiguated and session.question_count < self.max_questions
+        # Asked at most once per session; otherwise LUMI states its assumption.
+        may_ask_again = not session.disambiguated
         if unsure and may_ask_again:
             question = self._disambiguation_question(session, decision, cross_check)
             if question:
@@ -348,16 +368,12 @@ class Orchestrator:
 
         if decision.customer_intent == "agree_continue":
             return self.compare_products(session)
-        if decision.customer_intent == "end_conversation":
+        if self._wants_to_stop(decision):
             return self._close(session)
 
         # New information after Bước 1 may reopen discovery, but never past the
         # 8-question budget.
-        question = (
-            self._select_question(session, decision.next_topic)
-            if session.question_count < self.max_questions
-            else None
-        )
+        question = self._select_question(session, decision.next_topic)
         if question is None:
             session.state = ConversationState.CONFIRM
             return None
@@ -369,7 +385,7 @@ class Orchestrator:
     ) -> str | None:
         """Answer questions asked after Bước 2, for as long as the customer has them."""
 
-        if decision.customer_intent == "end_conversation":
+        if self._wants_to_stop(decision):
             return self._close(session)
 
         session.state = ConversationState.FOLLOW_UP

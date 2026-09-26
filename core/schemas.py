@@ -178,6 +178,10 @@ class TurnDecision(StrictModel):
     type_probabilities: TypeProbabilities
     confidence: float = Field(ge=0, le=1)
     customer_intent: CustomerIntent
+    # D4 carries its own confidence (decision_questions.D4.confidence_min).
+    # Ending a session on a misread message is costly, so the intent must not
+    # borrow D3's confidence.
+    intent_confidence: float = Field(ge=0, le=1)
 
 
 class TypeDecision(StrictModel):
