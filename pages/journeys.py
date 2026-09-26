@@ -29,7 +29,7 @@ if not loaded:
     st.stop()
 
 opening = loaded[0][1]["messages"][0]["content"]
-st.html(ui.card(
+ui.render(st, ui.card(
     f'<div class="lumi-eyebrow">Lời chào — giống nhau cho cả ba</div>'
     f'<div class="lumi-muted">{ui.esc(opening)}</div>'
 ))
@@ -60,13 +60,13 @@ for column, (persona, data) in zip(columns, loaded):
             st.caption(f"• {question}")
 
         st.markdown("**LUMI nhận ra**")
-        st.html(ui.insight_cards(data.get("insights") or []) or '<span class="lumi-caption">—</span>')
+        ui.render(st, ui.insight_cards(data.get("insights") or []) or '<span class="lumi-caption">—</span>')
 
         st.markdown("**Loại đề xuất**")
-        st.html(f'<span class="lumi-tag lumi-tag-note">{ui.esc(type_names.get(decision.get("insurance_type"), "—"))}</span>')
+        ui.render(st, f'<span class="lumi-tag lumi-tag-note">{ui.esc(type_names.get(decision.get("insurance_type"), "—"))}</span>')
 
         st.markdown("**Điều quan trọng nhất**")
-        st.html("".join(f'<span class="lumi-chip"><b>{ui.esc(item)}</b></span>' for item in priority) or "—")
+        ui.render(st, "".join(f'<span class="lumi-chip"><b>{ui.esc(item)}</b></span>' for item in priority) or "—")
 
         st.markdown("**Sản phẩm đầu bảng**")
         st.write(ranking[0]["product_name"] if ranking else "—")
@@ -76,4 +76,4 @@ for column, (persona, data) in zip(columns, loaded):
             st.session_state["lumi_persona"] = persona["id"]
             st.switch_page("pages/consult.py")
 
-st.html(ui.data_footer())
+ui.render(st, ui.data_footer())

@@ -44,6 +44,18 @@ def load_css() -> str:
     return CSS_PATH.read_text(encoding="utf-8")
 
 
+def render(st: Any, markup: str | None) -> None:
+    """Write markup with `st.html`, skipping anything empty.
+
+    Several builders below legitimately return "" — no insights yet, no
+    scenario for this insurance type — and `st.html("")` raises
+    StreamlitMissingRequiredParameterError, which aborts the rest of the page.
+    """
+
+    if markup and markup.strip():
+        st.html(markup)
+
+
 def esc(value: Any) -> str:
     return html.escape(str(value), quote=True)
 

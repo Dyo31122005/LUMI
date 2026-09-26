@@ -49,7 +49,7 @@ def start_screen() -> None:
 
     left, right = st.columns(2)
     with left:
-        st.html(ui.card(
+        ui.render(st, ui.card(
             "<b>💬 Tự trò chuyện</b>"
             '<div class="lumi-caption" style="margin-top:6px">'
             "Kể về hoàn cảnh của bạn, LUMI sẽ hỏi thêm khi cần.</div>"
@@ -65,7 +65,7 @@ def start_screen() -> None:
                 st.rerun()
 
     with right:
-        st.html(ui.card(
+        ui.render(st, ui.card(
             "<b>▶ Xem demo với nhân vật mẫu</b>"
             '<div class="lumi-caption" style="margin-top:6px">'
             "Xem lại một phiên LUMI đã tư vấn cho 1 trong 3 nhân vật. Chạy được cả khi không có mạng.</div>"
@@ -122,12 +122,12 @@ def profile_panel(data: dict[str, Any]) -> None:
 
     st.subheader(f"Hồ sơ của {name}")
     completeness = (data.get("derived") or {}).get("completeness", 0)
-    st.html(ui.completeness_bar(completeness))
-    st.html(ui.profile_chips(profile, field_labels()))
+    ui.render(st, ui.completeness_bar(completeness))
+    ui.render(st, ui.profile_chips(profile, field_labels()))
 
     insights = data.get("insights") or []
     if insights:
-        st.html("".join(
+        ui.render(st, "".join(
             f'<div class="lumi-insight"><div class="lumi-eyebrow">💡 LUMI nhận ra</div>{ui.esc(item["reason"])}</div>'
             for item in insights
         ))
@@ -138,7 +138,7 @@ def profile_panel(data: dict[str, Any]) -> None:
     probabilities = decision.get("type_probabilities") or (
         turns[-1]["type_probabilities"] if turns else None
     )
-    st.html(ui.hypothesis_bars(probabilities, decision.get("confidence")))
+    ui.render(st, ui.hypothesis_bars(probabilities, decision.get("confidence")))
 
 
 # ----------------------------------------------------------------- transcript
@@ -152,7 +152,7 @@ def transcript(data: dict[str, Any]) -> None:
             st.markdown(message["content"])
             explanation = why.get(str(index))
             if explanation:
-                st.html(ui.why_ask(explanation))
+                ui.render(st, ui.why_ask(explanation))
 
 
 def results(data: dict[str, Any]) -> None:
@@ -162,7 +162,7 @@ def results(data: dict[str, Any]) -> None:
         return
 
     type_names = {item["id"]: item["name_vi"] for item in knowledge_base().section("insurance_types")}
-    st.html(ui.step_one_card(
+    ui.render(st, ui.step_one_card(
         decision,
         data.get("insights") or [],
         type_names.get(decision["insurance_type"], decision["insurance_type"]),
@@ -181,21 +181,21 @@ def results(data: dict[str, Any]) -> None:
     }
     priority = [criteria_names.get(key, key) for key in data.get("priority_criteria", [])]
 
-    st.html(ui.card(
+    ui.render(st, ui.card(
         ui.priority_chips(priority, data.get("weight_reasons", []), profile_name)
         + ui.ranking_cards(ranking, profile_name),
         eyebrow=f"Bước 2 · So sánh{' cho ' + profile_name if profile_name else ''}",
     ))
 
-    st.html(ui.card(ui.heatmap(ranking, data.get("priority_criteria", [])), title="Bản đồ nhiệt 6 tiêu chí"))
+    ui.render(st, ui.card(ui.heatmap(ranking, data.get("priority_criteria", [])), title="Bản đồ nhiệt 6 tiêu chí"))
 
     rows = list(knowledge_base().section("comparison_rows")[decision["insurance_type"]])
     priority_rows = _priority_rows(decision["insurance_type"], data.get("priority_criteria", []))
     with st.expander("Bảng chi tiết"):
-        st.html(ui.comparison_table(ranking, rows, priority_rows))
+        ui.render(st, ui.comparison_table(ranking, rows, priority_rows))
 
-    st.html(ui.scenario_card(data.get("scenario")))
-    st.html(ui.data_footer())
+    ui.render(st, ui.scenario_card(data.get("scenario")))
+    ui.render(st, ui.data_footer())
 
 
 def _priority_rows(insurance_type: str, priority_criteria: list[str]) -> list[str]:
@@ -272,8 +272,23 @@ def manual_mode() -> None:
         return
 
     orchestrator, session = live
-    profile_age = session.profile.age
-    top_bar(session.profile.name or "Bạn", "Tự trò chuyện", engine_label, ui.persona_class(profile_age))
+    top_bar(session.profile.name or "Bạn", "Tự trò chuyện", engine_label, ui.persona_class(session.profile.age))
+
+    # Read the input before drawing anything else: if a later section raises,
+    # the visitor can still type instead of being stuck with a broken page.
+    prompt = st.chat_input("Nhập câu trả lời của bạn…")
+    if prompt:
+        try:
+            with st.spinner("Đang phân tích hồ sơ…"):
+                orchestrator.handle_customer_message(session, prompt)
+        except Exception as error:
+            st.session_state["lumi_turn_error"] = str(error)
+        st.rerun()
+
+    turn_error = st.session_state.pop("lumi_turn_error", None)
+    if turn_error:
+        st.error("LUMI gặp sự cố khi xử lý câu trả lời vừa rồi. Bạn thử gửi lại nhé.", icon="⚠")
+        st.caption(turn_error)
 
     chat_column, panel_column = st.columns([62, 38], gap="large")
 
@@ -282,39 +297,35 @@ def manual_mode() -> None:
             role = "assistant" if message.role == "assistant" else "user"
             with st.chat_message(role, avatar=BOT_AVATAR if role == "assistant" else CUSTOMER_AVATAR):
                 st.markdown(message.content)
-                explanation = session.why_ask.get(index)
-                if explanation:
-                    st.html(ui.why_ask(explanation))
+                ui.render(st, ui.why_ask(session.why_ask[index]) if index in session.why_ask else None)
 
-        if session.ranked or session.type_decision:
+        if session.type_decision:
             st.divider()
             results(live_session_data(session))
 
     with panel_column:
         st.subheader(f"Hồ sơ của {session.profile.name or 'bạn'}")
-        st.html(ui.completeness_bar((session.derived or {}).get("completeness", 0)))
-        st.html(ui.profile_chips(session.profile, field_labels()))
-        st.html(ui.insight_cards(session.insights))
-        st.subheader("LUMI đang cân nhắc")
-        latest = session.turn_decisions[-1] if session.turn_decisions else None
-        st.html(ui.hypothesis_bars(
-            latest.type_probabilities.model_dump() if latest else None,
-            latest.confidence if latest else None,
-        ))
-        st.divider()
-        if st.button("🗑 Xoá hồ sơ", use_container_width=True):
-            reset_session()
-            st.rerun()
+        has_profile = bool(session.profile.model_dump(exclude={"provenance"}, exclude_none=True))
+        if not has_profile:
+            st.caption(
+                "Hồ sơ sẽ được điền dần khi bạn trả lời. Mỗi thông tin đều kèm "
+                "câu nói gốc của bạn."
+            )
+        else:
+            ui.render(st, ui.completeness_bar((session.derived or {}).get("completeness", 0)))
+            ui.render(st, ui.profile_chips(session.profile, field_labels()))
+            ui.render(st, ui.insight_cards(session.insights))
 
-    prompt = st.chat_input("Nhập câu trả lời của bạn…")
-    if prompt:
-        try:
-            with st.spinner("Đang phân tích hồ sơ…"):
-                orchestrator.handle_customer_message(session, prompt)
-        except Exception as error:
-            st.error("LUMI đang gặp sự cố kết nối khi xử lý câu trả lời.", icon="⚠")
-            st.caption(str(error))
-        st.rerun()
+        if session.turn_decisions:
+            latest = session.turn_decisions[-1]
+            st.subheader("LUMI đang cân nhắc")
+            ui.render(st, ui.hypothesis_bars(latest.type_probabilities.model_dump(), latest.confidence))
+
+        if has_profile:
+            st.divider()
+            if st.button("🗑 Xoá hồ sơ", use_container_width=True):
+                reset_session()
+                st.rerun()
 
 
 def live_session_data(session: Any) -> dict[str, Any]:

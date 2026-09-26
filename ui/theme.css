@@ -44,8 +44,19 @@
 .lumi-senior .lumi-caption { display: none; }
 
 html, body, .stApp, [class*="st-"] { font-family: var(--font); }
+
+/* Streamlit draws its icons with Material Symbols; the rule above would
+   replace that font and turn every icon into raw text. */
+[data-testid="stIconMaterial"],
+[class*="material-symbols"] {
+  font-family: "Material Symbols Rounded", "Material Symbols Outlined" !important;
+}
+
 .stApp { background: var(--bg); color: var(--text); }
-.block-container { padding-top: 1.6rem; max-width: 1180px; }
+
+/* Leave room for Streamlit's fixed header: a smaller padding pulls the first
+   row of content underneath it. */
+.block-container { padding-top: 4.5rem; max-width: 1180px; }
 
 h1, h2, h3, h4 { color: var(--brand-900); font-weight: 700; letter-spacing: -0.01em; }
 

@@ -41,22 +41,22 @@ with controls[1]:
 st.title(f"Báo cáo tư vấn bảo hiểm dành cho {name}")
 
 st.subheader("1. Hồ sơ tóm tắt")
-st.html(ui.profile_chips(profile, labels))
+ui.render(st, ui.profile_chips(profile, labels))
 
 insights = data.get("insights") or []
 if insights:
     st.subheader("2. LUMI nhận ra")
-    st.html(ui.insight_cards(insights))
+    ui.render(st, ui.insight_cards(insights))
 
 decision = data.get("type_decision")
 if decision:
     st.subheader("3. Đề xuất")
-    st.html(ui.step_one_card(decision, insights, type_names.get(decision["insurance_type"], "")))
+    ui.render(st, ui.step_one_card(decision, insights, type_names.get(decision["insurance_type"], "")))
 
 ranking = recording.ranking
 if ranking:
     st.subheader("4. Hai lựa chọn đầu")
-    st.html(ui.ranking_cards(ranking[:2], name))
+    ui.render(st, ui.ranking_cards(ranking[:2], name))
 
     rows = list(kb.section("comparison_rows")[decision["insurance_type"]])
     mapping = kb.section("scoring")["criterion_to_rows"][decision["insurance_type"]]
@@ -65,12 +65,12 @@ if ranking:
         for criterion in data.get("priority_criteria", [])
         for item in mapping.get(criterion, ())
     ]
-    st.html(ui.comparison_table(ranking[:2], priority_rows or rows[:6], priority_rows))
+    ui.render(st, ui.comparison_table(ranking[:2], priority_rows or rows[:6], priority_rows))
 
 scenario = data.get("scenario")
 if scenario:
     st.subheader("5. Nếu… thì…")
-    st.html(ui.scenario_card(scenario))
+    ui.render(st, ui.scenario_card(scenario))
 
 st.subheader("6. Câu hỏi nên hỏi tư vấn viên")
 for question in [
@@ -88,4 +88,4 @@ for step in [
 ]:
     st.checkbox(step, key=f"todo_{hash(step)}")
 
-st.html(ui.data_footer())
+ui.render(st, ui.data_footer())

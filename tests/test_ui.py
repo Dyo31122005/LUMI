@@ -96,3 +96,97 @@ def test_manual_mode_without_credentials_offers_replay(monkeypatch: pytest.Monke
     assert not app.exception
     assert app.error
     assert any("Phát lại" in button.label for button in app.button)
+
+
+def test_render_skips_empty_markup() -> None:
+    """st.html("") raises, so ui.render must no-op on empty builders."""
+
+    from ui import components as ui
+
+    calls: list[str] = []
+
+    class FakeSt:
+        @staticmethod
+        def html(markup: str) -> None:
+            calls.append(markup)
+
+    ui.render(FakeSt, ui.insight_cards([]))
+    ui.render(FakeSt, ui.scenario_card(None))
+    ui.render(FakeSt, None)
+    ui.render(FakeSt, "   ")
+    assert calls == []
+
+    ui.render(FakeSt, "<b>có nội dung</b>")
+    assert calls == ["<b>có nội dung</b>"]
+
+
+def _live_session_with_empty_profile():
+    """A real orchestrator + session whose profile has nothing in it yet."""
+
+    from core.decision import RuleEngine
+    from core.kb import KnowledgeBase
+    from core.orchestrator import Orchestrator
+
+    kb = KnowledgeBase.load()
+
+    class Stub:
+        def extract(self, *_: object) -> object: ...
+        def write_question(self, *, template: str, **__: object) -> str:
+            return template
+
+        @staticmethod
+        def render_template(template: str, address: dict) -> str:
+            return template
+
+    orchestrator = Orchestrator(
+        knowledge_base=kb, extractor=Stub(), conversation=Stub(),
+        engine=RuleEngine(kb), writer=Stub(),
+    )
+    session = orchestrator.new_session(None, {"assistant_self": "mình", "customer": "bạn"})
+    orchestrator.greeting(session)
+    return orchestrator, session
+
+
+def test_manual_mode_survives_a_profile_with_no_insights() -> None:
+    """Regression from production: the first live turn crashed with
+    StreamlitMissingRequiredParameterError because there were no insights yet
+    and st.html() was handed an empty string, which killed the chat input."""
+
+    app = run(
+        "consult.py",
+        lumi_mode="manual",
+        lumi_live=_live_session_with_empty_profile(),
+        lumi_engine_label="Rule",
+    )
+
+    assert not app.exception, f"Trang vỡ: {app.exception}"
+    assert app.chat_input, "Ô nhập phải luôn được vẽ để người dùng gõ được"
+    assert any("LUMI" in message.markdown[0].value for message in app.chat_message)
+
+
+def test_manual_mode_survives_a_profile_that_has_no_insights_yet() -> None:
+    """The exact production crash: a filled profile whose insight list is empty
+    made ui.insight_cards() return "", and st.html("") aborted the page."""
+
+    from core.schemas import Profile
+
+    orchestrator, session = _live_session_with_empty_profile()
+    session.profile = Profile(age=31, employment_status="employed", monthly_income=18_000_000)
+    session.insights = []
+    session.derived = {"completeness": 0.4}
+
+    app = run("consult.py", lumi_mode="manual", lumi_live=(orchestrator, session), lumi_engine_label="Rule")
+
+    assert not app.exception, f"Trang vỡ: {app.exception}"
+    assert app.chat_input
+
+
+def test_manual_mode_explains_the_empty_profile_panel() -> None:
+    app = run(
+        "consult.py",
+        lumi_mode="manual",
+        lumi_live=_live_session_with_empty_profile(),
+        lumi_engine_label="Rule",
+    )
+    captions = " ".join(item.value for item in app.caption)
+    assert "điền dần" in captions
