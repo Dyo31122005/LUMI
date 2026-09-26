@@ -155,6 +155,7 @@ def reset_session() -> None:
         "lumi_mode", "lumi_persona", "lumi_manual_messages", "lumi_pending_prompt",
         "lumi_step", "lumi_live", "lumi_live_error", "lumi_turn_error",
         "lumi_speech", "lumi_draft", "lumi_last_clip", "lumi_voice_error",
+        "lumi_audio_cache", "lumi_play", "lumi_play_armed", "lumi_autoplayed",
     ):
         st.session_state.pop(key, None)
 
@@ -348,6 +349,8 @@ def manual_mode() -> None:
 
     chat_column, panel_column = st.columns([62, 38], gap="large")
 
+    arm_autoplay_for_large_text(session)
+
     with chat_column:
         st.html(
             '<div class="lumi-chat-heading"><div><div class="lumi-eyebrow">Cuộc trò chuyện</div>'
@@ -360,6 +363,8 @@ def manual_mode() -> None:
                 with st.chat_message(role, avatar=BOT_AVATAR if role == "assistant" else CUSTOMER_AVATAR):
                     st.markdown(message.content)
                     ui.render(st, ui.why_ask(session.why_ask[index]) if index in session.why_ask else None)
+                    if role == "assistant":
+                        play_controls(index, message.content, session.profile.age)
 
             if session.type_decision:
                 st.divider()
@@ -428,6 +433,74 @@ def speech_client() -> Any | None:
         client = None
     st.session_state["lumi_speech"] = client
     return client
+
+
+def speak_message(text: str, age: int | None) -> bytes | None:
+    """Synthesise a reply, reusing audio already produced this session.
+
+    Synthesis happens on request, never for every message on every rerun:
+    a ten-message transcript would otherwise cost ten calls each time the
+    page redraws.
+    """
+
+    client = speech_client()
+    if client is None:
+        return None
+
+    from core.speech import style_for_age
+
+    style = style_for_age(age)
+    cache: dict[str, bytes] = st.session_state.setdefault("lumi_audio_cache", {})
+    key = hashlib.sha1(f"{style.voice}|{text}".encode("utf-8")).hexdigest()
+
+    if key not in cache:
+        try:
+            with st.spinner("Đang chuẩn bị giọng đọc…"):
+                cache[key] = client.speak(text, style)
+        except Exception as error:
+            st.session_state["lumi_voice_error"] = str(error)
+            return None
+    return cache[key]
+
+
+def play_controls(index: int, text: str, age: int | None) -> None:
+    """A listen button per reply, plus the player once it has been asked for."""
+
+    if speech_client() is None:
+        return
+
+    if st.session_state.get("lumi_play") != index:
+        if st.button("Nghe", key=f"lumi_play_{index}", icon=":material/volume_up:"):
+            st.session_state["lumi_play"] = index
+            st.session_state["lumi_play_armed"] = True
+            st.rerun()
+        return
+
+    audio = speak_message(text, age)
+    if audio is None:
+        return
+    # Autoplay only on the run that asked for it, so redraws do not restart it.
+    armed = bool(st.session_state.pop("lumi_play_armed", False))
+    st.audio(audio, format="audio/mp3", autoplay=armed)
+
+
+def arm_autoplay_for_large_text(session: Any) -> None:
+    """Large-text mode reads the newest reply aloud on its own (VOICE-08).
+
+    Customers who turned on large text are the ones least served by reading a
+    screen, so the reply plays without them hunting for a button.
+    """
+
+    if not st.session_state.get("lumi_senior_mode") or speech_client() is None:
+        return
+    last = len(session.messages) - 1
+    if last < 0 or session.messages[last].role != "assistant":
+        return
+    if st.session_state.get("lumi_autoplayed") == last:
+        return
+    st.session_state["lumi_autoplayed"] = last
+    st.session_state["lumi_play"] = last
+    st.session_state["lumi_play_armed"] = True
 
 
 def voice_input() -> None:

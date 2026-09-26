@@ -215,12 +215,19 @@ class FakeSpeech:
         self.text, self.fail = text, fail
         self.enabled = True
         self.calls = 0
+        self.spoken: list[tuple[str, object]] = []
 
     def transcribe(self, audio: bytes, **_: object) -> str:
         self.calls += 1
         if self.fail:
             raise RuntimeError(self.fail)
         return self.text
+
+    def speak(self, text: str, style: object = None) -> bytes:
+        self.spoken.append((text, style))
+        if self.fail:
+            raise RuntimeError(self.fail)
+        return b"ID3FAKEAUDIO"
 
 
 def _voice_app(monkeypatch: pytest.MonkeyPatch, speech: object | None, **state: object):
@@ -297,3 +304,97 @@ def test_a_transcription_failure_keeps_typing_available(monkeypatch: pytest.Monk
     assert not app.exception
     assert app.warning, "Phải nói rõ vì sao không nghe được"
     assert app.chat_input, "Người dùng vẫn phải gõ được"
+
+
+# --------------------------------------------------------- voice playback
+
+
+def _messages_with_reply(session) -> None:
+    from core.schemas import ChatMessage
+
+    session.messages.append(
+        ChatMessage(role="customer", content="mình 60 tuổi", turn_index=len(session.messages))
+    )
+    session.messages.append(
+        ChatMessage(role="assistant", content="Cháu chào bác ạ.", turn_index=len(session.messages))
+    )
+
+
+def _playback_app(speech: object | None, senior: bool = False, **state: object):
+    from streamlit.testing.v1 import AppTest
+
+    orchestrator, session = _live_session_with_empty_profile()
+    _messages_with_reply(session)
+
+    app = AppTest.from_file(str(PAGES / "consult.py"), default_timeout=TIMEOUT)
+    app.session_state["lumi_mode"] = "manual"
+    app.session_state["lumi_live"] = (orchestrator, session)
+    app.session_state["lumi_engine_label"] = "Rule"
+    app.session_state["lumi_speech"] = speech
+    if senior:
+        app.session_state["lumi_senior_mode"] = True
+    for key, value in state.items():
+        app.session_state[key] = value
+    return app.run(), speech
+
+
+def test_no_audio_is_generated_until_someone_asks() -> None:
+    """Synthesising every reply on every redraw would be slow and costly."""
+
+    app, speech = _playback_app(FakeSpeech())
+
+    assert not app.exception
+    assert speech.spoken == [], "Chưa bấm nghe thì không được gọi TTS"
+    assert any(item.label == "Nghe" for item in app.button)
+
+
+def test_pressing_listen_produces_a_player() -> None:
+    app, speech = _playback_app(FakeSpeech())
+
+    next(item for item in app.button if item.label == "Nghe").click().run()
+
+    assert speech.spoken, "Bấm nghe thì phải sinh giọng"
+    assert app.get("audio"), "Phải hiện trình phát"
+
+
+def test_audio_is_reused_rather_than_regenerated() -> None:
+    app, speech = _playback_app(FakeSpeech())
+    next(item for item in app.button if item.label == "Nghe").click().run()
+    first = len(speech.spoken)
+
+    app.run()  # a plain redraw
+
+    assert len(speech.spoken) == first, "Vẽ lại không được sinh giọng lần nữa"
+
+
+def test_large_text_mode_plays_the_newest_reply_by_itself() -> None:
+    app, speech = _playback_app(FakeSpeech(), senior=True)
+
+    assert not app.exception
+    assert speech.spoken, "Chế độ chữ lớn phải tự đọc câu trả lời mới"
+    assert app.get("audio")
+
+
+def test_large_text_autoplay_does_not_repeat_on_redraw() -> None:
+    app, speech = _playback_app(FakeSpeech(), senior=True)
+    first = len(speech.spoken)
+
+    app.run()
+
+    assert len(speech.spoken) == first
+
+
+def test_no_listen_button_when_voice_is_off() -> None:
+    app, _ = _playback_app(None)
+
+    assert not app.exception
+    assert not any(item.label == "Nghe" for item in app.button)
+
+
+def test_a_synthesis_failure_does_not_break_the_page() -> None:
+    app, _ = _playback_app(FakeSpeech(fail="Máy chủ giọng nói bận"))
+
+    next(item for item in app.button if item.label == "Nghe").click().run()
+
+    assert not app.exception
+    assert app.chat_input
