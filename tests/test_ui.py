@@ -211,11 +211,17 @@ def test_manual_mode_explains_the_empty_profile_panel() -> None:
 class FakeSpeech:
     """Stands in for SpeechClient inside the page."""
 
-    def __init__(self, text: str = "mình để ra được ba triệu rưỡi mỗi tháng", fail: str = "") -> None:
+    def __init__(
+        self,
+        text: str = "mình để ra được ba triệu rưỡi mỗi tháng",
+        fail: str = "",
+        max_actions: int = 20,
+    ) -> None:
         self.text, self.fail = text, fail
         self.enabled = True
         self.calls = 0
         self.spoken: list[tuple[str, object]] = []
+        self.settings = type("S", (), {"voice_max_actions": max_actions})()
 
     def transcribe(self, audio: bytes, **_: object) -> str:
         self.calls += 1
@@ -398,3 +404,53 @@ def test_a_synthesis_failure_does_not_break_the_page() -> None:
 
     assert not app.exception
     assert app.chat_input
+
+
+# ------------------------------------------------------- voice spend cap
+
+
+def test_the_microphone_disappears_once_the_budget_is_spent() -> None:
+    """A public deployment carries a real key, so one visitor must not be able
+    to spend without limit."""
+
+    app, _ = _playback_app(FakeSpeech(max_actions=2), lumi_voice_used=2)
+
+    assert not app.exception
+    assert not app.get("audio_input"), "Hết lượt thì không hiện micro nữa"
+    assert app.info, "Phải giải thích vì sao micro biến mất"
+    assert app.chat_input, "Gõ phím vẫn dùng được"
+
+
+def test_the_listen_button_disappears_once_the_budget_is_spent() -> None:
+    app, speech = _playback_app(FakeSpeech(max_actions=2), lumi_voice_used=2)
+
+    assert not any(item.label == "Nghe" for item in app.button)
+    assert speech.spoken == []
+
+
+def test_spending_is_counted_per_synthesis() -> None:
+    app, _ = _playback_app(FakeSpeech(max_actions=5))
+    assert app.session_state.get("lumi_voice_used", 0) == 0
+
+    next(item for item in app.button if item.label == "Nghe").click().run()
+
+    assert app.session_state["lumi_voice_used"] == 1
+
+
+def test_cached_audio_does_not_spend_the_budget_again() -> None:
+    app, _ = _playback_app(FakeSpeech(max_actions=5))
+    next(item for item in app.button if item.label == "Nghe").click().run()
+    spent = app.session_state["lumi_voice_used"]
+
+    app.run()
+
+    assert app.session_state["lumi_voice_used"] == spent
+
+
+def test_autoplay_leaves_a_turn_for_a_deliberate_request() -> None:
+    """Auto playback must not eat the very last action."""
+
+    app, speech = _playback_app(FakeSpeech(max_actions=3), senior=True, lumi_voice_used=2)
+
+    assert speech.spoken == [], "Còn một lượt cuối thì để dành cho khách tự bấm"
+    assert not app.exception

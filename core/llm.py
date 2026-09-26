@@ -24,6 +24,7 @@ LUMI_MODEL = "gpt-5.6-luna"
 # model. Every agent that thinks or writes still uses LUMI_MODEL alone.
 DEFAULT_STT_MODEL = "gpt-4o-transcribe"
 DEFAULT_TTS_MODEL = "gpt-4o-mini-tts"
+DEFAULT_VOICE_MAX_ACTIONS = 20
 
 ReasoningEffort = Literal["none", "low", "medium"]
 SchemaT = TypeVar("SchemaT", bound=BaseModel)
@@ -42,6 +43,10 @@ class LLMSettings:
     stt_model: str = DEFAULT_STT_MODEL
     tts_model: str = DEFAULT_TTS_MODEL
     voice_enabled: bool = True
+    # A ceiling per visitor, so one session cannot run up the bill on a
+    # public deployment. Spending limits at OpenAI are the last line, not
+    # the first.
+    voice_max_actions: int = DEFAULT_VOICE_MAX_ACTIONS
 
 
 def _flag(name: str, default: bool) -> bool:
@@ -53,6 +58,19 @@ def _flag(name: str, default: bool) -> bool:
     if raw in {"0", "false", "off", "no"}:
         return False
     raise ModelConfigurationError(f"{name} must be on or off.")
+
+
+def _positive_int(name: str, default: int) -> int:
+    raw = os.getenv(name, "").strip()
+    if not raw:
+        return default
+    try:
+        value = int(raw)
+    except ValueError as error:
+        raise ModelConfigurationError(f"{name} must be a whole number.") from error
+    if value < 0:
+        raise ModelConfigurationError(f"{name} must not be negative.")
+    return value
 
 
 def load_settings(env_path: Path | None = None) -> LLMSettings:
@@ -86,6 +104,7 @@ def load_settings(env_path: Path | None = None) -> LLMSettings:
         # A public deployment carries a real key, so voice must be switchable
         # off without touching code.
         voice_enabled=_flag("LUMI_VOICE", default=True),
+        voice_max_actions=_positive_int("LUMI_VOICE_MAX_ACTIONS", DEFAULT_VOICE_MAX_ACTIONS),
     )
 
 

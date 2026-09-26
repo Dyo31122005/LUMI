@@ -77,6 +77,7 @@ test trên môi trường 3.12 nếu muốn chắc chắn.
 | `LUMI_VOICE` | `on` hoặc `off` | Không, mặc định `on` |
 | `MODEL_STT` | `gpt-4o-transcribe` | Không, có mặc định |
 | `MODEL_TTS` | `gpt-4o-mini-tts` | Không, có mặc định |
+| `LUMI_VOICE_MAX_ACTIONS` | Số nguyên, mặc định `20` | Không |
 
 `PORT` do Railway tự cấp, đừng đặt tay.
 
@@ -99,6 +100,11 @@ tiền API của bạn**.
 Mỗi lượt dùng giọng nói tốn thêm một lần phiên âm và một lần tổng hợp giọng,
 ngoài các lời gọi vốn có. Nếu muốn mở link cho nhiều người mà vẫn giữ chi phí
 thấp, đặt `LUMI_VOICE=off`; phần gõ phím hoạt động y nguyên.
+
+Nếu vẫn muốn bật giọng nói, `LUMI_VOICE_MAX_ACTIONS` đặt trần số lượt mỗi phiên
+(mặc định 20; một lượt là một lần phiên âm hoặc một lần đọc). Hết trần thì micro
+và nút Nghe biến mất kèm lời giải thích, phần gõ phím giữ nguyên. Âm thanh đã
+sinh được dùng lại nên nghe lại một câu cũ không tốn thêm lượt.
 
 Hai model audio là ngoại lệ có chủ đích với quy tắc một model duy nhất trong
 build plan: model hội thoại không phiên âm và không đọc được. Mọi agent suy nghĩ

@@ -156,6 +156,7 @@ def reset_session() -> None:
         "lumi_step", "lumi_live", "lumi_live_error", "lumi_turn_error",
         "lumi_speech", "lumi_draft", "lumi_last_clip", "lumi_voice_error",
         "lumi_audio_cache", "lumi_play", "lumi_play_armed", "lumi_autoplayed",
+        "lumi_voice_used",
     ):
         st.session_state.pop(key, None)
 
@@ -435,6 +436,40 @@ def speech_client() -> Any | None:
     return client
 
 
+def _has_cached_audio(text: str, age: int | None) -> bool:
+    from core.speech import style_for_age
+
+    style = style_for_age(age)
+    key = hashlib.sha1(f"{style.voice}|{text}".encode("utf-8")).hexdigest()
+    return key in st.session_state.get("lumi_audio_cache", {})
+
+
+def voice_budget_left() -> int:
+    """Voice actions still allowed this session (VOICE-10).
+
+    A public deployment carries a real key and has no per-visitor identity, so
+    the ceiling lives here rather than relying on the OpenAI spending limit.
+    """
+
+    client = speech_client()
+    if client is None:
+        return 0
+    used = int(st.session_state.get("lumi_voice_used", 0))
+    return max(0, client.settings.voice_max_actions - used)
+
+
+def spend_voice_action() -> None:
+    st.session_state["lumi_voice_used"] = int(st.session_state.get("lumi_voice_used", 0)) + 1
+
+
+def voice_budget_notice() -> None:
+    st.info(
+        "Bạn đã dùng hết số lượt giọng nói cho phiên này. Phần gõ phím vẫn dùng "
+        "bình thường, hoặc bắt đầu lại để có lượt mới.",
+        icon=":material/hourglass_disabled:",
+    )
+
+
 def speak_message(text: str, age: int | None) -> bytes | None:
     """Synthesise a reply, reusing audio already produced this session.
 
@@ -454,9 +489,14 @@ def speak_message(text: str, age: int | None) -> bytes | None:
     key = hashlib.sha1(f"{style.voice}|{text}".encode("utf-8")).hexdigest()
 
     if key not in cache:
+        if voice_budget_left() <= 0:
+            st.session_state["lumi_voice_error"] = "Đã hết lượt giọng nói cho phiên này."
+            return None
         try:
             with st.spinner("Đang chuẩn bị giọng đọc…"):
                 cache[key] = client.speak(text, style)
+            spend_voice_action()
+            st.session_state.pop("lumi_voice_error", None)
         except Exception as error:
             st.session_state["lumi_voice_error"] = str(error)
             return None
@@ -467,6 +507,10 @@ def play_controls(index: int, text: str, age: int | None) -> None:
     """A listen button per reply, plus the player once it has been asked for."""
 
     if speech_client() is None:
+        return
+
+    cached = _has_cached_audio(text, age)
+    if not cached and voice_budget_left() <= 0:
         return
 
     if st.session_state.get("lumi_play") != index:
@@ -498,6 +542,9 @@ def arm_autoplay_for_large_text(session: Any) -> None:
         return
     if st.session_state.get("lumi_autoplayed") == last:
         return
+    # Keep the last actions for what the customer deliberately asks to hear.
+    if voice_budget_left() <= 1 and not _has_cached_audio(session.messages[last].content, session.profile.age):
+        return
     st.session_state["lumi_autoplayed"] = last
     st.session_state["lumi_play"] = last
     st.session_state["lumi_play_armed"] = True
@@ -514,6 +561,10 @@ def voice_input() -> None:
     if client is None:
         return
 
+    if voice_budget_left() <= 0 and not st.session_state.get("lumi_draft"):
+        voice_budget_notice()
+        return
+
     recording = st.audio_input("Hoặc nói với LUMI", key="lumi_mic")
     if recording is not None:
         data = recording.getvalue()
@@ -523,6 +574,9 @@ def voice_input() -> None:
         if fingerprint != st.session_state.get("lumi_last_clip"):
             st.session_state["lumi_last_clip"] = fingerprint
             st.session_state.pop("lumi_voice_error", None)
+            if voice_budget_left() <= 0:
+                st.session_state["lumi_voice_error"] = "Đã hết lượt giọng nói cho phiên này."
+                st.rerun()
             try:
                 with st.spinner("Đang nghe bạn nói…"):
                     st.session_state["lumi_draft"] = client.transcribe(
@@ -530,6 +584,7 @@ def voice_input() -> None:
                         filename=getattr(recording, "name", None) or "speech.wav",
                         prompt=_speech_hint(),
                     )
+                spend_voice_action()
             except Exception as error:
                 st.session_state["lumi_voice_error"] = str(error)
             st.rerun()
