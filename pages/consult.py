@@ -13,8 +13,8 @@ from core.session_io import Recording
 from ui import components as ui
 from ui.landing_sections import PERSONAS
 
-BOT_AVATAR = "🔵"
-CUSTOMER_AVATAR = "🙂"
+BOT_AVATAR = str(ui.MASCOT_PATH)
+CUSTOMER_AVATAR = ":material/person:"
 
 SUGGESTIONS = ["Tôi lo mất việc", "Tôi sắp nghỉ hưu", "Tôi muốn để lại cho gia đình"]
 PERSONA_BY_ID = {item["id"]: item for item in PERSONAS}
@@ -45,71 +45,115 @@ def load_recording(persona_id: str) -> dict[str, Any] | None:
 
 
 def start_screen() -> None:
-    st.title("Xin chào, bạn muốn bắt đầu thế nào?")
+    st.html(ui.page_intro(
+        "Tư vấn cho hoàn cảnh của bạn",
+        "Hãy bắt đầu từ điều bạn đang quan tâm nhất",
+        "Bạn không cần biết tên sản phẩm hay thuật ngữ bảo hiểm. LUMI sẽ hỏi từng bước và giải thích vì sao cần thông tin đó.",
+    ))
 
-    left, right = st.columns(2)
-    with left:
-        ui.render(st, ui.card(
-            "<b>💬 Tự trò chuyện</b>"
-            '<div class="lumi-caption" style="margin-top:6px">'
-            "Kể về hoàn cảnh của bạn, LUMI sẽ hỏi thêm khi cần.</div>"
-        ))
-        if st.button("Bắt đầu", type="primary", use_container_width=True):
-            st.session_state["lumi_mode"] = "manual"
-            st.rerun()
-        st.caption("Gợi ý mở đầu:")
-        for index, text in enumerate(SUGGESTIONS):
+    with st.container(key="lumi_primary_start"):
+        intro, mascot = st.columns([1.45, 0.55], gap="large", vertical_alignment="center")
+        with intro:
+            st.html(
+                '<div class="lumi-start-card">'
+                f'{ui.material_icon("forum")}<h2>Bắt đầu một phiên tư vấn mới</h2>'
+                '<p>Cuộc trò chuyện thường mất khoảng 3–5 phút. Hồ sơ được tạo dần ngay bên cạnh và có thể xoá bất kỳ lúc nào.</p>'
+                '</div>'
+            )
+            if st.button(
+                "Bắt đầu trò chuyện",
+                type="primary",
+                icon=":material/arrow_forward:",
+                use_container_width=True,
+            ):
+                st.session_state["lumi_mode"] = "manual"
+                st.rerun()
+        with mascot:
+            st.image(str(ui.MASCOT_PATH), caption="Mascot LUMI", use_container_width=True)
+
+    st.markdown("#### Hoặc chọn một câu để bắt đầu nhanh")
+    suggestions = st.columns(len(SUGGESTIONS))
+    for index, (column, text) in enumerate(zip(suggestions, SUGGESTIONS)):
+        with column:
             if st.button(text, key=f"suggest_{index}", use_container_width=True):
                 st.session_state["lumi_mode"] = "manual"
-                st.session_state["lumi_manual_messages"] = [{"role": "customer", "content": text}]
+                st.session_state["lumi_pending_prompt"] = text
                 st.rerun()
 
-    with right:
-        ui.render(st, ui.card(
-            "<b>▶ Xem demo với nhân vật mẫu</b>"
-            '<div class="lumi-caption" style="margin-top:6px">'
-            "Xem lại một phiên LUMI đã tư vấn cho 1 trong 3 nhân vật. Chạy được cả khi không có mạng.</div>"
-        ))
-        for persona in PERSONAS:
-            if st.button(persona["name"], key=f"replay_{persona['id']}", use_container_width=True):
+    st.html(
+        '<div class="lumi-security-note">'
+        f'{ui.material_icon("lock")} Thông tin chỉ dùng cho buổi tư vấn này. Bạn có thể xoá bất kỳ lúc nào.'
+        '</div>'
+    )
+
+    st.divider()
+    st.html(ui.page_intro(
+        "Muốn xem trước?",
+        "Khám phá một hành trình mẫu",
+        "Các phiên phát lại chạy từ dữ liệu đã ghi và giúp bạn xem trọn quy trình trước khi chia sẻ thông tin của mình.",
+    ))
+    columns = st.columns(3, gap="medium")
+    for column, persona in zip(columns, PERSONAS):
+        with column:
+            st.html(
+                f'<div class="lumi-persona-card {persona["css"]}">'
+                f'<span class="lumi-avatar">{ui.esc(persona["initial"])}</span>'
+                f'<h3>{ui.esc(persona["name"])}</h3>'
+                f'<p class="lumi-muted">{ui.esc(persona["situation"])}</p>'
+                f'<span class="lumi-tag lumi-tag-note">{ui.esc(persona["recommendation"])}</span>'
+                '</div>'
+            )
+            if st.button(
+                f"Xem hành trình {persona['name'].split(',')[0]}",
+                key=f"replay_{persona['id']}",
+                icon=":material/play_circle:",
+                use_container_width=True,
+            ):
                 st.session_state["lumi_mode"] = "replay"
                 st.session_state["lumi_persona"] = persona["id"]
                 st.rerun()
-
-    st.caption("🔒 Thông tin chỉ dùng cho buổi tư vấn này. Bạn có thể xoá bất kỳ lúc nào.")
 
 
 # -------------------------------------------------------------------- top bar
 
 
 def top_bar(title: str, mode_label: str, engine_label: str, persona_css: str) -> None:
-    left, middle, right = st.columns([3, 2, 2])
-    with left:
-        st.html(
-            f'<div class="{persona_css}" style="display:flex;align-items:center;gap:10px">'
-            f'<span class="lumi-avatar">{ui.esc(title[:1])}</span>'
-            f"<b>{ui.esc(title)}</b></div>"
-        )
-    with middle:
-        st.html(
-            f'<span class="lumi-demo-badge">{ui.esc(mode_label)}</span> '
-            f'<span class="lumi-caption">Engine: {ui.esc(engine_label)}</span>'
-        )
-    with right:
-        columns = st.columns(2)
-        with columns[0]:
-            senior = st.session_state.get("lumi_senior_mode", False)
-            if st.button("Aa Chữ lớn", use_container_width=True, type="secondary" if not senior else "primary"):
-                st.session_state["lumi_senior_mode"] = not senior
-                st.rerun()
-        with columns[1]:
-            if st.button("← Trang chủ", use_container_width=True):
-                reset_session()
-                st.switch_page("pages/landing.py")
+    with st.container(key="lumi_session_toolbar"):
+        left, middle, right = st.columns([3.2, 2.1, 2.4], vertical_alignment="center")
+        with left:
+            st.html(
+                f'<div class="lumi-session-head {persona_css}">'
+                f'<span class="lumi-avatar">{ui.esc(title[:1])}</span>'
+                f'<div><h2>{ui.esc(title)}</h2><p>Phiên tư vấn cá nhân hoá</p></div></div>'
+            )
+        with middle:
+            st.html(
+                f'<span class="lumi-status-badge">{ui.material_icon("radio_button_checked")} {ui.esc(mode_label)}</span> '
+                f'<span class="lumi-caption">Engine: {ui.esc(engine_label)}</span>'
+            )
+        with right:
+            columns = st.columns(2)
+            with columns[0]:
+                senior = st.session_state.get("lumi_senior_mode", False)
+                if st.button(
+                    "Chữ lớn",
+                    icon=":material/text_increase:",
+                    use_container_width=True,
+                    type="secondary" if not senior else "primary",
+                ):
+                    st.session_state["lumi_senior_mode"] = not senior
+                    st.rerun()
+            with columns[1]:
+                if st.button("Bắt đầu lại", icon=":material/restart_alt:", use_container_width=True):
+                    reset_session()
+                    st.rerun()
 
 
 def reset_session() -> None:
-    for key in ("lumi_mode", "lumi_persona", "lumi_manual_messages", "lumi_step", "lumi_live", "lumi_live_error"):
+    for key in (
+        "lumi_mode", "lumi_persona", "lumi_manual_messages", "lumi_pending_prompt",
+        "lumi_step", "lumi_live", "lumi_live_error", "lumi_turn_error",
+    ):
         st.session_state.pop(key, None)
 
 
@@ -128,7 +172,8 @@ def profile_panel(data: dict[str, Any]) -> None:
     insights = data.get("insights") or []
     if insights:
         ui.render(st, "".join(
-            f'<div class="lumi-insight"><div class="lumi-eyebrow">💡 LUMI nhận ra</div>{ui.esc(item["reason"])}</div>'
+            '<div class="lumi-insight"><div class="lumi-eyebrow">'
+            f'{ui.material_icon("lightbulb")} LUMI nhận ra</div>{ui.esc(item["reason"])}</div>'
             for item in insights
         ))
 
@@ -256,7 +301,7 @@ def manual_mode() -> None:
         top_bar("Bạn", "Tự trò chuyện", "Không khả dụng", "persona-mid")
         st.error(
             "LUMI đang gặp sự cố kết nối, nên chưa bắt đầu được phiên tự trò chuyện.",
-            icon="⚠",
+            icon=":material/error:",
         )
         st.caption(st.session_state.get("lumi_live_error", ""))
         columns = st.columns(2)
@@ -274,6 +319,15 @@ def manual_mode() -> None:
     orchestrator, session = live
     top_bar(session.profile.name or "Bạn", "Tự trò chuyện", engine_label, ui.persona_class(session.profile.age))
 
+    pending_prompt = st.session_state.pop("lumi_pending_prompt", None)
+    if pending_prompt:
+        try:
+            with st.spinner("Đang phân tích điều bạn quan tâm…"):
+                orchestrator.handle_customer_message(session, pending_prompt)
+        except Exception as error:
+            st.session_state["lumi_turn_error"] = str(error)
+        st.rerun()
+
     # Read the input before drawing anything else: if a later section raises,
     # the visitor can still type instead of being stuck with a broken page.
     prompt = st.chat_input("Nhập câu trả lời của bạn…")
@@ -287,45 +341,53 @@ def manual_mode() -> None:
 
     turn_error = st.session_state.pop("lumi_turn_error", None)
     if turn_error:
-        st.error("LUMI gặp sự cố khi xử lý câu trả lời vừa rồi. Bạn thử gửi lại nhé.", icon="⚠")
+        st.error("LUMI gặp sự cố khi xử lý câu trả lời vừa rồi. Bạn thử gửi lại nhé.", icon=":material/error:")
         st.caption(turn_error)
 
     chat_column, panel_column = st.columns([62, 38], gap="large")
 
     with chat_column:
-        for index, message in enumerate(session.messages):
-            role = "assistant" if message.role == "assistant" else "user"
-            with st.chat_message(role, avatar=BOT_AVATAR if role == "assistant" else CUSTOMER_AVATAR):
-                st.markdown(message.content)
-                ui.render(st, ui.why_ask(session.why_ask[index]) if index in session.why_ask else None)
+        st.html(
+            '<div class="lumi-chat-heading"><div><div class="lumi-eyebrow">Cuộc trò chuyện</div>'
+            '<h2>LUMI đang tìm hiểu hoàn cảnh của bạn</h2></div>'
+            '<span class="lumi-status-badge">Đang tư vấn</span></div>'
+        )
+        with st.container(key="lumi_chat_panel"):
+            for index, message in enumerate(session.messages):
+                role = "assistant" if message.role == "assistant" else "user"
+                with st.chat_message(role, avatar=BOT_AVATAR if role == "assistant" else CUSTOMER_AVATAR):
+                    st.markdown(message.content)
+                    ui.render(st, ui.why_ask(session.why_ask[index]) if index in session.why_ask else None)
 
-        if session.type_decision:
-            st.divider()
-            results(live_session_data(session))
+            if session.type_decision:
+                st.divider()
+                results(live_session_data(session))
 
     with panel_column:
-        st.subheader(f"Hồ sơ của {session.profile.name or 'bạn'}")
-        has_profile = bool(session.profile.model_dump(exclude={"provenance"}, exclude_none=True))
-        if not has_profile:
-            st.caption(
-                "Hồ sơ sẽ được điền dần khi bạn trả lời. Mỗi thông tin đều kèm "
-                "câu nói gốc của bạn."
-            )
-        else:
-            ui.render(st, ui.completeness_bar((session.derived or {}).get("completeness", 0)))
-            ui.render(st, ui.profile_chips(session.profile, field_labels()))
-            ui.render(st, ui.insight_cards(session.insights))
+        with st.container(height=720, border=False, key="lumi_profile_panel"):
+            st.subheader(f"Hồ sơ của {session.profile.name or 'bạn'}")
+            st.caption("Được cập nhật trực tiếp từ cuộc trò chuyện")
+            has_profile = bool(session.profile.model_dump(exclude={"provenance"}, exclude_none=True))
+            if not has_profile:
+                st.info(
+                    "Hồ sơ sẽ được điền dần khi bạn trả lời. Mỗi thông tin đều kèm câu nói gốc của bạn.",
+                    icon=":material/manage_accounts:",
+                )
+            else:
+                ui.render(st, ui.completeness_bar((session.derived or {}).get("completeness", 0)))
+                ui.render(st, ui.profile_chips(session.profile, field_labels()))
+                ui.render(st, ui.insight_cards(session.insights))
 
-        if session.turn_decisions:
-            latest = session.turn_decisions[-1]
-            st.subheader("LUMI đang cân nhắc")
-            ui.render(st, ui.hypothesis_bars(latest.type_probabilities.model_dump(), latest.confidence))
+            if session.turn_decisions:
+                latest = session.turn_decisions[-1]
+                st.subheader("LUMI đang cân nhắc")
+                ui.render(st, ui.hypothesis_bars(latest.type_probabilities.model_dump(), latest.confidence))
 
-        if has_profile:
-            st.divider()
-            if st.button("🗑 Xoá hồ sơ", use_container_width=True):
-                reset_session()
-                st.rerun()
+            if has_profile:
+                st.divider()
+                if st.button("Xoá hồ sơ", icon=":material/delete:", use_container_width=True):
+                    reset_session()
+                    st.rerun()
 
 
 def live_session_data(session: Any) -> dict[str, Any]:
@@ -338,6 +400,11 @@ def live_session_data(session: Any) -> dict[str, Any]:
 
 
 mode = st.session_state.get("lumi_mode")
+ui.app_header(
+    st,
+    "consult",
+    report_ready=mode == "replay" and bool(st.session_state.get("lumi_persona")),
+)
 
 if mode is None:
     start_screen()
@@ -366,13 +433,36 @@ else:
 
         chat_column, panel_column = st.columns([62, 38], gap="large")
         with chat_column:
-            st.subheader("Hội thoại")
-            transcript(data)
-            st.divider()
-            results(data)
+            st.html(
+                '<div class="lumi-chat-heading"><div><div class="lumi-eyebrow">Phiên mẫu đã hoàn thành</div>'
+                f'<h2>Hành trình của {ui.esc(persona.get("name", persona_id))}</h2></div>'
+                '<span class="lumi-status-badge">Phát lại</span></div>'
+            )
+            with st.container(key="lumi_chat_panel"):
+                transcript(data)
+                st.divider()
+                results(data)
         with panel_column:
-            profile_panel(data)
-            st.divider()
-            if st.button("↺ Chọn nhân vật khác", use_container_width=True):
+            with st.container(height=720, border=False, key="lumi_profile_panel"):
+                profile_panel(data)
+                st.divider()
+                if st.button("Chọn nhân vật khác", icon=":material/switch_account:", use_container_width=True):
+                    reset_session()
+                    st.rerun()
+
+        st.divider()
+        st.html(ui.page_intro(
+            "Tiếp tục khám phá",
+            "Bạn muốn làm gì tiếp theo?",
+            "Xem báo cáo cô đọng, đối chiếu ba hành trình hoặc bắt đầu phiên dành cho chính bạn.",
+        ))
+        actions = st.columns(3)
+        with actions[0]:
+            ui.page_link(st, "pages/report.py", label="Xem báo cáo", icon=":material/description:")
+        with actions[1]:
+            ui.page_link(st, "pages/journeys.py", label="So sánh 3 hành trình", icon=":material/route:")
+        with actions[2]:
+            if st.button("Tư vấn cho tôi", type="primary", icon=":material/forum:", use_container_width=True):
                 reset_session()
+                st.session_state["lumi_mode"] = "manual"
                 st.rerun()

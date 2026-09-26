@@ -12,6 +12,8 @@ from pathlib import Path
 from typing import Any, Iterable
 
 CSS_PATH = Path(__file__).resolve().parent / "theme.css"
+ASSET_DIR = Path(__file__).resolve().parents[1] / "assets"
+MASCOT_PATH = ASSET_DIR / "mascot.png"
 
 TYPE_LABELS = {
     "unemployment": "Thất nghiệp",
@@ -89,6 +91,88 @@ def card(body: str, *, eyebrow: str | None = None, title: str | None = None) -> 
     return "".join(parts)
 
 
+def material_icon(name: str, *, label: str | None = None) -> str:
+    """Return a decorative Material Symbol with optional accessible text."""
+
+    accessible = f'<span class="lumi-sr-only">{esc(label)}</span>' if label else ""
+    return (
+        f'<span class="material-symbols-rounded lumi-icon" aria-hidden="true">{esc(name)}</span>'
+        f"{accessible}"
+    )
+
+
+def page_link(
+    st: Any,
+    page: str,
+    *,
+    label: str,
+    icon: str,
+    use_container_width: bool = True,
+) -> None:
+    """Render a registered page link, with a harmless standalone-test fallback."""
+
+    from streamlit.errors import StreamlitPageNotFoundError
+
+    try:
+        st.page_link(
+            page,
+            label=label,
+            icon=icon,
+            use_container_width=use_container_width,
+        )
+    except StreamlitPageNotFoundError:
+        # AppTest executes a page file directly, outside the st.navigation
+        # registry created by app.py. Keep the page testable without masking
+        # any runtime error raised when the full app is used.
+        icon_name = icon.removeprefix(":material/").removesuffix(":")
+        st.html(
+            '<div class="lumi-page-link-fallback">'
+            f'{material_icon(icon_name)} {esc(label)}</div>'
+        )
+
+
+def app_header(st: Any, active: str, *, report_ready: bool = False) -> None:
+    """Compact product navigation shared by every page.
+
+    The native Streamlit sidebar is hidden in ``app.py`` so visitors always see
+    the same small, task-oriented navigation bar instead of a developer menu.
+    """
+
+    with st.container(key="lumi_app_header"):
+        widths = [2.8, 1.0, 1.0, 1.35] + ([1.0] if report_ready else [])
+        columns = st.columns(widths, vertical_alignment="center")
+        with columns[0]:
+            st.html(
+                '<div class="lumi-brand" aria-label="LUMI">'
+                '<span class="lumi-brand-mark" aria-hidden="true"></span>'
+                '<span><strong>LUMI</strong><small>Hiểu bạn trước, rồi mới đề xuất</small></span>'
+                '</div>'
+            )
+        links = [
+            ("pages/landing.py", "Trang chủ", ":material/home:", "landing"),
+            ("pages/consult.py", "Tư vấn", ":material/forum:", "consult"),
+            ("pages/journeys.py", "Hành trình", ":material/route:", "journeys"),
+        ]
+        if report_ready:
+            links.append(("pages/report.py", "Báo cáo", ":material/description:", "report"))
+        for column, (page, label, icon, key) in zip(columns[1:], links):
+            with column:
+                page_link(st, page, label=label, icon=icon)
+                if active == key:
+                    st.html('<span class="lumi-nav-active" aria-hidden="true"></span>')
+        st.html('<div class="lumi-header-divider" aria-hidden="true"></div>')
+
+
+def page_intro(kicker: str, title: str, description: str) -> str:
+    return (
+        '<div class="lumi-page-intro">'
+        f'<div class="lumi-eyebrow">{esc(kicker)}</div>'
+        f'<h1>{esc(title)}</h1>'
+        f'<p>{esc(description)}</p>'
+        '</div>'
+    )
+
+
 # ------------------------------------------------------------------- profile
 
 
@@ -145,7 +229,8 @@ def insight_cards(insights: Iterable[Any]) -> str:
     """Accepts InsightFlag models or their serialised form."""
 
     blocks = [
-        '<div class="lumi-insight"><div class="lumi-eyebrow">💡 LUMI nhận ra</div>'
+        '<div class="lumi-insight"><div class="lumi-eyebrow">'
+        f'{material_icon("lightbulb", label="Nhận định")} LUMI nhận ra</div>'
         f"{esc(item['reason'] if isinstance(item, dict) else item.reason)}</div>"
         for item in insights
     ]
@@ -176,7 +261,7 @@ def hypothesis_bars(probabilities: dict[str, float] | None, confidence: float | 
 
 
 def why_ask(text: str) -> str:
-    return f'<div class="lumi-why">ⓘ {esc(text)}</div>'
+    return f'<div class="lumi-why">{material_icon("info")} Vì sao LUMI hỏi: {esc(text)}</div>'
 
 
 # -------------------------------------------------------------------- step 1
@@ -188,7 +273,7 @@ def step_one_card(decision: dict[str, Any], insights: Iterable[Any], type_name: 
     secondary = decision.get("secondary_type")
 
     body = [
-        f'<div class="lumi-rank-head"><span class="lumi-rank-name">★ {esc(type_name)}</span>'
+        f'<div class="lumi-rank-head"><span class="lumi-rank-name">{material_icon("verified")} {esc(type_name)}</span>'
         f'<span class="lumi-rank-score">Tin cậy {decision.get("confidence", 0):.2f}'.replace(".", ",") + "</span></div>",
         f"<ul style='margin:10px 0 6px'>{reasons}</ul>" if reasons else "",
         insight_cards(insights),
