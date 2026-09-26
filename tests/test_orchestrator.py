@@ -55,6 +55,12 @@ class StubWriter:
     def write_no_products(self, **_: Any) -> str:
         return "Bước 2: chưa có sản phẩm nào phù hợp."
 
+    def write_follow_up(self, **kwargs: Any) -> str:
+        return f"Trả lời thêm: {kwargs['question']}"
+
+    def write_closing(self, **_: Any) -> str:
+        return "Lời kết: cảm ơn bạn."
+
 
 class FakeSimulator:
     def __init__(self, replies: list[str]) -> None:
@@ -244,3 +250,67 @@ def test_full_offline_run_reaches_a_ranked_comparison(kb: KnowledgeBase) -> None
     assert session.ranked and session.ranked[0].product_id == "ta_genz"
     assert session.weights and sum(session.weights.values()) == pytest.approx(100)
     assert session.scenario is not None
+
+
+# ------------------------------------------------------------- follow-up
+
+
+def _intent_engine(kb: KnowledgeBase, intent: str) -> RuleEngine:
+    class Fixed(RuleEngine):
+        def decide_turn(self, profile, derived=None, context=None) -> TurnDecision:  # type: ignore[override]
+            return super().decide_turn(profile, derived, context).model_copy(
+                update={"customer_intent": intent}
+            )
+
+    return Fixed(kb)
+
+
+def _session_past_step_two(kb: KnowledgeBase):
+    orchestrator = build(kb, VUONG_PATCHES, ["ừ"])
+    orchestrator.engine = _intent_engine(kb, "agree_continue")
+    session = orchestrator.new_session("vuong", {"assistant_self": "mình", "customer": "Vương"})
+    session.profile = Profile(
+        age=22, employment_status="job_seeking", primary_concerns=["job_loss"],
+        monthly_income=3_000_000, budget_monthly=150_000, bhtn_months=0,
+    )
+    orchestrator.recommend_type(session)
+    orchestrator.handle_customer_message(session, "ok so sánh giúp mình")
+    assert session.state is ConversationState.FOLLOW_UP
+    return orchestrator, session
+
+
+def test_customer_can_keep_asking_after_the_comparison(kb: KnowledgeBase) -> None:
+    """The 8-question budget caps LUMI's questions, never the customer's."""
+
+    orchestrator, session = _session_past_step_two(kb)
+    orchestrator.engine = _intent_engine(kb, "ask_question")
+
+    for index in range(1, 6):
+        reply = orchestrator.handle_customer_message(session, f"cho mình hỏi thêm {index}")
+        assert reply, f"LUMI phải trả lời câu hỏi thứ {index}"
+        assert session.state is ConversationState.FOLLOW_UP
+
+    answers = [item for item in session.messages if item.content.startswith("Trả lời thêm:")]
+    assert len(answers) == 5
+
+
+def test_follow_up_ends_only_when_the_customer_says_so(kb: KnowledgeBase) -> None:
+    orchestrator, session = _session_past_step_two(kb)
+    orchestrator.engine = _intent_engine(kb, "end_conversation")
+
+    reply = orchestrator.handle_customer_message(session, "thôi mình dừng ở đây")
+
+    assert session.state is ConversationState.CLOSING
+    assert reply and "Lời kết" in reply
+
+
+def test_a_closed_session_still_answers_rather_than_going_silent(kb: KnowledgeBase) -> None:
+    orchestrator, session = _session_past_step_two(kb)
+    orchestrator.engine = _intent_engine(kb, "end_conversation")
+    orchestrator.handle_customer_message(session, "thôi nhé")
+
+    orchestrator.engine = _intent_engine(kb, "ask_question")
+    reply = orchestrator.handle_customer_message(session, "à khoan, cho mình hỏi lại")
+
+    assert reply, "Khách nhắn tiếp sau lời kết vẫn phải được trả lời"
+    assert session.state is ConversationState.FOLLOW_UP

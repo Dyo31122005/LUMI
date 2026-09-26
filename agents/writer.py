@@ -168,3 +168,84 @@ class AdvisorWriter:
             ),
         }
         return self._write(payload, collect_allowed_numbers(payload))
+
+    # Segments in the knowledge base are keyed by insurance type.
+    SEGMENTS = {"unemployment": "M1", "retirement": "M2", "life": "M3", "health": "M4"}
+
+    def write_follow_up(
+        self,
+        *,
+        question: str,
+        profile: Profile,
+        insurance_type: str | None,
+        ranking: list[Any],
+        address: dict[str, str],
+    ) -> str:
+        """Answer a question asked after the recommendation (build plan §2.5)."""
+
+        segment = self.SEGMENTS.get(insurance_type or "", "")
+        faq = self.kb.section("faq")
+        entries = list(faq.get(segment, ())) + list(faq.get("general", ()))
+
+        regulations = [
+            item
+            for item in self.kb.section("regulations")
+            if item.get("segment") in {segment, "all"}
+        ]
+
+        payload: dict[str, Any] = {
+            "task": "follow_up",
+            "address": address,
+            "question": question,
+            "profile": profile.model_dump(exclude={"provenance"}),
+            "recommended_type": insurance_type,
+            "ranking": [
+                {
+                    "rank": item.rank,
+                    "product_name": item.product["product_name"],
+                    "insurer": item.product["insurer"],
+                    "comparison_values": dict(item.product.get("comparison_values") or {}),
+                    "strengths": list((item.product.get("personalization_tags") or {}).get("strengths") or ()),
+                    "watch_outs": list((item.product.get("personalization_tags") or {}).get("watch_outs") or ()),
+                }
+                for item in ranking
+            ],
+            "faq": [{"q": item["q"], "a": item["a"]} for item in entries],
+            "regulations": [
+                {
+                    "topic": item.get("topic"),
+                    "content_vi": item.get("content_vi"),
+                    "legal_basis": item.get("legal_basis"),
+                    "verified": item.get("verified"),
+                }
+                for item in regulations
+            ],
+            "glossary": [
+                {"term": item["term"], "explain_vi": item["explain_vi"]}
+                for item in self.kb.section("glossary")
+            ],
+            "fiction_note": FICTION_NOTE,
+            "instruction_vi": (
+                "Khách hỏi thêm sau khi đã nhận đề xuất. Trả lời ngắn gọn, bám đúng câu hỏi, "
+                "chỉ dùng dữ liệu trong payload: faq, regulations, glossary và bảng so sánh. "
+                "Quy định có verified khác true thì chỉ nói ở mức khái quát và khuyên khách "
+                "kiểm tra với cơ quan BHXH hoặc tư vấn viên. Nếu payload không có thông tin để "
+                "trả lời thì nói thẳng là chưa có dữ liệu và hướng khách hỏi tư vấn viên; "
+                "tuyệt đối không bịa. Không lặp lại toàn bộ Bước 1 hay Bước 2."
+            ),
+        }
+        return self._write(payload, collect_allowed_numbers(payload))
+
+    def write_closing(self, *, profile: Profile, insurance_type: str | None, address: dict[str, str]) -> str:
+        payload: dict[str, Any] = {
+            "task": "closing",
+            "address": address,
+            "profile_name": profile.name,
+            "recommended_type": insurance_type,
+            "instruction_vi": (
+                "Khách muốn dừng. Viết lời kết ngắn: cảm ơn, nhắc 2–3 việc nên làm tiếp "
+                "(đọc kỹ điều khoản và phần loại trừ, khai báo trung thực, trao đổi với tư "
+                "vấn viên có chứng chỉ). Không giới thiệu thêm sản phẩm, không thêm con số."
+            ),
+        }
+        return self._write(payload, collect_allowed_numbers(payload))

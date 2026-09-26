@@ -173,6 +173,12 @@ class Orchestrator:
         if session.state is ConversationState.CONFIRM:
             return self._handle_confirmation(session, decision)
 
+        # After the recommendation the customer may keep asking as long as they
+        # like. The 8-question budget caps LUMI's own discovery questions, not
+        # the customer's.
+        if session.state in {ConversationState.FOLLOW_UP, ConversationState.CLOSING}:
+            return self._handle_follow_up(session, decision, message)
+
         if session.state is not ConversationState.DISCOVERY:
             return None
 
@@ -343,8 +349,7 @@ class Orchestrator:
         if decision.customer_intent == "agree_continue":
             return self.compare_products(session)
         if decision.customer_intent == "end_conversation":
-            session.state = ConversationState.CLOSING
-            return None
+            return self._close(session)
 
         # New information after Bước 1 may reopen discovery, but never past the
         # 8-question budget.
@@ -358,6 +363,35 @@ class Orchestrator:
             return None
         session.state = ConversationState.DISCOVERY
         return self._ask(session, question, decision)
+
+    def _handle_follow_up(
+        self, session: ConsultationSession, decision: TurnDecision, message: str
+    ) -> str | None:
+        """Answer questions asked after Bước 2, for as long as the customer has them."""
+
+        if decision.customer_intent == "end_conversation":
+            return self._close(session)
+
+        session.state = ConversationState.FOLLOW_UP
+        text = self.writer.write_follow_up(
+            question=message,
+            profile=session.profile,
+            insurance_type=session.type_decision.insurance_type if session.type_decision else None,
+            ranking=session.ranked,
+            address=address_context(session.profile, session.address, self.kb),
+        )
+        self._append(session, "assistant", text)
+        return text
+
+    def _close(self, session: ConsultationSession) -> str:
+        session.state = ConversationState.CLOSING
+        text = self.writer.write_closing(
+            profile=session.profile,
+            insurance_type=session.type_decision.insurance_type if session.type_decision else None,
+            address=address_context(session.profile, session.address, self.kb),
+        )
+        self._append(session, "assistant", text)
+        return text
 
     def compare_products(self, session: ConsultationSession) -> str:
         """Bước 2: hard filters → D5 per product → weights → ranking → A4."""
