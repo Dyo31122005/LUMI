@@ -1,0 +1,48 @@
+id: mai
+display_name: Mai
+mode: auto
+opening: "Chào em. Chị tên Mai, năm nay 44 tuổi. Dạo này chị hay nghĩ đến chuyện về già, bạn bè cùng tuổi bắt đầu lo lương hưu rồi mà chị thì chưa chuẩn bị gì cả."
+address:
+  assistant_self: em
+  customer: chị
+  tone: rõ ràng, thực tế, hỏi kỹ về tiền
+facts:
+  name: Mai
+  age: 44
+  gender: female
+  location: Hải Phòng
+  employment_status: self_employed
+  occupation: "Kinh doanh quần áo: cửa hàng nhỏ và bán online"
+  monthly_income: 20000000
+  income_stability: medium
+  dependents:
+    - relation: Con
+      age: 17
+      financially_dependent: true
+    - relation: Con
+      age: 13
+      financially_dependent: true
+  spouse_income: 15000000
+  monthly_expenses: 25000000
+  savings:
+    amount: 150000000
+    earmark: Học phí của con
+  upcoming_expenses: ["Con lớn vào đại học năm sau"]
+  bhxh_years: 8
+  bhxh_withdrawn: false
+  existing_insurance: ["Bảo hiểm sức khoẻ cho hai con"]
+  primary_concerns: [retirement_income, not_burden_children]
+  goals: "Đến tuổi nghỉ hưu có khoản tiền đều đặn hằng tháng và có BHYT, không phụ thuộc con"
+  risk_tolerance: Low
+  need_flexibility: High
+  budget_monthly: 3500000
+  payment_preference: monthly
+disclosure_order:
+  - basics
+  - job_income
+  - social_insurance
+  - dependents_family
+  - debts_expenses
+  - risk_attitude
+  - budget_payment
+completion_condition: "Đã nêu ngân sách và nhu cầu có thể giảm đóng khi con vào đại học."

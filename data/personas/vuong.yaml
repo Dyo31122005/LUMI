@@ -1,0 +1,42 @@
+id: vuong
+display_name: Vương
+mode: auto
+opening: "chào bạn, mình là Vương, 22 tuổi. mình mới tốt nghiệp hồi tháng 7, đang đi xin việc mà thấy hơi áp lực"
+address:
+  assistant_self: mình
+  customer: Vương
+  tone: thân mật, viết thường, có thể dùng emoji nhẹ
+facts:
+  name: Vương
+  age: 22
+  gender: male
+  location: Hà Nội
+  employment_status: job_seeking
+  occupation: Marketing
+  job_prospect: "Phỏng vấn vòng cuối ở startup fintech; lương dự kiến 11000000 VND mỗi tháng"
+  expected_income: 11000000
+  monthly_income: 3000000
+  income_sources: ["Gia đình hỗ trợ 3000000 VND mỗi tháng", "Freelance viết content 0–4000000 VND mỗi tháng"]
+  income_stability: low
+  monthly_expenses: 5500000
+  debts:
+    - type: Trả góp laptop
+      monthly: 1200000
+      remaining_months: 10
+  dependents: []
+  bhxh_years: 0
+  bhtn_months: 0
+  has_employment_contract: false
+  health_status: good
+  primary_concerns: [job_loss, income_gap, debt_repayment]
+  goals: "Có tiền cầm cự vài tháng khi mất việc và vẫn trả được góp laptop"
+  budget_monthly: 150000
+  payment_preference: monthly
+disclosure_order:
+  - basics
+  - job_income
+  - debts_expenses
+  - social_insurance
+  - health
+  - budget_payment
+completion_condition: "Đã chia sẻ ngân sách và mục tiêu cầm cự khi mất việc."

@@ -1,0 +1,704 @@
+{
+  "persona_id": "duc",
+  "address": {
+    "assistant_self": "cháu",
+    "customer": "bác",
+    "tone": "lễ phép, chậm rãi, cẩn trọng"
+  },
+  "state": "FOLLOW_UP",
+  "question_count": 7,
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Xin chào! Tôi là LUMI, trợ lý tư vấn bảo hiểm. Tôi sẽ hỏi một vài câu để hiểu hoàn cảnh của bạn, sau đó gợi ý loại bảo hiểm phù hợp. Thông tin chỉ dùng cho buổi tư vấn này. Bạn đang quan tâm hoặc lo lắng điều gì?",
+      "turn_index": 0
+    },
+    {
+      "role": "customer",
+      "content": "Chào cháu. Tôi là Đức, 60 tuổi. Tôi muốn tìm hiểu về bảo hiểm, nhưng nói trước là tôi hơi ngại, nghe nhiều người kể mua bảo hiểm xong đến lúc cần thì không được trả tiền.",
+      "turn_index": 1
+    },
+    {
+      "role": "assistant",
+      "content": "Bác hiện đang làm công việc gì, và thu nhập hằng tháng khoảng bao nhiêu ạ?",
+      "turn_index": 2
+    },
+    {
+      "role": "customer",
+      "content": "Bác là kỹ sư xây dựng ở một công ty nhà nước, hiện vẫn đang làm việc và dự định nghỉ hưu vào năm sau. Về thu nhập hằng tháng thì bác xin phép chưa chia sẻ lúc này.",
+      "turn_index": 3
+    },
+    {
+      "role": "assistant",
+      "content": "Bác đang lo lắng nhất điều gì về tình hình tài chính của mình lúc này ạ?",
+      "turn_index": 4
+    },
+    {
+      "role": "customer",
+      "content": "Bác lo nhất là sau khi nghỉ hưu, nếu có chuyện gì thì vợ bác không có nguồn thu nhập riêng và các con lại phải gánh. Bác muốn có một khoản chắc chắn để bảo vệ vợ, đồng thời để lại được chút gì đó cho các cháu.",
+      "turn_index": 5
+    },
+    {
+      "role": "assistant",
+      "content": "Bác có bệnh gì cần theo dõi thường xuyên không ạ, và bác có hút thuốc không ạ?",
+      "turn_index": 6
+    },
+    {
+      "role": "customer",
+      "content": "Bác bị tăng huyết áp, hiện đã kiểm soát bằng thuốc. Bác không hút thuốc.",
+      "turn_index": 7
+    },
+    {
+      "role": "assistant",
+      "content": "Bác thấy phù hợp với việc đóng dần hằng năm hay đóng một lần hơn ạ? Nếu đóng một lần, khoảng bao nhiêu thì bác cảm thấy thoải mái ạ?",
+      "turn_index": 8
+    },
+    {
+      "role": "customer",
+      "content": "Bác thấy đóng một lần sẽ phù hợp hơn, khoảng 400 triệu thì bác cảm thấy thoải mái.",
+      "turn_index": 9
+    },
+    {
+      "role": "assistant",
+      "content": "Để tính tuổi nghỉ hưu và phí chính xác, cháu xin phép hỏi bác là nam hay nữ ạ?",
+      "turn_index": 10
+    },
+    {
+      "role": "customer",
+      "content": "Bác là nam.",
+      "turn_index": 11
+    },
+    {
+      "role": "assistant",
+      "content": "Bác đã có hợp đồng bảo hiểm nào chưa, ngoài bảo hiểm y tế ạ?",
+      "turn_index": 12
+    },
+    {
+      "role": "customer",
+      "content": "Hiện tại bác chỉ có bảo hiểm y tế thôi cháu ạ, chưa có hợp đồng bảo hiểm nào khác.",
+      "turn_index": 13
+    },
+    {
+      "role": "assistant",
+      "content": "Hiện có ai đang phụ thuộc vào thu nhập của bác không ạ, chẳng hạn như vợ hoặc chồng, con nhỏ hay bố mẹ ạ?",
+      "turn_index": 14
+    },
+    {
+      "role": "customer",
+      "content": "Có bác ạ. Vợ bác năm nay 57 tuổi và hiện không có thu nhập, nên vẫn phụ thuộc vào bác. Các con thì đã trưởng thành, bác không muốn sau này phải để các con gánh thêm.",
+      "turn_index": 15
+    },
+    {
+      "role": "assistant",
+      "content": "Bác Đức kiểm tra giúp cháu vài thông tin chính:\n\n- Bác 60 tuổi, là kỹ sư xây dựng và dự kiến nghỉ hưu vào năm sau.\n- Bác đã lập gia đình; vợ bác 57 tuổi, hiện không có thu nhập và đang phụ thuộc tài chính vào bác.\n- Bác hiện có bảo hiểm y tế, chưa có hợp đồng bảo hiểm nào khác. Bác bị tăng huyết áp nhưng đang kiểm soát bằng thuốc và không hút thuốc.\n- Bác muốn bảo vệ vợ, không để các con phải gánh nặng, đồng thời để lại một khoản cho các cháu. Bác thấy phương án đóng một lần khoảng 400 triệu đồng phù hợp hơn.\n\nLoại bảo hiểm cháu đề xuất là **Bảo hiểm nhân thọ (bảo vệ, để lại tài sản)**.\n\nLý do chính:\n\n- Bác dự kiến nghỉ hưu vào năm sau, trong khi vợ hiện không có thu nhập. Bảo hiểm nhân thọ phù hợp với mục tiêu tạo nguồn bảo vệ cho người vợ nếu bác không còn khả năng tạo thu nhập.\n- Bác đã nói rõ muốn “bảo vệ vợ, không để các con phải gánh” và “để lại được chút gì đó cho các cháu”. Đây là những mục tiêu phù hợp với chức năng bảo vệ và để lại tài sản của bảo hiểm nhân thọ.\n- Bác có khoản ngân sách đóng một lần khoảng 400 triệu đồng và nhu cầu linh hoạt thấp, nên có thể xem xét giải pháp bảo vệ dài hạn. Tuy nhiên, bệnh tăng huyết áp cần được khai báo trung thực; việc chấp nhận bảo hiểm sẽ phụ thuộc vào thẩm định của doanh nghiệp bảo hiểm.\n\nCác loại chưa được ưu tiên:\n\n- **Bảo hiểm hưu trí:** chưa ưu tiên bằng bảo hiểm nhân thọ vì mối quan tâm chính của bác hiện là bảo vệ vợ và để lại tài sản.\n- **Bảo hiểm sức khỏe:** bác đã có bảo hiểm y tế; loại này chủ yếu hỗ trợ chi phí y tế, không trực tiếp giải quyết mục tiêu bảo vệ thu nhập cho vợ hoặc để lại tài sản.\n- **Bảo hiểm thất nghiệp:** không phù hợp với giai đoạn bác đang chuẩn bị nghỉ hưu và mục tiêu hiện tại.\n\nBác có muốn cháu so sánh một số sản phẩm cụ thể theo mức bảo vệ, cách đóng phí và các điểm cần lưu ý không ạ?\n\nThông tin trên chỉ mang tính tham khảo. Bạn nên làm việc với tư vấn viên có chứng chỉ trước khi mua bảo hiểm.",
+      "turn_index": 16
+    },
+    {
+      "role": "customer",
+      "content": "Ừ, cháu so sánh giúp bác một số phương án cụ thể theo mức bảo vệ, cách đóng phí và những điểm cần lưu ý nhé. Bác muốn ưu tiên khoản bảo vệ chắc chắn cho vợ, và ngân sách đóng một lần khoảng 400 triệu đồng. Nhưng cháu nói rõ điều kiện chi trả, loại trừ và việc thẩm định sức khỏe giúp bác, vì bác khá lo lúc cần lại không được trả.",
+      "turn_index": 17
+    },
+    {
+      "role": "assistant",
+      "content": "Bác đang ưu tiên:\n\n- Đáp ứng nhu cầu chính: bảo vệ vợ và để lại tài sản cho các cháu.\n- Điều kiện tham gia: bác có bệnh mãn tính, nên thẩm định là rào cản cần xem xét kỹ.\n\n**Hạng 1: Bảo Tín Đóng Một Lần – Sao Việt Assurance**\n\nĐây là lựa chọn phù hợp nhất với các ưu tiên của bác vì:\n\n- Thẩm định rút gọn với 5 câu hỏi; tăng huyết áp đã kiểm soát được chấp nhận phí chuẩn theo thông tin minh họa. Tuy vậy, bác vẫn cần khai báo sức khỏe trung thực và kết quả cuối cùng phụ thuộc thẩm định.\n- Đóng một lần 350 triệu, thấp hơn ngân sách 400 triệu, giúp bác không phải nhớ đóng hằng năm.\n- Số tiền bảo hiểm cố định 450 triệu, không phụ thuộc lợi nhuận thị trường; có giá trị hoàn lại từ năm 1 khoảng 80% phí.\n\nĐiểm bác cần cân nhắc:\n\n- Số tiền bảo hiểm cố định, không tăng theo lạm phát.\n- Không có quyền lợi bổ trợ sức khỏe.\n- Chưa có dữ liệu thu nhập để đánh giá đầy đủ khả năng chi trả.\n- Chưa nêu rõ quyền tạm dừng hoặc giảm phí.\n\n**Hạng 2: Di Sản Trọn Đời – An Phúc Life**\n\nĐiểm mạnh:\n\n- Số tiền bảo hiểm 550 triệu, cao nhất trong nhóm.\n- Bảo vệ đến 99 tuổi.\n- Có bổ trợ bệnh hiểm nghèo.\n\nĐiểm cần lưu ý:\n\n- Thẩm định đầy đủ; bệnh mãn tính có thể dẫn đến phụ phí.\n- Tổng phí mẫu 480 triệu, vượt ngân sách đóng một lần 400 triệu.\n- Cần đóng 48 triệu mỗi năm trong 10 năm.\n- Giá trị hoàn lại bắt đầu từ năm 3.\n\n**Hạng 3: Phúc Lộc An Khang – Bình Minh Insurance**\n\nĐiểm mạnh:\n\n- Có tiền đáo hạn ở tuổi 80.\n- Có bổ trợ nằm viện.\n- Quyền lợi cơ bản 450 triệu được nêu rõ.\n\nĐiểm cần lưu ý:\n\n- Tổng phí 460 triệu cao hơn ngân sách đóng một lần 400 triệu.\n- Phải khám sức khỏe bắt buộc; bác đang ở tuổi tham gia tối đa là 60.\n- Lãi chia không đảm bảo.\n- Giá trị hoàn lại bắt đầu từ năm 3 và chưa nêu rõ quyền tạm dừng, giảm phí hoặc rút tiền linh hoạt.\n\n**Hạng 4: Tử Kỳ An Tâm 75 – Trường An Life**\n\nĐiểm mạnh:\n\n- Phí thấp nhất nhóm, tổng phí mẫu 270 triệu.\n- Số tiền bảo hiểm 500 triệu.\n- Có thể phù hợp nếu bác ưu tiên bảo vệ khi tử vong với mức phí thấp hơn.\n\nĐiểm cần lưu ý:\n\n- Phải đóng 18 triệu mỗi năm trong 15 năm.\n- Nếu sống qua 75 tuổi thì không nhận quyền lợi theo thông tin minh họa.\n- Không có giá trị hoàn lại.\n- Bác đang đúng ngưỡng tuổi tham gia tối đa là 60; tăng huyết áp có thể phát sinh phụ phí và cần thẩm định đầy đủ.\n\n**Tình huống minh họa: nếu người trụ cột mất, người phụ thuộc nhận được gì?**\n\n- Bảo Tín Đóng Một Lần: 450 triệu.\n- Di Sản Trọn Đời: 550 triệu.\n- Phúc Lộc An Khang: 450 triệu.\n- Tử Kỳ An Tâm 75: 500 triệu.\n\nCác con số trên là minh họa theo thông tin sản phẩm, không phải cam kết chi trả trong mọi trường hợp. Dữ liệu minh họa · Doanh nghiệp và sản phẩm trong demo là hư cấu.\n\nThông tin trên chỉ mang tính tham khảo. Bạn nên làm việc với tư vấn viên có chứng chỉ trước khi mua bảo hiểm.",
+      "turn_index": 18
+    }
+  ],
+  "profile": {
+    "name": "Đức",
+    "age": 60,
+    "gender": "male",
+    "location": null,
+    "marital_status": "married",
+    "employment_status": "near_retirement",
+    "occupation": "kỹ sư xây dựng",
+    "job_prospect": null,
+    "expected_income": null,
+    "has_employment_contract": null,
+    "months_in_current_job": null,
+    "monthly_income": null,
+    "income_sources": null,
+    "income_stability": null,
+    "retirement_timing": "năm sau",
+    "expected_pension": null,
+    "dependents": [
+      {
+        "relation": "spouse",
+        "age": 57,
+        "financially_dependent": true
+      }
+    ],
+    "spouse_income": 0.0,
+    "monthly_expenses": null,
+    "savings": null,
+    "assets": null,
+    "debts": null,
+    "upcoming_expenses": null,
+    "bhxh_years": null,
+    "bhxh_withdrawn": null,
+    "bhtn_months": null,
+    "existing_insurance": [
+      "bảo hiểm y tế"
+    ],
+    "health_status": null,
+    "chronic_conditions": [
+      "tăng huyết áp"
+    ],
+    "condition_controlled": true,
+    "smoker": false,
+    "primary_concerns": [
+      "spouse_protection",
+      "not_burden_children",
+      "legacy"
+    ],
+    "denied_concerns": null,
+    "goals": "Có một khoản chắc chắn để bảo vệ vợ, đồng thời để lại được chút gì đó cho các cháu.",
+    "risk_tolerance": null,
+    "need_flexibility": "Low",
+    "trust_concern": "Medium",
+    "budget_monthly": null,
+    "budget_annual": null,
+    "budget_single": 400000000.0,
+    "payment_preference": "single",
+    "beneficiaries": [
+      "vợ",
+      "các cháu"
+    ],
+    "provenance": {
+      "name": {
+        "quote": "Tôi là Đức",
+        "confidence": 1.0,
+        "turn_index": 1
+      },
+      "age": {
+        "quote": "60 tuổi",
+        "confidence": 1.0,
+        "turn_index": 1
+      },
+      "trust_concern": {
+        "quote": "tôi hơi ngại, nghe nhiều người kể mua bảo hiểm xong đến lúc cần thì không được trả tiền",
+        "confidence": 0.88,
+        "turn_index": 1
+      },
+      "occupation": {
+        "quote": "bác là kỹ sư xây dựng",
+        "confidence": 0.99,
+        "turn_index": 3
+      },
+      "employment_status": {
+        "quote": "dự định nghỉ hưu vào năm sau",
+        "confidence": 0.99,
+        "turn_index": 3
+      },
+      "retirement_timing": {
+        "quote": "dự định nghỉ hưu vào năm sau",
+        "confidence": 0.99,
+        "turn_index": 3
+      },
+      "primary_concerns": {
+        "quote": "Bác lo nhất là sau khi nghỉ hưu, nếu có chuyện gì thì vợ bác không có nguồn thu nhập riêng và các con lại phải gánh.",
+        "confidence": 0.99,
+        "turn_index": 5
+      },
+      "goals": {
+        "quote": "Bác muốn có một khoản chắc chắn để bảo vệ vợ, đồng thời để lại được chút gì đó cho các cháu.",
+        "confidence": 0.99,
+        "turn_index": 5
+      },
+      "beneficiaries": {
+        "quote": "bảo vệ vợ, đồng thời để lại được chút gì đó cho các cháu",
+        "confidence": 0.98,
+        "turn_index": 5
+      },
+      "chronic_conditions": {
+        "quote": "Bác bị tăng huyết áp",
+        "confidence": 0.99,
+        "turn_index": 7
+      },
+      "condition_controlled": {
+        "quote": "hiện đã kiểm soát bằng thuốc",
+        "confidence": 0.99,
+        "turn_index": 7
+      },
+      "smoker": {
+        "quote": "Bác không hút thuốc",
+        "confidence": 0.99,
+        "turn_index": 7
+      },
+      "budget_single": {
+        "quote": "khoảng 400 triệu thì bác cảm thấy thoải mái",
+        "confidence": 0.99,
+        "turn_index": 9
+      },
+      "payment_preference": {
+        "quote": "đóng một lần sẽ phù hợp hơn",
+        "confidence": 0.99,
+        "turn_index": 9
+      },
+      "gender": {
+        "quote": "Bác là nam.",
+        "confidence": 1.0,
+        "turn_index": 11
+      },
+      "existing_insurance": {
+        "quote": "Hiện tại bác chỉ có bảo hiểm y tế thôi cháu ạ, chưa có hợp đồng bảo hiểm nào khác.",
+        "confidence": 0.99,
+        "turn_index": 13
+      },
+      "marital_status": {
+        "quote": "Vợ bác năm nay 57 tuổi",
+        "confidence": 0.99,
+        "turn_index": 15
+      },
+      "dependents": {
+        "quote": "Vợ bác năm nay 57 tuổi và hiện không có thu nhập, nên vẫn phụ thuộc vào bác",
+        "confidence": 0.99,
+        "turn_index": 15
+      },
+      "spouse_income": {
+        "quote": "hiện không có thu nhập",
+        "confidence": 0.99,
+        "turn_index": 15
+      }
+    }
+  },
+  "derived": {
+    "life_stage": "pre_retirement",
+    "years_to_retirement": 2,
+    "pension_missing_years": null,
+    "unemployment_gap_months": null,
+    "premium_to_income_ratio": null,
+    "has_large_expense_2y": false,
+    "has_chronic_condition": true,
+    "completeness": 0.9166666666666666
+  },
+  "insurance_type": "life",
+  "type_decision": {
+    "insurance_type": "life",
+    "secondary_type": "retirement",
+    "type_probabilities": {
+      "unemployment": 0.02,
+      "retirement": 0.2,
+      "life": 0.7,
+      "health": 0.08
+    },
+    "confidence": 0.91,
+    "reasons": [
+      "Anh Đức 60 tuổi, dự kiến nghỉ hưu năm sau và muốn có khoản chắc chắn để bảo vệ người vợ đang phụ thuộc tài chính.",
+      "Mục tiêu chính là bảo vệ vợ, không tạo gánh nặng cho con và để lại tài sản cho các cháu, phù hợp nhất với bảo hiểm nhân thọ.",
+      "Anh có ngân sách đóng một lần 400 triệu đồng và nhu cầu linh hoạt thấp, phù hợp với định hướng giải pháp bảo vệ dài hạn."
+    ]
+  },
+  "turn_decisions": [
+    {
+      "next_topic": "goals_concerns",
+      "next_topic_reason": "Chú Đức muốn tìm hiểu bảo hiểm và đã nêu lo ngại về việc được chi trả, nên cần làm rõ ưu tiên bảo vệ chính trước.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "Unknown",
+      "trust_concern": "Medium",
+      "insurance_type": "retirement",
+      "type_probabilities": {
+        "unemployment": 0.1,
+        "retirement": 0.4,
+        "life": 0.2,
+        "health": 0.3
+      },
+      "confidence": 0.25,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "social_insurance",
+      "next_topic_reason": "Bác dự định nghỉ hưu vào năm sau nhưng chưa rõ số năm đã đóng BHXH và tình trạng hưởng lương hưu, đây là thông tin quan trọng để xác định nhu cầu ưu tiên.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "Unknown",
+      "trust_concern": "Medium",
+      "insurance_type": "retirement",
+      "type_probabilities": {
+        "unemployment": 0.08,
+        "retirement": 0.65,
+        "life": 0.15,
+        "health": 0.12
+      },
+      "confidence": 0.7,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "health",
+      "next_topic_reason": "Bác đã nêu rõ nhu cầu bảo vệ vợ và để lại tài sản cho các cháu; cần làm rõ tình trạng sức khỏe, bệnh nền và hút thuốc để đánh giá hướng bảo hiểm nhân thọ phù hợp.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "Unknown",
+      "trust_concern": "Medium",
+      "insurance_type": "life",
+      "type_probabilities": {
+        "unemployment": 0.02,
+        "retirement": 0.18,
+        "life": 0.7,
+        "health": 0.1
+      },
+      "confidence": 0.82,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "budget_payment",
+      "next_topic_reason": "Bác đã nêu rõ mục tiêu bảo vệ vợ và để lại cho các cháu, nhưng chưa cho biết ngân sách hoặc cách đóng phí để xác định giải pháp phù hợp.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "Unknown",
+      "trust_concern": "Medium",
+      "insurance_type": "life",
+      "type_probabilities": {
+        "unemployment": 0.03,
+        "retirement": 0.22,
+        "life": 0.65,
+        "health": 0.1
+      },
+      "confidence": 0.78,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "health",
+      "next_topic_reason": "Bác đã xác định ngân sách đóng một lần khoảng 400 triệu; cần làm rõ tình trạng sức khỏe hiện tại để đánh giá khả năng phù hợp của bảo hiểm nhân thọ, đặc biệt với tiền sử tăng huyết áp.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "Low",
+      "trust_concern": "Medium",
+      "insurance_type": "life",
+      "type_probabilities": {
+        "unemployment": 0.03,
+        "retirement": 0.12,
+        "life": 0.8,
+        "health": 0.05
+      },
+      "confidence": 0.86,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "health",
+      "next_topic_reason": "Bác đã cho biết có tăng huyết áp đang kiểm soát tốt; cần làm rõ tình trạng sức khỏe hiện tại để đánh giá khả năng tham gia bảo hiểm nhân thọ.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "Low",
+      "trust_concern": "Medium",
+      "insurance_type": "life",
+      "type_probabilities": {
+        "unemployment": 0.02,
+        "retirement": 0.18,
+        "life": 0.68,
+        "health": 0.12
+      },
+      "confidence": 0.78,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "health",
+      "next_topic_reason": "Bác có mục tiêu bảo vệ vợ và để lại tài sản cho các cháu, nhưng cần làm rõ tình trạng sức khỏe và bệnh tăng huyết áp để đánh giá phù hợp bảo hiểm nhân thọ.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "Low",
+      "trust_concern": "Medium",
+      "insurance_type": "life",
+      "type_probabilities": {
+        "unemployment": 0.02,
+        "retirement": 0.18,
+        "life": 0.72,
+        "health": 0.08
+      },
+      "confidence": 0.84,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "ready_to_recommend",
+      "next_topic_reason": "Bác đã nêu rõ vợ phụ thuộc tài chính, mong muốn bảo vệ vợ và để lại tài sản cho các cháu, cùng ngân sách đóng một lần 400 triệu đồng.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "Low",
+      "trust_concern": "Medium",
+      "insurance_type": "life",
+      "type_probabilities": {
+        "unemployment": 0.02,
+        "retirement": 0.13,
+        "life": 0.8,
+        "health": 0.05
+      },
+      "confidence": 0.91,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "ready_to_recommend",
+      "next_topic_reason": "Bác đã xác định ưu tiên bảo vệ vợ, ngân sách đóng một lần khoảng 400 triệu đồng và đồng ý xem các phương án cụ thể; bước tiếp theo là so sánh mức bảo vệ, điều kiện chi trả, loại trừ và thẩm định sức khỏe.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "Low",
+      "trust_concern": "High",
+      "insurance_type": "life",
+      "type_probabilities": {
+        "unemployment": 0.01,
+        "retirement": 0.08,
+        "life": 0.88,
+        "health": 0.03
+      },
+      "confidence": 0.9,
+      "customer_intent": "agree_continue"
+    }
+  ],
+  "insights": [
+    {
+      "key": "dependent_without_income",
+      "probability": 0.9,
+      "reason": "Nếu khách mất, người phụ thuộc sẽ mất nguồn thu nhập."
+    },
+    {
+      "key": "chronic_condition",
+      "probability": 0.9,
+      "reason": "Có bệnh mãn tính: nên ưu tiên sản phẩm thẩm định đơn giản và phải khai báo trung thực."
+    }
+  ],
+  "why_ask": {
+    "2": "Vì sao LUMI hỏi câu này: cần làm rõ «nỗi lo và mong muốn», giả thuyết đang dẫn đầu là «Hưu trí» (40%).",
+    "4": "Vì sao LUMI hỏi câu này: cần làm rõ «quá trình đóng BHXH/BHTN», giả thuyết đang dẫn đầu là «Hưu trí» (65%).",
+    "6": "Vì sao LUMI hỏi câu này: cần làm rõ «sức khoẻ», giả thuyết đang dẫn đầu là «Nhân thọ» (70%).",
+    "8": "Vì sao LUMI hỏi câu này: cần làm rõ «ngân sách và cách đóng phí», giả thuyết đang dẫn đầu là «Nhân thọ» (65%).",
+    "10": "Vì sao LUMI hỏi câu này: cần làm rõ «sức khoẻ», giả thuyết đang dẫn đầu là «Nhân thọ» (80%).",
+    "12": "Vì sao LUMI hỏi câu này: cần làm rõ «sức khoẻ», giả thuyết đang dẫn đầu là «Nhân thọ» (68%).",
+    "14": "Vì sao LUMI hỏi câu này: cần làm rõ «sức khoẻ», giả thuyết đang dẫn đầu là «Nhân thọ» (72%)."
+  },
+  "weights": {
+    "C1": 27.272727272727273,
+    "C2": 18.181818181818183,
+    "C3": 13.636363636363637,
+    "C4": 9.090909090909092,
+    "C5": 22.727272727272727,
+    "C6": 9.090909090909092
+  },
+  "weight_reasons": [
+    "Có bệnh mãn tính, thẩm định là rào cản"
+  ],
+  "priority_criteria": [
+    "C1",
+    "C5"
+  ],
+  "ranking": [
+    {
+      "rank": 1,
+      "product_id": "sv_baotin",
+      "product_name": "Bảo Tín Đóng Một Lần",
+      "insurer": "Sao Việt Assurance",
+      "premium_display": null,
+      "fit_score": 89.1,
+      "scores": {
+        "C1": "Meets very well",
+        "C2": "Meets well",
+        "C3": "Meets very well",
+        "C4": "Partly meets",
+        "C5": "Meets very well",
+        "C6": "Meets very well"
+      },
+      "notes": {
+        "C1": "Phù hợp trực tiếp với nhu cầu bảo vệ vợ, không burden con và để lại tài sản cho các cháu.",
+        "C2": "Phí đóng một lần 350 triệu, thấp hơn ngân sách 400 triệu; chưa có dữ liệu thu nhập để đánh giá đầy đủ khả năng chi trả.",
+        "C3": "Số tiền bảo hiểm cố định 450 triệu, không phụ thuộc lợi nhuận thị trường.",
+        "C4": "Có giá trị hoàn lại từ năm 1 khoảng 80% phí, nhưng không nêu rõ quyền tạm dừng hoặc giảm phí.",
+        "C5": "Tuổi 60 nằm trong giới hạn 40–70, tăng huyết áp kiểm soát được chấp nhận phí chuẩn và thẩm định chỉ 5 câu hỏi.",
+        "C6": "Cho phép nộp hồ sơ online và nêu thời gian xử lý bồi thường 10 ngày làm việc."
+      },
+      "filter_notes": [],
+      "strengths": [
+        "Thẩm định rút gọn (5 câu hỏi)",
+        "Đóng một lần, không phải nhớ đóng hằng năm",
+        "Có giá trị hoàn lại ngay từ năm 1"
+      ],
+      "watch_outs": [
+        "Số tiền bảo hiểm cố định, không tăng theo lạm phát",
+        "Không có quyền lợi bổ trợ sức khoẻ"
+      ],
+      "investment_linked": false,
+      "comparison_values": {
+        "Dòng sản phẩm": "Trọn đời, đóng phí một lần",
+        "Tuổi tham gia tối đa": "70",
+        "Thời hạn bảo vệ": "Đến 90 tuổi",
+        "Phí": "Mẫu nam 60 tuổi: 350 triệu, một lần",
+        "Tổng phí": "350 triệu",
+        "Số tiền bảo hiểm": "450 triệu",
+        "Khi sống đến cuối hợp đồng": "Nhận 450 triệu ở tuổi 90",
+        "Thẩm định sức khoẻ": "Rút gọn (5 câu hỏi)",
+        "Xử lý tăng huyết áp đã kiểm soát": "Chấp nhận, phí chuẩn",
+        "Giá trị hoàn lại": "Có từ năm 1 (khoảng 80% phí), tăng dần",
+        "Quyền lợi bổ sung": "Không",
+        "Người thụ hưởng": "Chỉ định tự do, chia theo tỷ lệ",
+        "Bồi thường": "Hồ sơ online, 10 ngày làm việc",
+        "Thời gian cân nhắc": "21 ngày"
+      }
+    },
+    {
+      "rank": 2,
+      "product_id": "ap_disan",
+      "product_name": "Di Sản Trọn Đời",
+      "insurer": "An Phúc Life",
+      "premium_display": null,
+      "fit_score": 74.1,
+      "scores": {
+        "C1": "Meets very well",
+        "C2": "Partly meets",
+        "C3": "Meets very well",
+        "C4": "Partly meets",
+        "C5": "Meets well",
+        "C6": "Meets well"
+      },
+      "notes": {
+        "C1": "Bảo vệ đến 99 tuổi, phù hợp bảo vệ vợ và để lại di sản cho các cháu.",
+        "C2": "Tổng phí mẫu 480 triệu vượt ngân sách đóng một lần 400 triệu và sản phẩm yêu cầu đóng 48 triệu mỗi năm trong 10 năm.",
+        "C3": "Sản phẩm không liên kết đầu tư, có số tiền bảo hiểm 550 triệu và quyền lợi đáo hạn được nêu rõ.",
+        "C4": "Có giá trị hoàn lại từ năm 3 nhưng phí cố định 10 năm và không nêu rõ cơ chế tạm dừng hoặc giảm phí.",
+        "C5": "Khách 60 tuổi còn trong giới hạn tham gia 65 tuổi; tăng huyết áp đã kiểm soát được chấp nhận nhưng có thể phụ phí 15–25% và phải thẩm định đầy đủ.",
+        "C6": "Kênh yêu cầu quyền lợi gồm đại lý hoặc online, thời gian giải quyết được nêu là 15 ngày."
+      },
+      "filter_notes": [],
+      "strengths": [
+        "Số tiền bảo hiểm cao nhất nhóm (550 triệu)",
+        "Bảo vệ đến 99 tuổi",
+        "Có bổ trợ bệnh hiểm nghèo"
+      ],
+      "watch_outs": [
+        "Thẩm định đầy đủ",
+        "Có thể bị cộng phụ phí nếu có bệnh mãn tính",
+        "Giá trị hoàn lại từ năm 3"
+      ],
+      "investment_linked": false,
+      "comparison_values": {
+        "Dòng sản phẩm": "Trọn đời, đóng phí 10 năm",
+        "Tuổi tham gia tối đa": "65",
+        "Thời hạn bảo vệ": "Đến 99 tuổi",
+        "Phí": "Mẫu nam 60 tuổi: 48 triệu/năm × 10 năm",
+        "Tổng phí": "480 triệu",
+        "Số tiền bảo hiểm": "550 triệu",
+        "Khi sống đến cuối hợp đồng": "Nhận số tiền bảo hiểm ở tuổi 99",
+        "Thẩm định sức khoẻ": "Đầy đủ",
+        "Xử lý tăng huyết áp đã kiểm soát": "Chấp nhận, có thể cộng phụ phí 15–25%",
+        "Giá trị hoàn lại": "Có từ năm 3",
+        "Quyền lợi bổ sung": "Bệnh hiểm nghèo (tham gia đến 65 tuổi)",
+        "Người thụ hưởng": "Chỉ định tự do, chia theo tỷ lệ",
+        "Bồi thường": "Đại lý hoặc online, 15 ngày",
+        "Thời gian cân nhắc": "21 ngày"
+      }
+    },
+    {
+      "rank": 3,
+      "product_id": "bm_phucloc",
+      "product_name": "Phúc Lộc An Khang",
+      "insurer": "Bình Minh Insurance",
+      "premium_display": null,
+      "fit_score": 63.2,
+      "scores": {
+        "C1": "Meets very well",
+        "C2": "Partly meets",
+        "C3": "Meets well",
+        "C4": "Partly meets",
+        "C5": "Partly meets",
+        "C6": "Meets well"
+      },
+      "notes": {
+        "C1": "Phù hợp trực tiếp với nhu cầu bảo vệ vợ và để lại tài sản cho các cháu.",
+        "C2": "Tổng phí 460 triệu vượt ngân sách đóng một lần 400 triệu, dù chưa có dữ liệu thu nhập để đánh giá thêm.",
+        "C3": "Quyền lợi cơ bản 450 triệu được nêu rõ, nhưng phần lãi chia không được đảm bảo.",
+        "C4": "Có giá trị hoàn lại từ năm 3 nhưng sản phẩm không nêu rõ quyền tạm dừng, giảm phí hoặc rút tiền linh hoạt.",
+        "C5": "Khách vừa đúng tuổi tham gia tối đa 60 và tăng huyết áp phải được xét qua khám sức khỏe.",
+        "C6": "Quy trình chi trả tại văn phòng trong 15 ngày được nêu cụ thể, dù không có thêm cam kết về độ tin cậy."
+      },
+      "filter_notes": [],
+      "strengths": [
+        "Nhận tiền khi đáo hạn ở tuổi 80",
+        "Có bổ trợ nằm viện"
+      ],
+      "watch_outs": [
+        "Tổng phí (460 triệu) cao hơn số tiền bảo hiểm (450 triệu)",
+        "Phải khám sức khoẻ bắt buộc",
+        "Lãi chia không đảm bảo"
+      ],
+      "investment_linked": false,
+      "comparison_values": {
+        "Dòng sản phẩm": "Hỗn hợp (bảo vệ + đáo hạn)",
+        "Tuổi tham gia tối đa": "60",
+        "Thời hạn bảo vệ": "Đến 80 tuổi",
+        "Phí": "Mẫu nam 60 tuổi: 46 triệu/năm × 10 năm",
+        "Tổng phí": "460 triệu",
+        "Số tiền bảo hiểm": "450 triệu",
+        "Khi sống đến cuối hợp đồng": "Nhận 450 triệu + lãi chia (không đảm bảo) ở tuổi 80",
+        "Thẩm định sức khoẻ": "Khám sức khoẻ bắt buộc",
+        "Xử lý tăng huyết áp đã kiểm soát": "Xét theo kết quả khám",
+        "Giá trị hoàn lại": "Có từ năm 3",
+        "Quyền lợi bổ sung": "Hỗ trợ nằm viện",
+        "Người thụ hưởng": "Chỉ định tự do, chia theo tỷ lệ",
+        "Bồi thường": "Tại văn phòng, 15 ngày",
+        "Thời gian cân nhắc": "21 ngày"
+      }
+    },
+    {
+      "rank": 4,
+      "product_id": "ta_tuky75",
+      "product_name": "Tử Kỳ An Tâm 75",
+      "insurer": "Trường An Life",
+      "premium_display": null,
+      "fit_score": 60.9,
+      "scores": {
+        "C1": "Meets well",
+        "C2": "Meets well",
+        "C3": "Meets very well",
+        "C4": "Does not meet",
+        "C5": "Partly meets",
+        "C6": "Meets well"
+      },
+      "notes": {
+        "C1": "Quyền lợi tử vong 500 triệu phù hợp bảo vệ vợ và để lại tài sản, nhưng không có quyền lợi khi sống đến hạn.",
+        "C2": "Tổng phí mẫu 270 triệu thấp hơn ngân sách một lần 400 triệu, nhưng sản phẩm thu 18 triệu mỗi năm trong 15 năm.",
+        "C3": "Đây là sản phẩm tử kỳ, không liên kết đầu tư và số tiền bảo hiểm được xác định trước.",
+        "C4": "Không có giá trị hoàn lại và không nêu tùy chọn giảm, tạm dừng hoặc rút tiền.",
+        "C5": "Tuổi tham gia tối đa là 60, khách đúng ngưỡng này; tăng huyết áp đã kiểm soát được chấp nhận nhưng có thể bị cộng phụ phí và phải thẩm định đầy đủ.",
+        "C6": "Có kênh yêu cầu bồi thường online, thời gian xử lý nêu là 10 ngày và quy trình được mô tả khá rõ."
+      },
+      "filter_notes": [],
+      "strengths": [
+        "Phí thấp nhất nhóm",
+        "Số tiền bảo hiểm 500 triệu"
+      ],
+      "watch_outs": [
+        "Sống qua 75 tuổi thì không nhận gì",
+        "Không có giá trị hoàn lại"
+      ],
+      "investment_linked": false,
+      "comparison_values": {
+        "Dòng sản phẩm": "Tử kỳ",
+        "Tuổi tham gia tối đa": "60",
+        "Thời hạn bảo vệ": "Đến 75 tuổi",
+        "Phí": "Mẫu nam 60 tuổi: 18 triệu/năm × 15 năm",
+        "Tổng phí": "270 triệu",
+        "Số tiền bảo hiểm": "500 triệu",
+        "Khi sống đến cuối hợp đồng": "Không nhận gì",
+        "Thẩm định sức khoẻ": "Tờ khai, có thể xét nghiệm",
+        "Xử lý tăng huyết áp đã kiểm soát": "Chấp nhận, có thể cộng phụ phí",
+        "Giá trị hoàn lại": "Không có",
+        "Quyền lợi bổ sung": "Tai nạn",
+        "Người thụ hưởng": "Chỉ định tự do, chia theo tỷ lệ",
+        "Bồi thường": "Online, 10 ngày",
+        "Thời gian cân nhắc": "21 ngày"
+      }
+    }
+  ],
+  "excluded": [],
+  "scenario": {
+    "kind": "table",
+    "title": "Nếu người trụ cột mất, người phụ thuộc nhận được gì",
+    "lines": [
+      [
+        "Bảo Tín Đóng Một Lần",
+        450000000.0
+      ],
+      [
+        "Di Sản Trọn Đời",
+        550000000.0
+      ],
+      [
+        "Phúc Lộc An Khang",
+        450000000.0
+      ],
+      [
+        "Tử Kỳ An Tâm 75",
+        500000000.0
+      ]
+    ],
+    "note": null
+  }
+}

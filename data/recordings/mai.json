@@ -1,0 +1,575 @@
+{
+  "persona_id": "mai",
+  "address": {
+    "assistant_self": "em",
+    "customer": "chị",
+    "tone": "rõ ràng, thực tế, hỏi kỹ về tiền"
+  },
+  "state": "FOLLOW_UP",
+  "question_count": 4,
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Xin chào! Tôi là LUMI, trợ lý tư vấn bảo hiểm. Tôi sẽ hỏi một vài câu để hiểu hoàn cảnh của bạn, sau đó gợi ý loại bảo hiểm phù hợp. Thông tin chỉ dùng cho buổi tư vấn này. Bạn đang quan tâm hoặc lo lắng điều gì?",
+      "turn_index": 0
+    },
+    {
+      "role": "customer",
+      "content": "Chào em. Chị tên Mai, năm nay 44 tuổi. Dạo này chị hay nghĩ đến chuyện về già, bạn bè cùng tuổi bắt đầu lo lương hưu rồi mà chị thì chưa chuẩn bị gì cả.",
+      "turn_index": 1
+    },
+    {
+      "role": "assistant",
+      "content": "Chị hiện đang làm công việc gì ạ? Thu nhập hằng tháng của chị khoảng bao nhiêu ạ?",
+      "turn_index": 2
+    },
+    {
+      "role": "customer",
+      "content": "Chị đang kinh doanh quần áo, có một cửa hàng nhỏ và bán thêm online. Thu nhập của chị khoảng 20 triệu đồng mỗi tháng, nhưng cũng không hoàn toàn ổn định.",
+      "turn_index": 3
+    },
+    {
+      "role": "assistant",
+      "content": "Chị đã từng đi làm có hợp đồng và đóng bảo hiểm xã hội chưa ạ? Nếu rồi thì khoảng bao lâu, và thời gian đóng bảo hiểm thất nghiệp được bao nhiêu tháng ạ?",
+      "turn_index": 4
+    },
+    {
+      "role": "customer",
+      "content": "Trước đây chị có đi làm theo hợp đồng và đã đóng bảo hiểm xã hội khoảng 8 năm, chưa rút lần nào. Còn thời gian đóng bảo hiểm thất nghiệp thì chị không nhớ rõ là bao nhiêu tháng.",
+      "turn_index": 5
+    },
+    {
+      "role": "assistant",
+      "content": "Mỗi tháng, chị thấy mức ngân sách khoảng bao nhiêu là phù hợp để không cảm thấy áp lực ạ?",
+      "turn_index": 6
+    },
+    {
+      "role": "customer",
+      "content": "Chị thấy khoảng 3,5 triệu đồng mỗi tháng là phù hợp và muốn đóng theo tháng. Nhưng vì con lớn năm sau vào đại học nên nếu lúc đó áp lực quá, chị cần phương án có thể giảm mức đóng.",
+      "turn_index": 7
+    },
+    {
+      "role": "assistant",
+      "content": "Hiện có ai đang phụ thuộc vào thu nhập của chị không, chẳng hạn như vợ/chồng, con nhỏ hoặc bố mẹ ạ?",
+      "turn_index": 8
+    },
+    {
+      "role": "customer",
+      "content": "Có, hiện hai con của chị vẫn đang phụ thuộc vào thu nhập của chị. Cháu lớn 17 tuổi, năm sau vào đại học; cháu nhỏ 13 tuổi. Chồng chị cũng có thu nhập riêng.",
+      "turn_index": 9
+    },
+    {
+      "role": "assistant",
+      "content": "Chị Mai kiểm tra giúp em vài điểm chính:\n\n- Chị 44 tuổi, đang kinh doanh quần áo với một cửa hàng nhỏ và bán thêm online.\n- Thu nhập khoảng 20 triệu đồng mỗi tháng nhưng chưa hoàn toàn ổn định.\n- Chị đã đóng bảo hiểm xã hội 8 năm và chưa rút lần nào.\n- Hai con 13 và 17 tuổi vẫn phụ thuộc vào thu nhập của chị; con lớn năm sau vào đại học. Chị mong muốn chuẩn bị cho cuộc sống và thu nhập khi về già, với mức đóng khoảng 3,5 triệu đồng mỗi tháng và ưu tiên đóng theo tháng, có thể giảm mức đóng khi cần.\n\nLoại bảo hiểm em đề xuất là **Bảo hiểm hưu trí**.\n\nLý do chính:\n\n- Chị đang hướng đến mục tiêu có cuộc sống và thu nhập khi về già, trong khi còn khoảng 16 năm đến tuổi hưu.\n- Nguồn thu từ kinh doanh có độ ổn định thấp, nên việc chuẩn bị một kế hoạch thu nhập dài hạn có thể giúp chị chủ động hơn.\n- Chị cần phương án linh hoạt vì con lớn sắp vào đại học. Khả năng giảm mức đóng hoặc điều chỉnh kế hoạch khi có khoản chi lớn là điểm chị nên quan tâm.\n\nCác loại chưa được ưu tiên ở thời điểm này:\n\n- **Bảo hiểm nhân thọ:** vẫn đáng cân nhắc để bảo vệ hai con và tài chính gia đình, nhưng hiện mục tiêu chuẩn bị thu nhập khi về già của chị được ưu tiên trước.\n- **Bảo hiểm thất nghiệp:** chưa phù hợp bằng vì chị đang tự kinh doanh, không có hợp đồng lao động.\n- **Bảo hiểm sức khỏe:** có thể bổ sung nếu chị quan tâm đến chi phí y tế, nhưng chưa phải nhu cầu chính chị đang đặt ra.\n\nChị có muốn em tiếp tục so sánh các sản phẩm cụ thể theo mức đóng, tính linh hoạt và quyền lợi hưu trí không ạ?\n\nThông tin trên chỉ mang tính tham khảo. Bạn nên làm việc với tư vấn viên có chứng chỉ trước khi mua bảo hiểm.",
+      "turn_index": 10
+    },
+    {
+      "role": "customer",
+      "content": "Ừ, em so sánh giúp chị các sản phẩm cụ thể theo mức đóng, tính linh hoạt và quyền lợi hưu trí nhé. Chị muốn xem kỹ điều kiện có thể giảm mức đóng khi con lớn vào đại học.",
+      "turn_index": 11
+    },
+    {
+      "role": "assistant",
+      "content": "Chị đang ưu tiên:\n\n- Khả năng chi trả, vì thu nhập có thể bấp bênh hoặc ngân sách có giới hạn.\n- Mức cam kết và sự an toàn.\n- Có thể tạm dừng đóng phí hoặc rút tiền khi cần.\n\n**1. Hưu Trí Linh Hoạt – Trường An Life**\n\nĐây là lựa chọn được xếp hạng cao nhất vì phí tự chọn, tối thiểu **12 triệu/năm**, thấp hơn ngân sách **42 triệu/năm**. Sản phẩm có:\n\n- Cam kết lãi tối thiểu **2%**.\n- Có thể tạm dừng đóng phí từ năm thứ **2**, tối đa **24 tháng**.\n- Có thể rút một phần sau năm **5** mà không bị phạt.\n- Có lựa chọn nhận tiền định kỳ trong **10–20 năm**.\n\nĐiểm cần cân nhắc là lãi cam kết thấp hơn Hưu An Nhàn: **2%** so với **3%**. Mức minh họa **4,5%** vẫn phụ thuộc vào kịch bản, không phải mức được đảm bảo.\n\n**2. Hưu An Nhàn – An Phúc Life**\n\nSản phẩm này có mức lãi cam kết cao nhất nhóm là **3%**, cùng quyền lợi tử vong bằng giá trị quỹ cộng **100 triệu**. Phí tự chọn, tối thiểu **15 triệu/năm**, vẫn thấp hơn ngân sách **42 triệu/năm**.\n\nĐiểm cần lưu ý:\n\n- Chỉ được tạm dừng đóng phí từ năm thứ **3**.\n- Nếu rút trong **5 năm đầu**, có thể bị phạt **10%**.\n- Có phí ban đầu **3%**.\n- Mức minh họa **4,8%** phụ thuộc vào kịch bản, không phải mức chắc chắn.\n\n**3. Tương Lai Vững – Bình Minh Insurance**\n\nSản phẩm có phí tự chọn, tối thiểu **10 triệu/năm**, cho phép rút một phần từ năm **3** và có khả năng đạt kết quả cao hơn trong kịch bản thị trường tốt.\n\nTuy nhiên, đây là sản phẩm liên kết đầu tư:\n\n- Không cam kết lãi.\n- Giá trị quỹ phụ thuộc thị trường.\n- Có phí ban đầu **5%** và phí quản lý quỹ **1,5%/năm**.\n- Rút trước hạn chịu phí **2%**.\n- Việc tạm dừng đóng phí phụ thuộc vào việc giá trị quỹ còn đủ để khấu trừ phí.\n- Khi tư vấn, cần được ghi âm theo quy định của sản phẩm.\n\n**Nếu hình dung theo thẻ minh họa:** nếu thu nhập hằng tháng khi nghỉ hưu gồm lương hưu BHXH ước tính **2.520.000 đồng** và khoản từ Hưu Trí Linh Hoạt là khoảng **2.963.387 đồng** theo lãi cam kết, tổng thu nhập thấp ước tính là **5.483.387 đồng** mỗi tháng. Nếu theo lãi minh họa **4,5%**, khoản từ Hưu Trí Linh Hoạt là **3.700.590 đồng**, tổng thu nhập cao ước tính là **6.220.590 đồng** mỗi tháng. Đây là các giá trị danh nghĩa; lạm phát có thể làm giảm sức mua sau nhiều năm.\n\nDữ liệu minh họa · Doanh nghiệp và sản phẩm trong demo là hư cấu.\n\nThông tin trên chỉ mang tính tham khảo. Bạn nên làm việc với tư vấn viên có chứng chỉ trước khi mua bảo hiểm.",
+      "turn_index": 12
+    }
+  ],
+  "profile": {
+    "name": "Mai",
+    "age": 44,
+    "gender": "female",
+    "location": null,
+    "marital_status": null,
+    "employment_status": "self_employed",
+    "occupation": "kinh doanh quần áo",
+    "job_prospect": null,
+    "expected_income": null,
+    "has_employment_contract": null,
+    "months_in_current_job": null,
+    "monthly_income": 20000000.0,
+    "income_sources": [
+      "cửa hàng nhỏ",
+      "bán online"
+    ],
+    "income_stability": "low",
+    "retirement_timing": null,
+    "expected_pension": null,
+    "dependents": [
+      {
+        "relation": "con",
+        "age": 17,
+        "financially_dependent": true
+      },
+      {
+        "relation": "con",
+        "age": 13,
+        "financially_dependent": true
+      }
+    ],
+    "spouse_income": null,
+    "monthly_expenses": null,
+    "savings": null,
+    "assets": null,
+    "debts": null,
+    "upcoming_expenses": [
+      "Con lớn năm sau vào đại học"
+    ],
+    "bhxh_years": 8.0,
+    "bhxh_withdrawn": false,
+    "bhtn_months": null,
+    "existing_insurance": null,
+    "health_status": null,
+    "chronic_conditions": null,
+    "condition_controlled": null,
+    "smoker": null,
+    "primary_concerns": [
+      "retirement_income"
+    ],
+    "denied_concerns": null,
+    "goals": "Chuẩn bị cho cuộc sống và thu nhập khi về già",
+    "risk_tolerance": null,
+    "need_flexibility": "High",
+    "trust_concern": null,
+    "budget_monthly": 3500000.0,
+    "budget_annual": null,
+    "budget_single": null,
+    "payment_preference": "monthly",
+    "beneficiaries": null,
+    "provenance": {
+      "name": {
+        "quote": "Chị tên Mai",
+        "confidence": 1.0,
+        "turn_index": 1
+      },
+      "age": {
+        "quote": "năm nay chị 44 tuổi",
+        "confidence": 1.0,
+        "turn_index": 1
+      },
+      "gender": {
+        "quote": "Chị tên Mai",
+        "confidence": 0.99,
+        "turn_index": 1
+      },
+      "primary_concerns": {
+        "quote": "quyền lợi hưu trí",
+        "confidence": 0.92,
+        "turn_index": 11
+      },
+      "goals": {
+        "quote": "hay nghĩ đến chuyện về già... chưa chuẩn bị gì cả",
+        "confidence": 0.82,
+        "turn_index": 1
+      },
+      "employment_status": {
+        "quote": "đang kinh doanh quần áo",
+        "confidence": 0.99,
+        "turn_index": 3
+      },
+      "occupation": {
+        "quote": "đang kinh doanh quần áo",
+        "confidence": 0.99,
+        "turn_index": 3
+      },
+      "income_sources": {
+        "quote": "có một cửa hàng nhỏ và bán thêm online",
+        "confidence": 0.98,
+        "turn_index": 3
+      },
+      "monthly_income": {
+        "quote": "Thu nhập của chị khoảng 20 triệu đồng mỗi tháng",
+        "confidence": 0.99,
+        "turn_index": 3
+      },
+      "income_stability": {
+        "quote": "không hoàn toàn ổn định",
+        "confidence": 0.97,
+        "turn_index": 3
+      },
+      "bhxh_years": {
+        "quote": "đã đóng bảo hiểm xã hội khoảng 8 năm",
+        "confidence": 0.98,
+        "turn_index": 5
+      },
+      "bhxh_withdrawn": {
+        "quote": "chưa rút lần nào",
+        "confidence": 0.99,
+        "turn_index": 5
+      },
+      "budget_monthly": {
+        "quote": "khoảng 3,5 triệu đồng mỗi tháng là phù hợp",
+        "confidence": 0.99,
+        "turn_index": 7
+      },
+      "payment_preference": {
+        "quote": "muốn đóng theo tháng",
+        "confidence": 0.99,
+        "turn_index": 7
+      },
+      "need_flexibility": {
+        "quote": "cần phương án có thể giảm mức đóng",
+        "confidence": 0.96,
+        "turn_index": 7
+      },
+      "upcoming_expenses": {
+        "quote": "con lớn năm sau vào đại học",
+        "confidence": 0.98,
+        "turn_index": 7
+      },
+      "dependents": {
+        "quote": "hai con của chị vẫn đang phụ thuộc vào thu nhập của chị. Cháu lớn 17 tuổi... cháu nhỏ 13 tuổi",
+        "confidence": 1.0,
+        "turn_index": 9
+      }
+    }
+  },
+  "derived": {
+    "life_stage": "mid_career",
+    "years_to_retirement": 16,
+    "pension_missing_years": 0.0,
+    "unemployment_gap_months": null,
+    "premium_to_income_ratio": 0.175,
+    "has_large_expense_2y": true,
+    "has_chronic_condition": false,
+    "completeness": 0.9090909090909091
+  },
+  "insurance_type": "retirement",
+  "type_decision": {
+    "insurance_type": "retirement",
+    "secondary_type": "life",
+    "type_probabilities": {
+      "unemployment": 0.08,
+      "retirement": 0.58,
+      "life": 0.25,
+      "health": 0.09
+    },
+    "confidence": 0.8,
+    "reasons": [
+      "Mai đặt mục tiêu chuẩn bị cuộc sống và thu nhập khi về già, còn khoảng 16 năm đến tuổi hưu.",
+      "Mai đã có 8 năm BHXH và nguồn thu từ cửa hàng nhỏ, bán online có độ ổn định thấp, nên cần ưu tiên củng cố thu nhập dài hạn.",
+      "Mai có hai con 13 và 17 tuổi đang phụ thuộc tài chính, trong đó con lớn sắp vào đại học, nên bảo vệ tài chính gia đình cũng là nhu cầu đáng cân nhắc tiếp theo."
+    ]
+  },
+  "turn_decisions": [
+    {
+      "next_topic": "social_insurance",
+      "next_topic_reason": "Chị Mai đang lo về thu nhập khi về già nhưng chưa có thông tin về số năm BHXH, tình trạng rút BHXH và lương hưu dự kiến.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "Unknown",
+      "trust_concern": "Unknown",
+      "insurance_type": "retirement",
+      "type_probabilities": {
+        "unemployment": 0.08,
+        "retirement": 0.72,
+        "life": 0.12,
+        "health": 0.08
+      },
+      "confidence": 0.68,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "social_insurance",
+      "next_topic_reason": "Chị ưu tiên chuẩn bị thu nhập khi về già và hiện còn thiếu thông tin về thời gian đóng BHXH, yếu tố quyết định khoảng trống hưu trí.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "Unknown",
+      "trust_concern": "Unknown",
+      "insurance_type": "retirement",
+      "type_probabilities": {
+        "unemployment": 0.08,
+        "retirement": 0.68,
+        "life": 0.14,
+        "health": 0.1
+      },
+      "confidence": 0.72,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "budget_payment",
+      "next_topic_reason": "Chị có thu nhập 20 triệu đồng mỗi tháng nhưng chưa xác định ngân sách và cách đóng phù hợp cho mục tiêu thu nhập khi về già.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "Unknown",
+      "trust_concern": "Unknown",
+      "insurance_type": "retirement",
+      "type_probabilities": {
+        "unemployment": 0.08,
+        "retirement": 0.72,
+        "life": 0.12,
+        "health": 0.08
+      },
+      "confidence": 0.74,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "dependents_family",
+      "next_topic_reason": "Cần biết số người phụ thuộc và mức phụ thuộc tài chính để đánh giá ưu tiên bảo vệ thu nhập, con cái và chuẩn bị hưu trí.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "High",
+      "trust_concern": "Unknown",
+      "insurance_type": "retirement",
+      "type_probabilities": {
+        "unemployment": 0.1,
+        "retirement": 0.4,
+        "life": 0.3,
+        "health": 0.2
+      },
+      "confidence": 0.62,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "health",
+      "next_topic_reason": "Chị có hai con đang phụ thuộc tài chính, trong đó con lớn sắp vào đại học, nên cần làm rõ tình trạng sức khỏe để đánh giá phù hợp bảo hiểm bảo vệ thu nhập và gia đình.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "High",
+      "trust_concern": "Unknown",
+      "insurance_type": "life",
+      "type_probabilities": {
+        "unemployment": 0.1,
+        "retirement": 0.3,
+        "life": 0.45,
+        "health": 0.15
+      },
+      "confidence": 0.72,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "ready_to_recommend",
+      "next_topic_reason": "Chị đã đồng ý xem so sánh sản phẩm và đã nêu rõ mức đóng, hình thức đóng tháng cùng nhu cầu được giảm mức đóng khi con lớn vào đại học.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "High",
+      "trust_concern": "Unknown",
+      "insurance_type": "retirement",
+      "type_probabilities": {
+        "unemployment": 0.03,
+        "retirement": 0.8,
+        "life": 0.12,
+        "health": 0.05
+      },
+      "confidence": 0.9,
+      "customer_intent": "agree_continue"
+    }
+  ],
+  "insights": [
+    {
+      "key": "large_expense_2y",
+      "probability": 0.9,
+      "reason": "Khách có khoản chi lớn sắp tới: nên ưu tiên sản phẩm cho tạm dừng hoặc rút linh hoạt."
+    },
+    {
+      "key": "dependent_without_income",
+      "probability": 0.9,
+      "reason": "Nếu khách mất, người phụ thuộc sẽ mất nguồn thu nhập."
+    }
+  ],
+  "why_ask": {
+    "2": "Vì sao LUMI hỏi câu này: cần làm rõ «quá trình đóng BHXH/BHTN», giả thuyết đang dẫn đầu là «Hưu trí» (72%).",
+    "4": "Vì sao LUMI hỏi câu này: cần làm rõ «quá trình đóng BHXH/BHTN», giả thuyết đang dẫn đầu là «Hưu trí» (68%).",
+    "6": "Vì sao LUMI hỏi câu này: cần làm rõ «ngân sách và cách đóng phí», giả thuyết đang dẫn đầu là «Hưu trí» (72%).",
+    "8": "Vì sao LUMI hỏi câu này: cần làm rõ «gia đình và người phụ thuộc», giả thuyết đang dẫn đầu là «Hưu trí» (40%)."
+  },
+  "weights": {
+    "C1": 16.666666666666668,
+    "C2": 20.833333333333332,
+    "C3": 20.833333333333332,
+    "C4": 20.833333333333332,
+    "C5": 4.166666666666667,
+    "C6": 16.666666666666668
+  },
+  "weight_reasons": [
+    "Thu nhập bấp bênh hoặc ngân sách hạn chế",
+    "Có thể cần tạm dừng hoặc rút tiền"
+  ],
+  "priority_criteria": [
+    "C2",
+    "C3"
+  ],
+  "ranking": [
+    {
+      "rank": 1,
+      "product_id": "ta_huu_linhhoat",
+      "product_name": "Hưu Trí Linh Hoạt",
+      "insurer": "Trường An Life",
+      "premium_display": "Tự chọn, tối thiểu 12 triệu/năm",
+      "fit_score": 93.8,
+      "scores": {
+        "C1": "Meets very well",
+        "C2": "Meets very well",
+        "C3": "Meets well",
+        "C4": "Meets very well",
+        "C5": "Meets very well",
+        "C6": "Meets very well"
+      },
+      "notes": {
+        "C1": "Đúng mối quan tâm chính về thu nhập khi nghỉ hưu và có lựa chọn nhận định kỳ 10–20 năm.",
+        "C2": "Phí tối thiểu 12 triệu/năm thấp hơn ngân sách 42 triệu/năm; phí ban đầu là 2%.",
+        "C3": "Có lãi suất cam kết tối thiểu 2%, nhưng mức minh họa 4,5% vẫn phụ thuộc kịch bản.",
+        "C4": "Cho phép tạm dừng tối đa 24 tháng từ năm thứ 2 và rút một phần sau năm 5 không phạt.",
+        "C5": "Mai 44 tuổi, nằm trong độ tuổi tham gia 18–55; không yêu cầu hợp đồng lao động và thẩm định đơn giản.",
+        "C6": "Có nhiều hình thức chi trả, chuyển khoản tự động và theo dõi quỹ qua ứng dụng."
+      },
+      "filter_notes": [],
+      "strengths": [
+        "Có cam kết lãi tối thiểu",
+        "Tạm dừng đóng phí từ năm thứ 2",
+        "Rút một phần sau năm 5 không phạt"
+      ],
+      "watch_outs": [
+        "Lãi cam kết thấp hơn Hưu An Nhàn (2% so với 3%)"
+      ],
+      "investment_linked": false,
+      "comparison_values": {
+        "Dòng sản phẩm": "Hưu trí tài khoản linh hoạt",
+        "Tuổi tham gia": "18–55",
+        "Phí": "Tự chọn, tối thiểu 12 triệu/năm",
+        "Tuổi bắt đầu nhận": "55–65 (tự chọn)",
+        "Hình thức nhận": "Một lần hoặc định kỳ 10/15/20 năm",
+        "Lãi suất cam kết tối thiểu": "2%/năm",
+        "Lãi suất / kịch bản minh hoạ": "4,5%/năm",
+        "Phí ban đầu": "2% phí đóng",
+        "Phí quản lý quỹ": "Đã tính trong lãi",
+        "Giá trị quỹ dự kiến tuổi 60": "Mẫu: 537 triệu (cam kết) – 670 triệu (minh hoạ)",
+        "Nhận hằng tháng dự kiến": "Mẫu: 2,7 – 3,4 triệu (20 năm)",
+        "Tạm dừng đóng phí": "Tối đa 24 tháng, từ năm thứ 2",
+        "Rút trước hạn": "Rút một phần sau năm 5, không phạt",
+        "Quyền lợi tử vong khi đang tích luỹ": "Giá trị quỹ + 50 triệu",
+        "Chi trả và hỗ trợ": "Chuyển khoản tự động, theo dõi quỹ qua app",
+        "Ưu đãi thuế": "Theo quy định hiện hành, cần kiểm tra",
+        "Thời gian cân nhắc": "21 ngày"
+      }
+    },
+    {
+      "rank": 2,
+      "product_id": "ap_huu_annhan",
+      "product_name": "Hưu An Nhàn",
+      "insurer": "An Phúc Life",
+      "premium_display": "Tự chọn, tối thiểu 15 triệu/năm",
+      "fit_score": 70.0,
+      "scores": {
+        "C1": "Meets very well",
+        "C2": "Meets well",
+        "C3": "Meets well",
+        "C4": "Partly meets",
+        "C5": "Meets very well",
+        "C6": "Meets well"
+      },
+      "notes": {
+        "C1": "Sản phẩm tập trung trực tiếp vào thu nhập hưu trí, đúng mối quan tâm chính của Mai.",
+        "C2": "Phí tối thiểu 15 triệu/năm thấp hơn ngân sách 42 triệu/năm, nhưng có phí ban đầu 3%.",
+        "C3": "Có lãi suất cam kết tối thiểu 3%/năm, còn mức minh họa 4,8% phụ thuộc kịch bản.",
+        "C4": "Cho rút một phần từ năm 1 nhưng phạt 10% trong năm 1–5 và chỉ tạm dừng đóng từ năm 3.",
+        "C5": "Mai 44 tuổi nằm trong độ tuổi tham gia 18–55, không yêu cầu hợp đồng lao động và thẩm định giản lược.",
+        "C6": "Có lựa chọn nhận một lần hoặc định kỳ 10/20 năm, chi trả chuyển khoản và báo cáo quỹ hằng năm."
+      },
+      "filter_notes": [],
+      "strengths": [
+        "Lãi cam kết cao nhất nhóm (3%)",
+        "Quyền lợi tử vong cao (giá trị quỹ + 100 triệu)"
+      ],
+      "watch_outs": [
+        "Chỉ cho tạm dừng từ năm thứ 3",
+        "Phạt 10% nếu rút trong 5 năm đầu"
+      ],
+      "investment_linked": false,
+      "comparison_values": {
+        "Dòng sản phẩm": "Hưu trí truyền thống, cam kết lãi",
+        "Tuổi tham gia": "18–55",
+        "Phí": "Tự chọn, tối thiểu 15 triệu/năm",
+        "Tuổi bắt đầu nhận": "55–65",
+        "Hình thức nhận": "Một lần hoặc định kỳ 10/20 năm",
+        "Lãi suất cam kết tối thiểu": "3%/năm",
+        "Lãi suất / kịch bản minh hoạ": "4,8%/năm",
+        "Phí ban đầu": "3% phí đóng",
+        "Phí quản lý quỹ": "Đã tính trong lãi",
+        "Giá trị quỹ dự kiến tuổi 60": "Mẫu: 580 triệu (cam kết) – 681 triệu (minh hoạ)",
+        "Nhận hằng tháng dự kiến": "Mẫu: 3,2 – 3,8 triệu (20 năm)",
+        "Tạm dừng đóng phí": "Chỉ từ năm thứ 3",
+        "Rút trước hạn": "Phạt 10% (năm 1–5), giảm dần về 0 sau năm 10",
+        "Quyền lợi tử vong khi đang tích luỹ": "Giá trị quỹ + 100 triệu",
+        "Chi trả và hỗ trợ": "Chuyển khoản, báo cáo quỹ hằng năm",
+        "Ưu đãi thuế": "Theo quy định hiện hành, cần kiểm tra",
+        "Thời gian cân nhắc": "21 ngày"
+      }
+    },
+    {
+      "rank": 3,
+      "product_id": "bm_tuonglai",
+      "product_name": "Tương Lai Vững",
+      "insurer": "Bình Minh Insurance",
+      "premium_display": "Tự chọn, tối thiểu 10 triệu/năm",
+      "fit_score": 61.7,
+      "scores": {
+        "C1": "Meets very well",
+        "C2": "Meets well",
+        "C3": "Does not meet",
+        "C4": "Meets well",
+        "C5": "Meets very well",
+        "C6": "Meets well"
+      },
+      "notes": {
+        "C1": "Sản phẩm có tag phù hợp trực tiếp với mối quan tâm thu nhập hưu trí của Mai.",
+        "C2": "Phí tối thiểu 10 triệu/năm thấp hơn ngân sách 42 triệu/năm, nhưng có phí ban đầu 5% và phí quản lý quỹ 1,5%/năm.",
+        "C3": "Không có lãi suất hoặc quyền lợi giá trị quỹ được cam kết; kết quả phụ thuộc các kịch bản thị trường.",
+        "C4": "Cho phép tạm dừng nếu giá trị quỹ đủ khấu trừ phí và rút một phần từ năm 3, nhưng rút trước hạn chịu phí 2%.",
+        "C5": "Mai 44 tuổi, nằm trong độ tuổi tham gia 18–60; sản phẩm không yêu cầu hợp đồng lao động và thẩm định được giản lược.",
+        "C6": "Có thể nhận một lần hoặc định kỳ và theo dõi giá trị quỹ hằng ngày qua ứng dụng, nhưng sản phẩm không nêu chi tiết quy trình chi trả."
+      },
+      "filter_notes": [],
+      "strengths": [
+        "Có thể lãi cao hơn ở kịch bản tốt",
+        "Rút một phần từ năm 3"
+      ],
+      "watch_outs": [
+        "Không cam kết lãi, giá trị quỹ phụ thuộc thị trường",
+        "Phí ban đầu cao (5%)",
+        "Là sản phẩm liên kết đầu tư: tư vấn phải được ghi âm"
+      ],
+      "investment_linked": true,
+      "comparison_values": {
+        "Dòng sản phẩm": "Hưu trí liên kết đơn vị (unit-linked)",
+        "Tuổi tham gia": "18–60",
+        "Phí": "Tự chọn, tối thiểu 10 triệu/năm",
+        "Tuổi bắt đầu nhận": "55–70",
+        "Hình thức nhận": "Một lần hoặc định kỳ",
+        "Lãi suất cam kết tối thiểu": "Không cam kết",
+        "Lãi suất / kịch bản minh hoạ": "1,5% / 4,5% / 6,5% (thấp / vừa / cao, sau phí quản lý quỹ)",
+        "Phí ban đầu": "5% phí đóng",
+        "Phí quản lý quỹ": "1,5%/năm (đã trừ trong kịch bản)",
+        "Giá trị quỹ dự kiến tuổi 60": "Mẫu: 498 / 650 / 780 triệu",
+        "Nhận hằng tháng dự kiến": "Mẫu: 2,5 / 3,3 / 3,9 triệu (20 năm)",
+        "Tạm dừng đóng phí": "Được, nếu giá trị quỹ đủ khấu trừ phí",
+        "Rút trước hạn": "Rút một phần sau năm 3, phí 2%",
+        "Quyền lợi tử vong khi đang tích luỹ": "Giá trị quỹ",
+        "Chi trả và hỗ trợ": "Theo dõi giá trị quỹ hằng ngày qua app",
+        "Ưu đãi thuế": "Theo quy định hiện hành, cần kiểm tra",
+        "Thời gian cân nhắc": "21 ngày"
+      }
+    }
+  ],
+  "excluded": [],
+  "scenario": {
+    "kind": "bars",
+    "title": "Thu nhập hằng tháng ước tính khi nghỉ hưu",
+    "lines": [
+      [
+        "Lương hưu BHXH",
+        2520000
+      ],
+      [
+        "Hưu Trí Linh Hoạt (theo lãi cam kết)",
+        2963387
+      ],
+      [
+        "Hưu Trí Linh Hoạt (theo lãi minh hoạ)",
+        3700590
+      ],
+      [
+        "Tổng ước tính thấp",
+        5483387
+      ],
+      [
+        "Tổng ước tính cao",
+        6220590
+      ]
+    ],
+    "note": "Ước tính theo giá trị danh nghĩa; lạm phát sẽ làm giảm sức mua sau nhiều năm."
+  }
+}

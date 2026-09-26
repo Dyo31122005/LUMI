@@ -1,0 +1,48 @@
+id: duc
+display_name: Đức
+mode: auto
+opening: "Chào cháu. Tôi là Đức, 60 tuổi. Tôi muốn tìm hiểu về bảo hiểm, nhưng nói trước là tôi hơi ngại, nghe nhiều người kể mua bảo hiểm xong đến lúc cần thì không được trả tiền."
+address:
+  assistant_self: cháu
+  customer: bác
+  tone: lễ phép, chậm rãi, cẩn trọng
+facts:
+  name: Đức
+  age: 60
+  gender: male
+  employment_status: near_retirement
+  occupation: "Kỹ sư xây dựng ở công ty nhà nước, nghỉ hưu năm sau"
+  retirement_timing: "Nghỉ hưu năm sau"
+  bhxh_years: 35
+  expected_pension: 10000000
+  dependents:
+    - relation: Vợ
+      age: 57
+      financially_dependent: true
+  spouse_income: 0
+  savings:
+    amount: 1200000000
+    earmark: Tiền dự phòng và bảo vệ vợ
+  assets: ["Nhà đang ở"]
+  health_status: fair
+  chronic_conditions: ["Tăng huyết áp đã kiểm soát bằng thuốc"]
+  condition_controlled: true
+  smoker: false
+  existing_insurance: ["BHYT"]
+  primary_concerns: [spouse_protection, not_burden_children, legacy]
+  denied_concerns: [medical_cost]
+  goals: "Để lại khoản chắc chắn cho vợ, không để các con phải gánh"
+  trust_concern: High
+  budget_single: 400000000
+  budget_annual: 50000000
+  payment_preference: single
+  beneficiaries: ["Vợ", "Các cháu"]
+disclosure_order:
+  - basics
+  - dependents_family
+  - job_income
+  - goals_concerns
+  - health
+  - existing_coverage
+  - budget_payment
+completion_condition: "Đã xác nhận ưu tiên khoản bảo vệ chắc chắn cho vợ và ngân sách đóng một lần."

@@ -1,0 +1,650 @@
+{
+  "persona_id": "vuong",
+  "address": {
+    "assistant_self": "mình",
+    "customer": "Vương",
+    "tone": "thân mật, viết thường, có thể dùng emoji nhẹ"
+  },
+  "state": "FOLLOW_UP",
+  "question_count": 8,
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Xin chào! Tôi là LUMI, trợ lý tư vấn bảo hiểm. Tôi sẽ hỏi một vài câu để hiểu hoàn cảnh của bạn, sau đó gợi ý loại bảo hiểm phù hợp. Thông tin chỉ dùng cho buổi tư vấn này. Bạn đang quan tâm hoặc lo lắng điều gì?",
+      "turn_index": 0
+    },
+    {
+      "role": "customer",
+      "content": "chào bạn, mình là Vương, 22 tuổi. mình mới tốt nghiệp hồi tháng 7, đang đi xin việc mà thấy hơi áp lực",
+      "turn_index": 1
+    },
+    {
+      "role": "assistant",
+      "content": "vương đang tìm việc trong ngành gì, và hiện đã có cơ hội nào triển vọng chưa?",
+      "turn_index": 2
+    },
+    {
+      "role": "customer",
+      "content": "mình đang tìm việc trong ngành marketing. hiện mình có một cơ hội khá triển vọng là phỏng vấn vòng cuối ở một startup fintech, lương dự kiến khoảng 11 triệu mỗi tháng.",
+      "turn_index": 3
+    },
+    {
+      "role": "assistant",
+      "content": "vương đã từng đi làm theo hợp đồng và đóng bảo hiểm xã hội chưa? nếu rồi thì khoảng bao lâu?",
+      "turn_index": 4
+    },
+    {
+      "role": "customer",
+      "content": "chưa, mình chưa từng đi làm theo hợp đồng nên cũng chưa đóng bảo hiểm xã hội.",
+      "turn_index": 5
+    },
+    {
+      "role": "assistant",
+      "content": "hiện giờ vương đang trang trải chi phí sinh hoạt bằng nguồn nào vậy?",
+      "turn_index": 6
+    },
+    {
+      "role": "customer",
+      "content": "hiện tại gia đình hỗ trợ mình 3 triệu mỗi tháng, ngoài ra mình có nhận freelance viết content nhưng thu nhập không đều, khoảng 0–4 triệu mỗi tháng.",
+      "turn_index": 7
+    },
+    {
+      "role": "assistant",
+      "content": "Vương hiện có khoản vay hoặc trả góp nào cần thanh toán hằng tháng không?",
+      "turn_index": 8
+    },
+    {
+      "role": "customer",
+      "content": "mình đang trả góp laptop 1,2 triệu mỗi tháng, còn khoảng 10 tháng nữa.",
+      "turn_index": 9
+    },
+    {
+      "role": "assistant",
+      "content": "Vương ơi, chi tiêu hằng tháng của Vương hoặc cả nhà khoảng bao nhiêu vậy?",
+      "turn_index": 10
+    },
+    {
+      "role": "customer",
+      "content": "mỗi tháng mình chi khoảng 5,5 triệu, trong đó có 1,2 triệu trả góp laptop ạ",
+      "turn_index": 11
+    },
+    {
+      "role": "assistant",
+      "content": "nếu điều đó xảy ra, Vương mong bảo hiểm có thể giúp mình điều gì nhất?",
+      "turn_index": 12
+    },
+    {
+      "role": "customer",
+      "content": "mình mong nhất là có tiền cầm cự vài tháng nếu mất việc, để vẫn trang trải được chi phí sinh hoạt và trả đúng khoản góp laptop ạ",
+      "turn_index": 13
+    },
+    {
+      "role": "assistant",
+      "content": "Hiện có ai đang phụ thuộc vào thu nhập của Vương không, chẳng hạn như vợ/chồng, con nhỏ hoặc bố mẹ?",
+      "turn_index": 14
+    },
+    {
+      "role": "customer",
+      "content": "hiện tại không có ai phụ thuộc vào thu nhập của mình ạ",
+      "turn_index": 15
+    },
+    {
+      "role": "assistant",
+      "content": "Dạo này sức khoẻ của Vương thế nào rồi?",
+      "turn_index": 16
+    },
+    {
+      "role": "customer",
+      "content": "sức khoẻ của mình hiện tại tốt ạ 😊",
+      "turn_index": 17
+    },
+    {
+      "role": "assistant",
+      "content": "Vương kiểm tra giúp mình vài điểm chính:\n\n- Vương 22 tuổi, đang tìm việc trong ngành marketing và hiện ở vòng phỏng vấn cuối tại một startup fintech.\n- Thu nhập hiện chưa ổn định, đến từ gia đình hỗ trợ và công việc freelance viết content.\n- Chi phí sinh hoạt khoảng 5,5 triệu mỗi tháng, cùng khoản trả góp laptop 1,2 triệu mỗi tháng.\n- Vương chưa có hợp đồng lao động, chưa đóng bảo hiểm xã hội và không có người phụ thuộc.\n\nLoại bảo hiểm mình đề xuất là **Bảo hiểm thất nghiệp / bảo vệ thu nhập khi mất việc**.\n\nLý do đề xuất:\n\n- Vương đang trong giai đoạn tìm việc và thu nhập không đều, nên nhu cầu duy trì dòng tiền khi có gián đoạn việc làm là ưu tiên rõ ràng.\n- Vương chia sẻ mong muốn có tiền cầm cự vài tháng nếu mất việc, để tiếp tục trang trải chi phí sinh hoạt và trả đúng khoản góp laptop.\n- Vương chưa có người phụ thuộc, chưa đóng bảo hiểm xã hội và sức khỏe hiện tại tốt, nên nhu cầu về bảo hiểm nhân thọ hoặc hưu trí hiện chưa nổi bật bằng nhu cầu bảo vệ thu nhập.\n\nCác loại chưa ưu tiên:\n\n- **Bảo hiểm hưu trí:** chưa phải nhu cầu trước mắt vì Vương còn trẻ và chưa đóng bảo hiểm xã hội.\n- **Bảo hiểm nhân thọ:** hiện chưa có người phụ thuộc vào thu nhập của Vương.\n- **Bảo hiểm sức khỏe:** sức khỏe hiện tại tốt và mối lo chính của Vương là mất việc, không phải chi phí y tế.\n\nVương có muốn mình so sánh các sản phẩm cụ thể trong nhóm bảo vệ thu nhập khi mất việc không?\n\nThông tin trên chỉ mang tính tham khảo. Bạn nên làm việc với tư vấn viên có chứng chỉ trước khi mua bảo hiểm.",
+      "turn_index": 18
+    },
+    {
+      "role": "customer",
+      "content": "mình muốn so sánh các sản phẩm cụ thể trong nhóm bảo vệ thu nhập khi mất việc ạ",
+      "turn_index": 19
+    },
+    {
+      "role": "assistant",
+      "content": "Vương đang ưu tiên:\n\n- Khả năng chi trả, vì thu nhập hoặc ngân sách có thể còn hạn chế.\n- Đáp ứng nhu cầu chính, đồng thời có thể cần tạm dừng hoặc rút tiền khi cần.\n\nTheo thứ tự phù hợp:\n\n- **Hạng một: GenZ Bảo Vệ – Trường An Life**\n  - Điểm mạnh: Phí **59.000đ/tháng**, điều kiện là có hợp đồng lao động từ **1 tháng**, và cho tạm dừng đóng phí.\n  - Điểm cần lưu ý: Có thời gian chờ **90 ngày**; tổng quyền lợi thấp, ở mức **4 triệu**; không chi trả nếu không đạt thử việc.\n  - Sản phẩm chỉ đăng ký được sau khi Vương ký hợp đồng lao động. Gói này phù hợp hơn với ưu tiên kiểm soát chi phí và khả năng tạm dừng đóng phí.\n\n- **Hạng hai: Việc Làm Vững – Bình Minh Insurance**\n  - Điểm mạnh: Quyền lợi cao nhất trong nhóm, kèm bảo hiểm tai nạn **100 triệu**.\n  - Điểm cần lưu ý: Phải qua thử việc mới mua được; phí **99.000đ/tháng** cao hơn các lựa chọn khác; hợp đồng kéo dài **12 tháng** và chưa nêu cơ chế tạm dừng hoặc giảm phí.\n  - Sản phẩm chỉ đăng ký được sau khi Vương ký hợp đồng lao động và đã qua thử việc. Vì vậy, hiện tại sản phẩm chưa đáp ứng ngay tình trạng đang tìm việc.\n\n- **Hạng ba: Trả Góp An Tâm – Sao Việt Assurance**\n  - Điểm mạnh: Phí thấp nhất, ở mức **35.000đ/tháng**; thời gian chờ ngắn, **30 ngày**; phù hợp với khoản trả góp đang có.\n  - Điểm cần lưu ý: Chỉ trả thay tiền góp, không hỗ trợ chi phí sinh hoạt; hợp đồng tự kết thúc khi trả hết khoản vay và không có giá trị hoàn lại.\n  - Sản phẩm cũng chỉ đăng ký được sau khi Vương ký hợp đồng lao động. Sản phẩm cần khoản vay đang hiệu lực nên phạm vi hỗ trợ hẹp hơn nhu cầu trang trải chung.\n\n**Tình huống minh hoạ: Nếu mất việc trong năm đầu đi làm**\n\n- GenZ Bảo Vệ: hỗ trợ **4 triệu**.\n- Việc Làm Vững: hỗ trợ **9 triệu**.\n- Tổng hỗ trợ ước tính: **13 triệu**.\n- Bảo hiểm thất nghiệp Nhà nước chi trả trong giai đoạn này: **0**.\n\nLý do là Vương còn thiếu **12 tháng** đóng bảo hiểm thất nghiệp mới đủ điều kiện hưởng trợ cấp Nhà nước.\n\nDữ liệu minh hoạ · Doanh nghiệp và sản phẩm trong demo là hư cấu.\n\nThông tin trên chỉ mang tính tham khảo. Bạn nên làm việc với tư vấn viên có chứng chỉ trước khi mua bảo hiểm.",
+      "turn_index": 20
+    }
+  ],
+  "profile": {
+    "name": "Vương",
+    "age": 22,
+    "gender": null,
+    "location": null,
+    "marital_status": null,
+    "employment_status": "job_seeking",
+    "occupation": "marketing",
+    "job_prospect": "phỏng vấn vòng cuối ở một startup fintech",
+    "expected_income": 11000000.0,
+    "has_employment_contract": false,
+    "months_in_current_job": null,
+    "monthly_income": null,
+    "income_sources": [
+      "gia đình hỗ trợ",
+      "freelance viết content"
+    ],
+    "income_stability": "low",
+    "retirement_timing": null,
+    "expected_pension": null,
+    "dependents": [],
+    "spouse_income": null,
+    "monthly_expenses": 5500000.0,
+    "savings": null,
+    "assets": null,
+    "debts": [
+      {
+        "type": "trả góp laptop",
+        "monthly": 1200000.0,
+        "remaining_months": null
+      }
+    ],
+    "upcoming_expenses": null,
+    "bhxh_years": 0.0,
+    "bhxh_withdrawn": null,
+    "bhtn_months": null,
+    "existing_insurance": null,
+    "health_status": "good",
+    "chronic_conditions": null,
+    "condition_controlled": null,
+    "smoker": null,
+    "primary_concerns": [
+      "job_loss"
+    ],
+    "denied_concerns": null,
+    "goals": "Có tiền cầm cự vài tháng nếu mất việc để vẫn trang trải chi phí sinh hoạt và trả đúng khoản góp laptop",
+    "risk_tolerance": null,
+    "need_flexibility": "High",
+    "trust_concern": null,
+    "budget_monthly": null,
+    "budget_annual": null,
+    "budget_single": null,
+    "payment_preference": null,
+    "beneficiaries": null,
+    "provenance": {
+      "name": {
+        "quote": "mình là Vương",
+        "confidence": 1.0,
+        "turn_index": 1
+      },
+      "age": {
+        "quote": "22 tuổi",
+        "confidence": 1.0,
+        "turn_index": 1
+      },
+      "employment_status": {
+        "quote": "đang đi xin việc",
+        "confidence": 1.0,
+        "turn_index": 1
+      },
+      "primary_concerns": {
+        "quote": "thấy hơi áp lực",
+        "confidence": 0.48,
+        "turn_index": 1
+      },
+      "occupation": {
+        "quote": "mình đang tìm việc trong ngành marketing",
+        "confidence": 0.99,
+        "turn_index": 3
+      },
+      "job_prospect": {
+        "quote": "một cơ hội khá triển vọng là phỏng vấn vòng cuối ở một startup fintech",
+        "confidence": 0.98,
+        "turn_index": 3
+      },
+      "expected_income": {
+        "quote": "lương dự kiến khoảng 11 triệu mỗi tháng",
+        "confidence": 0.99,
+        "turn_index": 3
+      },
+      "has_employment_contract": {
+        "quote": "mình chưa từng đi làm theo hợp đồng",
+        "confidence": 0.99,
+        "turn_index": 5
+      },
+      "bhxh_years": {
+        "quote": "chưa đóng bảo hiểm xã hội",
+        "confidence": 0.98,
+        "turn_index": 5
+      },
+      "income_sources": {
+        "quote": "gia đình hỗ trợ mình 3 triệu mỗi tháng, ngoài ra mình có nhận freelance viết content",
+        "confidence": 0.99,
+        "turn_index": 7
+      },
+      "income_stability": {
+        "quote": "thu nhập không đều",
+        "confidence": 0.99,
+        "turn_index": 7
+      },
+      "debts": {
+        "quote": "1,2 triệu trả góp laptop",
+        "confidence": 0.99,
+        "turn_index": 11
+      },
+      "monthly_expenses": {
+        "quote": "mỗi tháng mình chi khoảng 5,5 triệu",
+        "confidence": 0.99,
+        "turn_index": 11
+      },
+      "goals": {
+        "quote": "mình mong nhất là có tiền cầm cự vài tháng nếu mất việc, để vẫn trang trải được chi phí sinh hoạt và trả đúng khoản góp laptop ạ",
+        "confidence": 0.99,
+        "turn_index": 13
+      },
+      "dependents": {
+        "quote": "hiện tại không có ai phụ thuộc vào thu nhập của mình ạ",
+        "confidence": 0.99,
+        "turn_index": 15
+      },
+      "health_status": {
+        "quote": "sức khoẻ của mình hiện tại tốt ạ",
+        "confidence": 0.99,
+        "turn_index": 17
+      }
+    }
+  },
+  "derived": {
+    "life_stage": "young_adult",
+    "years_to_retirement": 38,
+    "pension_missing_years": 0.0,
+    "unemployment_gap_months": null,
+    "premium_to_income_ratio": null,
+    "has_large_expense_2y": false,
+    "has_chronic_condition": false,
+    "completeness": 0.6666666666666666
+  },
+  "insurance_type": "unemployment",
+  "type_decision": {
+    "insurance_type": "unemployment",
+    "secondary_type": null,
+    "type_probabilities": {
+      "unemployment": 0.9,
+      "retirement": 0.03,
+      "life": 0.02,
+      "health": 0.05
+    },
+    "confidence": 0.92,
+    "reasons": [
+      "Vương đang tìm việc, thu nhập hiện tại không ổn định và chỉ dựa vào gia đình hỗ trợ cùng công việc freelance.",
+      "Mối lo chính là mất việc và mục tiêu cụ thể là có tiền cầm cự vài tháng để trang trải chi phí sinh hoạt.",
+      "Vương không có người phụ thuộc và mới có 0 năm BHXH, nên nhu cầu hưu trí hoặc bảo hiểm nhân thọ hiện chưa nổi bật."
+    ]
+  },
+  "turn_decisions": [
+    {
+      "next_topic": "job_income",
+      "next_topic_reason": "Bạn đang tìm việc sau khi mới tốt nghiệp và cảm thấy áp lực, nên cần làm rõ triển vọng việc làm và khả năng có thu nhập trước.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "Unknown",
+      "trust_concern": "Unknown",
+      "insurance_type": "unemployment",
+      "type_probabilities": {
+        "unemployment": 0.75,
+        "retirement": 0.08,
+        "life": 0.07,
+        "health": 0.1
+      },
+      "confidence": 0.7,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "social_insurance",
+      "next_topic_reason": "Vương đang tìm việc và lo ngại mất việc, nên cần làm rõ số tháng đã tham gia BHTN để đánh giá khoảng trống bảo vệ thất nghiệp.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "Unknown",
+      "trust_concern": "Unknown",
+      "insurance_type": "unemployment",
+      "type_probabilities": {
+        "unemployment": 0.7,
+        "retirement": 0.1,
+        "life": 0.1,
+        "health": 0.1
+      },
+      "confidence": 0.62,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "job_income",
+      "next_topic_reason": "Vương đang tìm việc và chưa có thu nhập hiện tại, nên cần làm rõ mức độ ổn định thu nhập dự kiến trước khi đánh giá nhu cầu bảo hiểm thất nghiệp.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "Unknown",
+      "trust_concern": "Unknown",
+      "insurance_type": "unemployment",
+      "type_probabilities": {
+        "unemployment": 0.72,
+        "retirement": 0.1,
+        "life": 0.08,
+        "health": 0.1
+      },
+      "confidence": 0.78,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "debts_expenses",
+      "next_topic_reason": "Thu nhập hiện tại của Vương chưa ổn định và chưa rõ chi phí sinh hoạt, khoản nợ hoặc tiền tiết kiệm để đánh giá mức độ cần dự phòng khi thất nghiệp.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "Unknown",
+      "trust_concern": "Unknown",
+      "insurance_type": "unemployment",
+      "type_probabilities": {
+        "unemployment": 0.75,
+        "retirement": 0.08,
+        "life": 0.07,
+        "health": 0.1
+      },
+      "confidence": 0.74,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "debts_expenses",
+      "next_topic_reason": "Khoản trả góp laptop 1,2 triệu mỗi tháng trong 10 tháng cho thấy cần làm rõ tổng chi phí và khả năng dự phòng khi chưa có việc ổn định.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "High",
+      "trust_concern": "Unknown",
+      "insurance_type": "unemployment",
+      "type_probabilities": {
+        "unemployment": 0.7,
+        "retirement": 0.1,
+        "life": 0.1,
+        "health": 0.1
+      },
+      "confidence": 0.72,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "social_insurance",
+      "next_topic_reason": "Vương đang tìm việc và lo mất việc, nên cần biết số tháng đã đóng BHTN để xác định khoảng trống bảo vệ thất nghiệp.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "High",
+      "trust_concern": "Unknown",
+      "insurance_type": "unemployment",
+      "type_probabilities": {
+        "unemployment": 0.65,
+        "retirement": 0.15,
+        "life": 0.1,
+        "health": 0.1
+      },
+      "confidence": 0.72,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "social_insurance",
+      "next_topic_reason": "Mục tiêu chính của Vương là có tiền cầm cự khi mất việc, nên cần làm rõ số tháng đóng BHTN hiện có để đánh giá khoảng bảo vệ thất nghiệp.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "High",
+      "trust_concern": "Unknown",
+      "insurance_type": "unemployment",
+      "type_probabilities": {
+        "unemployment": 0.9,
+        "retirement": 0.03,
+        "life": 0.04,
+        "health": 0.03
+      },
+      "confidence": 0.78,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "social_insurance",
+      "next_topic_reason": "Vương không có người phụ thuộc và mối lo chính là có tiền cầm cự khi mất việc, nên cần làm rõ số tháng đã đóng BHTN để đánh giá khoảng hỗ trợ thất nghiệp hiện có.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "High",
+      "trust_concern": "Unknown",
+      "insurance_type": "unemployment",
+      "type_probabilities": {
+        "unemployment": 0.8,
+        "retirement": 0.05,
+        "life": 0.03,
+        "health": 0.12
+      },
+      "confidence": 0.78,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "social_insurance",
+      "next_topic_reason": "Vương đang tìm việc và lo chi phí khi mất việc, nên cần biết số tháng BHTN đã đóng để đánh giá khả năng hỗ trợ thực tế.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "High",
+      "trust_concern": "Unknown",
+      "insurance_type": "unemployment",
+      "type_probabilities": {
+        "unemployment": 0.8,
+        "retirement": 0.05,
+        "life": 0.05,
+        "health": 0.1
+      },
+      "confidence": 0.82,
+      "customer_intent": "add_or_correct_info"
+    },
+    {
+      "next_topic": "budget_payment",
+      "next_topic_reason": "Vương đã đồng ý so sánh sản phẩm, nên cần làm rõ ngân sách và cách thanh toán để đối chiếu mức phí phù hợp với chi phí sinh hoạt 5,5 triệu đồng và khoản trả góp laptop 1,2 triệu đồng mỗi tháng.",
+      "risk_tolerance": "Unknown",
+      "need_flexibility": "High",
+      "trust_concern": "Unknown",
+      "insurance_type": "unemployment",
+      "type_probabilities": {
+        "unemployment": 0.88,
+        "retirement": 0.03,
+        "life": 0.03,
+        "health": 0.06
+      },
+      "confidence": 0.88,
+      "customer_intent": "agree_continue"
+    }
+  ],
+  "insights": [],
+  "why_ask": {
+    "2": "Vì sao LUMI hỏi câu này: cần làm rõ «công việc và thu nhập», giả thuyết đang dẫn đầu là «Thất nghiệp» (75%).",
+    "4": "Vì sao LUMI hỏi câu này: cần làm rõ «quá trình đóng BHXH/BHTN», giả thuyết đang dẫn đầu là «Thất nghiệp» (70%).",
+    "6": "Vì sao LUMI hỏi câu này: cần làm rõ «công việc và thu nhập», giả thuyết đang dẫn đầu là «Thất nghiệp» (72%).",
+    "8": "Vì sao LUMI hỏi câu này: cần làm rõ «chi tiêu và khoản nợ», giả thuyết đang dẫn đầu là «Thất nghiệp» (75%).",
+    "10": "Vì sao LUMI hỏi câu này: cần làm rõ «chi tiêu và khoản nợ», giả thuyết đang dẫn đầu là «Thất nghiệp» (70%).",
+    "12": "Vì sao LUMI hỏi câu này: cần làm rõ «quá trình đóng BHXH/BHTN», giả thuyết đang dẫn đầu là «Thất nghiệp» (65%).",
+    "14": "Vì sao LUMI hỏi câu này: cần làm rõ «quá trình đóng BHXH/BHTN», giả thuyết đang dẫn đầu là «Thất nghiệp» (90%).",
+    "16": "Vì sao LUMI hỏi câu này: cần làm rõ «quá trình đóng BHXH/BHTN», giả thuyết đang dẫn đầu là «Thất nghiệp» (80%)."
+  },
+  "weights": {
+    "C1": 20.833333333333332,
+    "C2": 33.333333333333336,
+    "C3": 4.166666666666667,
+    "C4": 20.833333333333332,
+    "C5": 16.666666666666668,
+    "C6": 4.166666666666667
+  },
+  "weight_reasons": [
+    "Thu nhập bấp bênh hoặc ngân sách hạn chế",
+    "Có thể cần tạm dừng hoặc rút tiền"
+  ],
+  "priority_criteria": [
+    "C2",
+    "C1"
+  ],
+  "ranking": [
+    {
+      "rank": 1,
+      "product_id": "ta_genz",
+      "product_name": "GenZ Bảo Vệ",
+      "insurer": "Trường An Life",
+      "premium_display": "59.000đ/tháng",
+      "fit_score": 72.5,
+      "scores": {
+        "C1": "Meets well",
+        "C2": "Meets well",
+        "C3": "Meets very well",
+        "C4": "Meets very well",
+        "C5": "Partly meets",
+        "C6": "Meets well"
+      },
+      "notes": {
+        "C1": "Đúng mối lo mất việc, nhưng chỉ chi trả tối đa 2 tháng và tổng 4 triệu.",
+        "C2": "Phí cố định 59.000đ/tháng, thấp so với mức chi tiêu 5,5 triệu đồng/tháng, nhưng khách chưa nêu ngân sách bảo hiểm.",
+        "C3": "Quyền lợi chi trả cố định, không phụ thuộc lợi nhuận thị trường.",
+        "C4": "Cho tạm dừng đóng phí tối đa 3 tháng và hủy bất kỳ lúc nào.",
+        "C5": "Khách 22 tuổi và không cần thẩm định sức khỏe, nhưng hiện chưa có HĐLĐ và phải chờ 90 ngày.",
+        "C6": "Yêu cầu bồi thường qua app, thời gian xử lý nêu là 5 ngày làm việc."
+      },
+      "filter_notes": [
+        "Đăng ký sau khi ký hợp đồng lao động"
+      ],
+      "strengths": [
+        "Phí thấp",
+        "Điều kiện dễ: HĐLĐ từ 1 tháng",
+        "Cho tạm dừng đóng phí"
+      ],
+      "watch_outs": [
+        "Thời gian chờ 90 ngày",
+        "Tổng quyền lợi thấp (4 triệu)",
+        "Không chi trả nếu không đạt thử việc"
+      ],
+      "investment_linked": false,
+      "comparison_values": {
+        "Phí": "59.000đ/tháng",
+        "Tuổi tham gia": "18–35",
+        "Điều kiện tham gia": "Có HĐLĐ từ 1 tháng",
+        "Sự kiện được chi trả": "Mất việc không tự nguyện (cắt giảm, giải thể...)",
+        "Mức chi trả": "2 triệu/tháng",
+        "Thời gian chi trả tối đa": "2 tháng",
+        "Tổng quyền lợi tối đa": "4 triệu + voucher khoá học 1 triệu",
+        "Thời gian chờ": "90 ngày",
+        "Loại trừ chính": "Tự nghỉ, không đạt thử việc, bị sa thải do kỷ luật",
+        "Linh hoạt": "Tạm dừng tối đa 3 tháng, huỷ bất kỳ lúc nào",
+        "Quyền lợi bổ sung": "Voucher khoá học kỹ năng 1 triệu, hỗ trợ viết CV",
+        "Bồi thường": "Qua app, 5 ngày làm việc"
+      }
+    },
+    {
+      "rank": 2,
+      "product_id": "bm_vieclam",
+      "product_name": "Việc Làm Vững",
+      "insurer": "Bình Minh Insurance",
+      "premium_display": "99.000đ/tháng",
+      "fit_score": 66.2,
+      "scores": {
+        "C1": "Meets very well",
+        "C2": "Meets well",
+        "C3": "Meets very well",
+        "C4": "Partly meets",
+        "C5": "Partly meets",
+        "C6": "Meets well"
+      },
+      "notes": {
+        "C1": "Chi trả cố định 3 triệu/tháng tối đa 3 tháng, đúng mối lo mất việc và cần trang trải chi phí.",
+        "C2": "Phí 99.000đ/tháng tương đối thấp so với thu nhập kỳ vọng 11 triệu đồng, nhưng ngân sách bảo hiểm cụ thể chưa rõ.",
+        "C3": "Quyền lợi cố định và không gắn với đầu tư hay lợi nhuận thị trường.",
+        "C4": "Được đóng phí theo tháng nhưng hợp đồng 12 tháng và không có giá trị hoàn lại; chưa nêu cơ chế tạm dừng hoặc giảm phí.",
+        "C5": "Tuổi 22 nằm trong giới hạn 18–45, nhưng phải có hợp đồng lao động và đã qua thử việc trong khi hiện khách đang tìm việc.",
+        "C6": "Cho phép yêu cầu bồi thường online hoặc qua đại lý, với thời hạn xử lý nêu là 10 ngày."
+      },
+      "filter_notes": [
+        "Đăng ký sau khi ký hợp đồng lao động",
+        "Chỉ mua được sau khi qua thử việc"
+      ],
+      "strengths": [
+        "Quyền lợi cao nhất nhóm",
+        "Kèm bảo hiểm tai nạn 100 triệu"
+      ],
+      "watch_outs": [
+        "Phải qua thử việc mới mua được",
+        "Phí cao hơn các gói khác"
+      ],
+      "investment_linked": false,
+      "comparison_values": {
+        "Phí": "99.000đ/tháng",
+        "Tuổi tham gia": "18–45",
+        "Điều kiện tham gia": "Đã qua thử việc",
+        "Sự kiện được chi trả": "Mất việc không tự nguyện",
+        "Mức chi trả": "3 triệu/tháng",
+        "Thời gian chi trả tối đa": "3 tháng",
+        "Tổng quyền lợi tối đa": "9 triệu + tai nạn 100 triệu",
+        "Thời gian chờ": "60 ngày",
+        "Loại trừ chính": "Tự nghỉ, không đạt thử việc, bị sa thải do kỷ luật, mất việc trong thời gian chờ",
+        "Linh hoạt": "Hợp đồng 12 tháng, đóng theo tháng",
+        "Quyền lợi bổ sung": "Bảo hiểm tai nạn 100 triệu",
+        "Bồi thường": "Online hoặc đại lý, 10 ngày"
+      }
+    },
+    {
+      "rank": 3,
+      "product_id": "sv_tragop",
+      "product_name": "Trả Góp An Tâm",
+      "insurer": "Sao Việt Assurance",
+      "premium_display": "35.000đ/tháng",
+      "fit_score": 60.0,
+      "scores": {
+        "C1": "Meets well",
+        "C2": "Meets well",
+        "C3": "Meets very well",
+        "C4": "Partly meets",
+        "C5": "Partly meets",
+        "C6": "Meets well"
+      },
+      "notes": {
+        "C1": "Đúng mối lo mất việc và giúp trả khoản góp laptop, nhưng không chi trả chi phí sinh hoạt.",
+        "C2": "Phí 35.000đ/tháng khá thấp, nhưng hồ sơ chưa có ngân sách bảo hiểm cụ thể.",
+        "C3": "Quyền lợi là khoản chi trả cố định, không phụ thuộc lợi nhuận thị trường.",
+        "C4": "Phí thấp nhưng hợp đồng tự kết thúc khi trả hết khoản vay và không có giá trị hoàn lại.",
+        "C5": "Tuổi 22 phù hợp, nhưng khách chưa có việc làm và sản phẩm yêu cầu hợp đồng lao động cùng khoản vay đang hiệu lực.",
+        "C6": "Kênh yêu cầu qua đơn vị cho vay và thời hạn xử lý 7 ngày được nêu rõ."
+      },
+      "filter_notes": [
+        "Đăng ký sau khi ký hợp đồng lao động"
+      ],
+      "strengths": [
+        "Phí thấp nhất",
+        "Thời gian chờ ngắn (30 ngày)",
+        "Đúng với khoản trả góp đang có"
+      ],
+      "watch_outs": [
+        "Chỉ trả thay tiền góp, không hỗ trợ chi tiêu sinh hoạt",
+        "Tự kết thúc khi trả hết khoản vay"
+      ],
+      "investment_linked": false,
+      "comparison_values": {
+        "Phí": "35.000đ/tháng",
+        "Tuổi tham gia": "18–55",
+        "Điều kiện tham gia": "Có khoản trả góp đang hiệu lực + đang có việc làm",
+        "Sự kiện được chi trả": "Mất việc không tự nguyện",
+        "Mức chi trả": "Trả thay kỳ góp, tối đa 1,5 triệu/kỳ",
+        "Thời gian chi trả tối đa": "6 kỳ",
+        "Tổng quyền lợi tối đa": "6 kỳ góp, tối đa 9 triệu (tính lại theo khoản góp của khách)",
+        "Thời gian chờ": "30 ngày",
+        "Loại trừ chính": "Tự nghỉ, không đạt thử việc, bị sa thải do kỷ luật, khoản vay đã quá hạn trước khi mất việc",
+        "Linh hoạt": "Tự kết thúc khi trả hết khoản vay",
+        "Quyền lợi bổ sung": "Không",
+        "Bồi thường": "Qua đơn vị cho vay, 7 ngày"
+      }
+    }
+  ],
+  "excluded": [],
+  "scenario": {
+    "kind": "timeline",
+    "title": "Nếu mất việc trong năm đầu đi làm",
+    "lines": [
+      [
+        "GenZ Bảo Vệ",
+        4000000.0
+      ],
+      [
+        "Việc Làm Vững",
+        9000000.0
+      ],
+      [
+        "Tổng hỗ trợ ước tính",
+        13000000.0
+      ],
+      [
+        "Bảo hiểm thất nghiệp Nhà nước chi trả trong giai đoạn này",
+        0.0
+      ]
+    ],
+    "note": "Còn thiếu 12 tháng đóng BHTN mới đủ điều kiện hưởng trợ cấp Nhà nước."
+  }
+}

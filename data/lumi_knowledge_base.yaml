@@ -1,0 +1,1614 @@
+# =====================================================================
+# LUMI KNOWLEDGE BASE
+# File dữ liệu duy nhất để các agent tra cứu khi đề xuất bảo hiểm.
+# Đọc bằng: yaml.safe_load(open("lumi_knowledge_base.yaml", encoding="utf-8"))
+# =====================================================================
+
+meta:
+  name: "LUMI Knowledge Base"
+  version: "1.0"
+  updated_at: "2026-09-26"
+  language: "vi"
+  currency: "VND"
+  disclaimer: >-
+    Các doanh nghiệp và sản phẩm có is_fictional: true là hư cấu, số liệu chỉ để minh hoạ cho demo.
+    Các quy định Nhà nước có trường verified: true là đã đối chiếu với nguồn ghi kèm; verified: false
+    hoặc partial chỉ được nói ở mức khái quát và phải khuyên khách kiểm tra lại.
+  sections:
+    enums: "Giá trị chuẩn cho thuộc tính khách hàng (A1 dùng để chuẩn hoá)"
+    insurance_types: "4 loại bảo hiểm LUMI tư vấn, tín hiệu nhu cầu, tiêu chí cho Decision Agent"
+    decision_questions: "Định nghĩa các quyết định D1–D6 của Decision Agent (OpenAI)"
+    scoring: "Tiêu chí C1–C6, trọng số gốc, điều chỉnh theo khách, ngưỡng, ánh xạ tiêu chí sang hàng bảng"
+    comparison_rows: "Các hàng của bảng so sánh theo loại bảo hiểm"
+    products: "Catalog sản phẩm (hư cấu) và chế độ Nhà nước tham chiếu"
+    regulations: "Tri thức quy định, kèm nguồn và trạng thái đối chiếu"
+    finance: "Công thức tính cho thẻ Nếu... thì... và ước tính hưu trí"
+    glossary: "Thuật ngữ"
+    faq: "Câu hỏi thường gặp theo mảng"
+    writing_rules: "Quy tắc bắt buộc khi A4 viết lời tư vấn"
+    profile_schema: "Định nghĩa các trường thông tin khách, mức bắt buộc, điều kiện đủ để đề xuất"
+    question_bank: "Bộ câu hỏi định sẵn để khai thác các trường, điều kiện hỏi, câu hỏi phân định"
+  used_by:
+    A1_extractor: ["enums", "profile_schema"]
+    A2_decision: ["insurance_types", "decision_questions", "scoring.criteria", "products"]
+    A3_conversation: ["question_bank", "decision_questions.D1", "enums.address_styles"]
+    A4_writer: ["products", "regulations", "glossary", "faq", "writing_rules", "insurance_types"]
+    code_orchestrator_scoring: ["profile_schema.readiness", "question_bank.rules", "scoring", "comparison_rows", "products", "finance"]
+
+# ---------------------------------------------------------------------
+# 1. ENUMS – giá trị chuẩn
+# ---------------------------------------------------------------------
+enums:
+  employment_status:
+    student: "Đang đi học"
+    job_seeking: "Đang tìm việc"
+    probation: "Đang thử việc"
+    employed: "Đang đi làm, có hợp đồng"
+    self_employed: "Tự kinh doanh / làm tự do"
+    near_retirement: "Sắp nghỉ hưu (dưới 3 năm)"
+    retired: "Đã nghỉ hưu"
+  income_stability:
+    low: "Thấp / bấp bênh"
+    medium: "Trung bình"
+    high: "Cao / ổn định (lương cố định, lương hưu)"
+  life_stage:
+    young_adult: "Dưới 25 tuổi"
+    early_career: "25–39 tuổi"
+    mid_career: "40–54 tuổi"
+    pre_retirement: "55–64 tuổi"
+    retired: "Từ 65 tuổi"
+  concerns:
+    job_loss: "Mất việc"
+    income_gap: "Không có thu nhập trang trải"
+    debt_repayment: "Không trả được nợ / trả góp"
+    retirement_income: "Không có thu nhập khi về già"
+    not_burden_children: "Không muốn phụ thuộc hoặc làm gánh nặng cho con"
+    spouse_protection: "Bảo vệ vợ/chồng khi mình mất"
+    legacy: "Để lại tài sản cho con cháu"
+    medical_cost: "Chi phí khám chữa bệnh"
+    children_education: "Chi phí học tập của con"
+  attitude_levels:
+    risk_tolerance: ["Very low", "Low", "Medium", "High"]
+    need_flexibility: ["Low", "Medium", "High"]
+    trust_concern: ["Low", "Medium", "High"]
+  address_styles:
+    young: { max_age: 29, bot_self: "mình", customer: "tên riêng hoặc bạn", tone: "thân mật, có thể dùng emoji" }
+    mid:   { max_age: 54, bot_self: "em", customer: "anh/chị", tone: "rõ ràng, nhấn vào con số" }
+    senior: { max_age: 200, bot_self: "cháu", customer: "bác/cô/chú", tone: "lễ phép, chậm rãi, giải thích kỹ" }
+    rule: "Ưu tiên cách khách tự xưng; nếu không có thì chọn theo tuổi."
+
+# ---------------------------------------------------------------------
+# 2. INSURANCE TYPES – 4 loại bảo hiểm LUMI tư vấn
+# ---------------------------------------------------------------------
+insurance_types:
+  - id: unemployment
+    segment: M1
+    name_vi: "Bảo hiểm thất nghiệp / bảo vệ thu nhập khi mất việc"
+    short_vi: "Thất nghiệp"
+    purpose_vi: "Giữ một phần thu nhập hoặc trả thay khoản nợ khi khách mất việc không tự nguyện."
+    legal_category: ["state_scheme", "non_life", "health"]
+    market_note_vi: >-
+      Bảo hiểm mất việc bán lẻ độc lập cho cá nhân rất hiếm ở Việt Nam. Quyền lợi mất việc thường gắn
+      với khoản vay, thẻ tín dụng hoặc gói đi kèm dịch vụ ngân hàng. Sản phẩm độc lập trong catalog là hư cấu.
+    product_lines:
+      - "BHTN bắt buộc (Nhà nước)"
+      - "Bảo hiểm khoản vay / thẻ tín dụng có quyền lợi mất việc"
+      - "Gói bảo hiểm đi kèm dịch vụ tài chính có quyền lợi mất việc"
+      - "Bảo hiểm tai nạn có quyền lợi mất thu nhập"
+    need_signals_vi:
+      - "Đang tìm việc, đang thử việc hoặc mới đi làm dưới 12 tháng"
+      - "Số tháng đã đóng BHTN dưới 12"
+      - "Có khoản trả góp hoặc khoản vay hằng tháng"
+      - "Thu nhập bấp bênh"
+      - "Nói ra nỗi lo mất việc, bị cắt giảm, không có tiền trang trải"
+    not_prioritized_when_vi:
+      - "Trên 55 tuổi hoặc sắp nghỉ hưu"
+      - "Đã đóng BHTN đủ lâu và có quỹ dự phòng từ 6 tháng chi tiêu trở lên"
+    discovery_topics: ["job_income", "debts_expenses", "social_insurance", "budget_payment"]
+    decision_criterion: >-
+      Protects income after involuntary job loss; fits people who are job seeking, on probation or newly
+      employed, have fewer than 12 months of unemployment insurance contributions, have monthly loan
+      repayments, or worry about losing their job
+  - id: retirement
+    segment: M2
+    name_vi: "Bảo hiểm hưu trí"
+    short_vi: "Hưu trí"
+    purpose_vi: "Tích luỹ dài hạn để có thu nhập đều đặn sau khi nghỉ hưu."
+    legal_category: ["state_scheme", "life"]
+    market_note_vi: >-
+      Lớp nền là BHXH (bắt buộc hoặc tự nguyện). Lớp bổ sung gồm bảo hiểm hưu trí (nghiệp vụ nhân thọ)
+      và các sản phẩm nhân thọ tích luỹ. Cần phân biệt phần cam kết và phần minh hoạ.
+    product_lines:
+      - "BHXH tự nguyện (Nhà nước)"
+      - "Bảo hiểm hưu trí (cá nhân hoặc nhóm)"
+      - "Nhân thọ tích luỹ: hỗn hợp, liên kết chung, liên kết đơn vị"
+    need_signals_vi:
+      - "Tuổi 35–55, còn 5–25 năm đến tuổi nghỉ hưu"
+      - "Số năm BHXH dự kiến đến tuổi hưu dưới 15, hoặc tự kinh doanh không đóng BHXH"
+      - "Nói ra nỗi lo về già, lương hưu, không muốn phụ thuộc con"
+    not_prioritized_when_vi:
+      - "Dưới 28 tuổi và thu nhập chưa ổn định"
+      - "Đã có từ 20 năm BHXH và còn dưới 3 năm đến tuổi hưu"
+    discovery_topics: ["social_insurance", "job_income", "risk_attitude", "debts_expenses", "budget_payment"]
+    decision_criterion: >-
+      Builds savings for a regular income after retirement; fits people who are 5 to 25 years from
+      retirement age, have a pension gap because they have fewer than 15 years of social insurance or are
+      self-employed, and worry about income in old age
+  - id: life
+    segment: M3
+    name_vi: "Bảo hiểm nhân thọ (bảo vệ, để lại tài sản)"
+    short_vi: "Nhân thọ"
+    purpose_vi: "Chi trả một khoản cho người thụ hưởng khi người được bảo hiểm mất, có thể kèm tích luỹ."
+    legal_category: ["life"]
+    market_note_vi: >-
+      Với khách lớn tuổi cần chú ý tuổi tham gia tối đa, thẩm định sức khoẻ và tổng phí so với số tiền
+      bảo hiểm. Cách xử lý bệnh mãn tính thường không công khai.
+    product_lines: ["Tử kỳ", "Trọn đời", "Trọn đời đóng phí một lần", "Hỗn hợp", "Liên kết chung", "Sản phẩm bổ trợ"]
+    need_signals_vi:
+      - "Có người phụ thuộc tài chính (vợ/chồng không thu nhập, con dưới 18, cha mẹ)"
+      - "Nói ra mong muốn để lại cho vợ/con/cháu, không muốn con cái gánh"
+      - "Có tài sản tích luỹ, chưa có bảo hiểm nhân thọ"
+    not_prioritized_when_vi:
+      - "Dưới 25 tuổi và không có người phụ thuộc"
+      - "Trên 70 tuổi (ngoài tuổi tham gia của đa số sản phẩm)"
+    discovery_topics: ["dependents_family", "goals_concerns", "health", "beneficiaries", "budget_payment"]
+    decision_criterion: >-
+      Pays a sum to beneficiaries when the insured person dies; fits people with financial dependents such
+      as a spouse without income or young children, people who want to leave money to family, and people
+      with savings who have no life insurance yet
+  - id: health
+    segment: M4
+    name_vi: "Bảo hiểm sức khoẻ và tai nạn"
+    short_vi: "Sức khoẻ"
+    purpose_vi: "Chi trả chi phí y tế, bệnh hiểm nghèo, nằm viện hoặc tai nạn."
+    legal_category: ["state_scheme", "health"]
+    market_note_vi: "Trong demo, loại này chủ yếu dùng làm loại phụ hoặc quyền lợi bổ trợ."
+    product_lines: ["BHYT (Nhà nước)", "Chăm sóc sức khoẻ", "Bệnh hiểm nghèo", "Tai nạn con người"]
+    need_signals_vi:
+      - "Có bệnh mãn tính"
+      - "Nói ra nỗi lo chi phí khám chữa bệnh"
+      - "Chưa có bảo hiểm sức khoẻ thương mại"
+      - "Từ 50 tuổi trở lên"
+    not_prioritized_when_vi:
+      - "Khách nói rõ chi phí y tế không phải nỗi lo chính và đã có BHYT"
+    discovery_topics: ["health", "goals_concerns", "budget_payment"]
+    decision_criterion: >-
+      Pays medical, hospital or accident costs; fits people whose main worry is medical expenses, people
+      with a chronic illness, and people over 50 without private health cover
+
+# ---------------------------------------------------------------------
+# 3. DECISION QUESTIONS – các quyết định của A2 Decision Agent (OpenAI Structured Outputs; tương thích Decision Agent)
+#    Câu hỏi và tiêu chí viết bằng tiếng Anh, dạng khẳng định.
+#    State gửi vào chỉ gồm các trường cần thiết (A1 đã chuẩn hoá).
+# ---------------------------------------------------------------------
+decision_questions:
+  engine:
+    default: openai
+    model: "gpt-5.6-luna"
+    reasoning_effort: { per_turn: "low", step1_final_type: "medium", product_scoring: "low", flags: "low" }
+    output_vi: "Structured Outputs, JSON schema strict: lựa chọn là enum, xác suất là các trường số có tên cố định, kèm confidence và reason ngắn"
+    batching_vi: "D1–D4 gộp vào 1 lời gọi mỗi lượt; D5 gọi riêng từng sản phẩm, chạy song song"
+    probability_note_vi: "Xác suất do mô hình tự ước lượng, không được hiệu chỉnh; giao diện ghi 'ước lượng'; code chuẩn hoá tổng bằng 1"
+    alternatives: { offline: "rule", future: "jev" }
+  D1:
+    name_vi: "Chủ đề hỏi tiếp"
+    type: choice
+    instructions: "Which topic the advisor should ask about next to understand this customer's insurance needs"
+    state_fields: ["known_profile", "missing_fields", "type_probabilities"]
+    options:
+      job_income: "Employment status, job prospects and income stability are still unknown"
+      dependents_family: "Family members and financial dependents are still unknown"
+      debts_expenses: "Monthly expenses, loans or upcoming large expenses are still unknown"
+      social_insurance: "Social insurance and unemployment insurance contribution history is still unknown"
+      health: "Health conditions and smoking status are still unknown and matter for life or health insurance"
+      goals_concerns: "The customer's main worry or financial goal is still unclear"
+      risk_attitude: "The customer's attitude to investment risk is unknown and matters for retirement products"
+      beneficiaries: "Who should receive the money is unknown and matters for life insurance"
+      budget_payment: "Budget and preferred payment method are still unknown"
+      existing_coverage: "Existing insurance policies other than public health insurance are still unknown"
+      ready_to_recommend: "Enough information is known to recommend an insurance type"
+    confidence_min: 0.5
+    fallback_order: ["goals_concerns", "job_income", "dependents_family", "debts_expenses", "social_insurance", "health", "risk_attitude", "existing_coverage", "beneficiaries", "budget_payment", "ready_to_recommend"]
+    ui_explanation_template_vi: "Vì sao LUMI hỏi câu này: cần làm rõ «{topic_vi}», giả thuyết đang dẫn đầu là «{top_type_vi}» ({top_prob}%)."
+    topic_labels_vi:
+      job_income: "công việc và thu nhập"
+      dependents_family: "gia đình và người phụ thuộc"
+      debts_expenses: "chi tiêu và khoản nợ"
+      social_insurance: "quá trình đóng BHXH/BHTN"
+      health: "sức khoẻ"
+      goals_concerns: "nỗi lo và mong muốn"
+      risk_attitude: "khẩu vị rủi ro"
+      beneficiaries: "người thụ hưởng"
+      budget_payment: "ngân sách và cách đóng phí"
+      existing_coverage: "bảo hiểm đang có"
+      ready_to_recommend: "đủ thông tin để đề xuất"
+  D2:
+    name_vi: "Thái độ của khách"
+    type: score_group
+    state_fields: ["relevant_quotes"]
+    questions:
+      risk_tolerance:
+        instructions: "How much investment risk the customer is willing to accept"
+        levels: ["Very low", "Low", "Medium", "High"]
+      need_flexibility:
+        instructions: "How much the customer needs to pause, reduce or withdraw payments in the next few years"
+        levels: ["Low", "Medium", "High"]
+      trust_concern:
+        instructions: "How worried the customer is that the insurer will not pay claims"
+        levels: ["Low", "Medium", "High"]
+  D3:
+    name_vi: "Loại bảo hiểm (Bước 1 và thanh giả thuyết)"
+    type: choice
+    instructions: "Which insurance type best addresses this customer's main financial risk right now"
+    state_fields: ["full_profile", "derived_fields"]
+    options_from: "insurance_types[].decision_criterion"
+    run_every_turn: true
+    confidence_min: 0.6
+    secondary_prob_min: 0.2
+    cross_check_vi: "So sánh với luật chấm điểm của bản thiết kế v0.1; nếu khác nhau thì hiển thị cả hai và hỏi thêm 1 câu."
+  D4:
+    name_vi: "Ý định của khách"
+    type: choice
+    instructions: "What the customer wants to do next"
+    state_fields: ["last_bot_message", "last_customer_message"]
+    options:
+      agree_continue: "The customer agrees to see the comparison or to continue"
+      ask_question: "The customer asks a question"
+      add_or_correct_info: "The customer adds new information or corrects earlier information"
+      end_conversation: "The customer wants to stop now or decide later"
+    confidence_min: 0.6
+  D5:
+    name_vi: "Mức phù hợp của sản phẩm theo 6 tiêu chí"
+    type: score_group_per_product
+    state_fields: ["profile_summary", "one_product"]
+    levels: ["Does not meet", "Partly meets", "Meets well", "Meets very well"]
+    questions_from: "scoring.criteria[].decision_instruction"
+    note_vi: "Gọi riêng cho từng sản phẩm, chạy song song. Điểm tổng tính bằng code."
+  D6:
+    name_vi: "Cờ nhận định (tuỳ chọn)"
+    type: noul_group
+    state_fields: ["full_profile", "derived_fields"]
+    threshold: 0.7
+    flags:
+      large_expense_2y:
+        instructions: "The customer has a large planned expense within the next two years"
+        insight_template_vi: "Khách có khoản chi lớn sắp tới: nên ưu tiên sản phẩm cho tạm dừng hoặc rút linh hoạt."
+      dependent_without_income:
+        instructions: "A family member depends financially on the customer and has no income of their own"
+        insight_template_vi: "Nếu khách mất, người phụ thuộc sẽ mất nguồn thu nhập."
+      pension_gap:
+        instructions: "The customer will reach retirement age with fewer than 15 years of social insurance unless they keep contributing"
+        insight_template_vi: "Còn thiếu {missing_years} năm để đủ 15 năm đóng BHXH."
+      first_year_unemployment_gap:
+        instructions: "The customer has fewer than 12 months of unemployment insurance contributions"
+        insight_template_vi: "Nếu mất việc trong 12 tháng đầu, BHTN Nhà nước chưa chi trả."
+      chronic_condition:
+        instructions: "The customer has a chronic health condition that needs regular treatment"
+        insight_template_vi: "Có bệnh mãn tính: nên ưu tiên sản phẩm thẩm định đơn giản và phải khai báo trung thực."
+
+# ---------------------------------------------------------------------
+# 4. SCORING – tiêu chí, trọng số, ngưỡng (code dùng)
+# ---------------------------------------------------------------------
+scoring:
+  criteria:
+    - id: C1
+      name_vi: "Đáp ứng nhu cầu chính"
+      decision_instruction: "How well this product addresses the customer's main worry"
+    - id: C2
+      name_vi: "Khả năng chi trả"
+      decision_instruction: "How affordable this product is given the customer's budget and income, including all fees"
+    - id: C3
+      name_vi: "Mức cam kết, an toàn"
+      decision_instruction: "How much of this product's benefit is guaranteed rather than dependent on market returns"
+    - id: C4
+      name_vi: "Linh hoạt"
+      decision_instruction: "How well this product lets the customer pause, reduce, withdraw or cancel when the customer needs to"
+    - id: C5
+      name_vi: "Điều kiện tham gia"
+      decision_instruction: "How easily this customer can qualify for this product given age, health, employment and waiting periods"
+    - id: C6
+      name_vi: "Uy tín và bồi thường"
+      decision_instruction: "How clear, fast and reliable this product's claim or payout process is"
+  base_weights:
+    unemployment: { C1: 25, C2: 30, C3: 5,  C4: 15, C5: 20, C6: 5 }
+    retirement:   { C1: 20, C2: 15, C3: 25, C4: 15, C5: 5,  C6: 20 }
+    life:         { C1: 30, C2: 20, C3: 15, C4: 10, C5: 15, C6: 10 }
+    health:       { C1: 30, C2: 20, C3: 10, C4: 10, C5: 20, C6: 10 }
+  adjustments:
+    - { when: "income_stability == 'low' or premium_to_income_ratio > 0.05", add: { C2: 10 }, reason_vi: "Thu nhập bấp bênh hoặc ngân sách hạn chế" }
+    - { when: "risk_tolerance in ['Very low', 'Low']", add: { C3: 10 }, reason_vi: "Khách không muốn rủi ro" }
+    - { when: "need_flexibility == 'High' or has_large_expense_2y", add: { C4: 10 }, reason_vi: "Có thể cần tạm dừng hoặc rút tiền" }
+    - { when: "has_chronic_condition", add: { C5: 10 }, reason_vi: "Có bệnh mãn tính, thẩm định là rào cản" }
+    - { when: "trust_concern == 'High'", add: { C6: 10 }, reason_vi: "Khách lo không được chi trả" }
+  normalize_to: 100
+  level_to_points: { "Does not meet": 0, "Partly meets": 4, "Meets well": 7, "Meets very well": 10 }
+  fit_score: "sum(weight_i * points_i) / 10   # thang 0–100"
+  cell_tone: { "Does not meet": bad, "Partly meets": warn, "Meets well": good, "Meets very well": good }
+  priority_criteria_count: 2
+  thresholds:
+    completeness_min: 0.85
+    max_discovery_questions: 8
+    type_confidence_min: 0.6
+    secondary_type_prob_min: 0.2
+  criterion_to_rows:
+    unemployment:
+      C1: ["Mức chi trả", "Tổng quyền lợi tối đa", "Sự kiện được chi trả"]
+      C2: ["Phí"]
+      C3: ["Loại trừ chính"]
+      C4: ["Linh hoạt"]
+      C5: ["Điều kiện tham gia", "Thời gian chờ", "Tuổi tham gia"]
+      C6: ["Bồi thường"]
+    retirement:
+      C1: ["Nhận hằng tháng dự kiến", "Giá trị quỹ dự kiến tuổi 60", "Hình thức nhận"]
+      C2: ["Phí", "Phí ban đầu", "Phí quản lý quỹ"]
+      C3: ["Lãi suất cam kết tối thiểu", "Lãi suất / kịch bản minh hoạ"]
+      C4: ["Tạm dừng đóng phí", "Rút trước hạn"]
+      C5: ["Tuổi tham gia", "Tuổi bắt đầu nhận"]
+      C6: ["Chi trả và hỗ trợ", "Quyền lợi tử vong khi đang tích luỹ"]
+    life:
+      C1: ["Số tiền bảo hiểm", "Thời hạn bảo vệ"]
+      C2: ["Phí", "Tổng phí"]
+      C3: ["Khi sống đến cuối hợp đồng"]
+      C4: ["Giá trị hoàn lại"]
+      C5: ["Thẩm định sức khoẻ", "Xử lý tăng huyết áp đã kiểm soát", "Tuổi tham gia tối đa"]
+      C6: ["Bồi thường", "Người thụ hưởng"]
+    health:
+      C1: ["Quyền lợi chính", "Hạn mức"]
+      C2: ["Phí", "Đồng chi trả"]
+      C3: ["Loại trừ chính"]
+      C4: ["Tái tục tối đa"]
+      C5: ["Tuổi tham gia", "Thời gian chờ"]
+      C6: ["Bồi thường", "Bảo lãnh viện phí"]
+  hard_filters_vi:
+    - "Tuổi khách nằm ngoài eligibility.entry_age_min–entry_age_max → loại"
+    - "Phí vượt ngân sách tối đa theo đúng hình thức đóng khách chấp nhận → loại"
+    - "requires_loan: true mà khách không có khoản vay → loại"
+    - "requires_employment_contract: true mà khách chưa có HĐLĐ → giữ lại, gắn nhãn «đăng ký sau khi ký hợp đồng»"
+
+# ---------------------------------------------------------------------
+# 5. COMPARISON ROWS – hàng của bảng so sánh theo loại
+# ---------------------------------------------------------------------
+comparison_rows:
+  unemployment: ["Phí", "Tuổi tham gia", "Điều kiện tham gia", "Sự kiện được chi trả", "Mức chi trả", "Thời gian chi trả tối đa", "Tổng quyền lợi tối đa", "Thời gian chờ", "Loại trừ chính", "Linh hoạt", "Quyền lợi bổ sung", "Bồi thường"]
+  retirement: ["Dòng sản phẩm", "Tuổi tham gia", "Phí", "Tuổi bắt đầu nhận", "Hình thức nhận", "Lãi suất cam kết tối thiểu", "Lãi suất / kịch bản minh hoạ", "Phí ban đầu", "Phí quản lý quỹ", "Giá trị quỹ dự kiến tuổi 60", "Nhận hằng tháng dự kiến", "Tạm dừng đóng phí", "Rút trước hạn", "Quyền lợi tử vong khi đang tích luỹ", "Chi trả và hỗ trợ", "Ưu đãi thuế", "Thời gian cân nhắc"]
+  life: ["Dòng sản phẩm", "Tuổi tham gia tối đa", "Thời hạn bảo vệ", "Phí", "Tổng phí", "Số tiền bảo hiểm", "Khi sống đến cuối hợp đồng", "Thẩm định sức khoẻ", "Xử lý tăng huyết áp đã kiểm soát", "Giá trị hoàn lại", "Quyền lợi bổ sung", "Người thụ hưởng", "Bồi thường", "Thời gian cân nhắc"]
+  health: ["Dòng sản phẩm", "Tuổi tham gia", "Phí", "Quyền lợi chính", "Hạn mức", "Đồng chi trả", "Thời gian chờ", "Loại trừ chính", "Bảo lãnh viện phí", "Tái tục tối đa", "Bồi thường"]
+  computed_rows:
+    retirement: ["Giá trị quỹ dự kiến tuổi 60", "Nhận hằng tháng dự kiến"]
+    note_vi: "Các hàng computed được tính lại theo hồ sơ khách bằng finance.fund_accumulation và finance.annuity_payout; giá trị trong catalog chỉ là mẫu."
+
+# ---------------------------------------------------------------------
+# 6. PRODUCTS – catalog
+# ---------------------------------------------------------------------
+products:
+
+  # ============ M1 – THẤT NGHIỆP / BẢO VỆ THU NHẬP ============
+  - id: gov_bhtn
+    is_fictional: false
+    is_reference: true
+    insurer: "Nhà nước (BHXH Việt Nam)"
+    product_name: "Bảo hiểm thất nghiệp bắt buộc"
+    insurance_type: unemployment
+    legal_category: state_scheme
+    eligibility: { entry_age_min: 15, entry_age_max: 62, requires_employment_contract: true, min_contract_months: 1, requires_loan: false, underwriting: none }
+    premium: { basis: pct_of_salary, pct_employee: 1.0, display: "Khoảng 1% tiền lương đóng BHTN (người lao động); doanh nghiệp đóng phần của mình" }
+    personalization_tags:
+      fits_concerns: [job_loss, income_gap]
+      fits_life_stage: [young_adult, early_career, mid_career]
+      strengths: ["Tự động tham gia khi có HĐLĐ từ 1 tháng", "Có hỗ trợ học nghề, tư vấn việc làm"]
+      watch_outs: ["Phải đóng đủ 12 tháng trong 24 tháng mới được hưởng", "Chưa bảo vệ trong năm đầu đi làm"]
+    comparison_values:
+      "Phí": "Khoảng 1% tiền lương đóng BHTN (người lao động), doanh nghiệp đóng phần của mình"
+      "Tuổi tham gia": "Theo đối tượng luật định"
+      "Điều kiện tham gia": "Bắt buộc với HĐLĐ từ 1 tháng trở lên (từ 1/1/2026)"
+      "Sự kiện được chi trả": "Chấm dứt HĐ theo quy định, không phải đơn phương chấm dứt trái luật"
+      "Mức chi trả": "60% bình quân lương đóng BHTN 6 tháng liền kề, tối đa 5 lần lương tối thiểu vùng"
+      "Thời gian chi trả tối đa": "Tính theo số tháng đã đóng"
+      "Tổng quyền lợi tối đa": "Phụ thuộc mức lương và số tháng đã đóng"
+      "Thời gian chờ": "Cần đóng đủ 12 tháng trong 24 tháng; hưởng từ ngày làm việc thứ 11 kể từ khi nộp đủ hồ sơ"
+      "Loại trừ chính": "Đơn phương chấm dứt HĐ trái luật; nghỉ việc khi đủ điều kiện hưởng lương hưu"
+      "Linh hoạt": "Bắt buộc, không tự chọn"
+      "Quyền lợi bổ sung": "Hỗ trợ học nghề, tư vấn giới thiệu việc làm"
+      "Bồi thường": "Nộp hồ sơ tại trung tâm dịch vụ việc làm"
+    regulation_refs: [reg_bhtn_participants, reg_bhtn_conditions, reg_bhtn_amount, reg_bhtn_start, reg_bhtn_duration]
+    source: { type: regulation, collected_at: "2026-09-26" }
+
+  - id: ta_genz
+    is_fictional: true
+    is_reference: false
+    insurer: "Trường An Life"
+    product_name: "GenZ Bảo Vệ"
+    insurance_type: unemployment
+    legal_category: non_life
+    product_line: income_protection_job_loss
+    buyer_type: individual
+    distribution: [online]
+    investment_linked: false
+    eligibility: { entry_age_min: 18, entry_age_max: 35, requires_employment_contract: true, min_contract_months: 1, requires_passed_probation: false, requires_loan: false, underwriting: none }
+    premium: { basis: fixed, amount_vnd: 59000, period: monthly, display: "59.000đ/tháng" }
+    coverage: { waiting_period_days: 90, benefit_form: fixed_monthly, benefit_amount_vnd: 2000000, benefit_max_periods: 2, max_total_benefit_vnd: 4000000 }
+    flexibility: { pause_max_months: 3, cancel_anytime: true, cash_value: false }
+    claims: { channel: "app", days: 5 }
+    market_reality_note_vi: "Dạng gói mất việc độc lập mua qua app hiếm có trên thị trường thật; giữ cho demo."
+    personalization_tags:
+      fits_concerns: [job_loss, income_gap]
+      fits_life_stage: [young_adult, early_career]
+      strengths: ["Phí thấp", "Điều kiện dễ: HĐLĐ từ 1 tháng", "Cho tạm dừng đóng phí"]
+      watch_outs: ["Thời gian chờ 90 ngày", "Tổng quyền lợi thấp (4 triệu)", "Không chi trả nếu không đạt thử việc"]
+    comparison_values:
+      "Phí": "59.000đ/tháng"
+      "Tuổi tham gia": "18–35"
+      "Điều kiện tham gia": "Có HĐLĐ từ 1 tháng"
+      "Sự kiện được chi trả": "Mất việc không tự nguyện (cắt giảm, giải thể...)"
+      "Mức chi trả": "2 triệu/tháng"
+      "Thời gian chi trả tối đa": "2 tháng"
+      "Tổng quyền lợi tối đa": "4 triệu + voucher khoá học 1 triệu"
+      "Thời gian chờ": "90 ngày"
+      "Loại trừ chính": "Tự nghỉ, không đạt thử việc, bị sa thải do kỷ luật"
+      "Linh hoạt": "Tạm dừng tối đa 3 tháng, huỷ bất kỳ lúc nào"
+      "Quyền lợi bổ sung": "Voucher khoá học kỹ năng 1 triệu, hỗ trợ viết CV"
+      "Bồi thường": "Qua app, 5 ngày làm việc"
+    source: { type: fictional_demo, collected_at: "2026-09-26" }
+
+  - id: sv_tragop
+    is_fictional: true
+    is_reference: false
+    insurer: "Sao Việt Assurance"
+    product_name: "Trả Góp An Tâm"
+    insurance_type: unemployment
+    legal_category: non_life
+    product_line: loan_protection_job_loss
+    buyer_type: bundled
+    distribution: [finance_company, bank]
+    investment_linked: false
+    eligibility: { entry_age_min: 18, entry_age_max: 55, requires_employment_contract: true, min_contract_months: 1, requires_passed_probation: false, requires_loan: true, underwriting: none }
+    premium: { basis: fixed, amount_vnd: 35000, period: monthly, display: "35.000đ/tháng" }
+    coverage: { waiting_period_days: 30, benefit_form: pay_installments, benefit_cap_per_period_vnd: 1500000, benefit_max_periods: 6, max_total_benefit_vnd: 9000000 }
+    flexibility: { ends_with_loan: true, cash_value: false }
+    claims: { channel: "đơn vị cho vay", days: 7 }
+    personalization_tags:
+      fits_concerns: [debt_repayment, job_loss]
+      fits_life_stage: [young_adult, early_career, mid_career]
+      strengths: ["Phí thấp nhất", "Thời gian chờ ngắn (30 ngày)", "Đúng với khoản trả góp đang có"]
+      watch_outs: ["Chỉ trả thay tiền góp, không hỗ trợ chi tiêu sinh hoạt", "Tự kết thúc khi trả hết khoản vay"]
+    comparison_values:
+      "Phí": "35.000đ/tháng"
+      "Tuổi tham gia": "18–55"
+      "Điều kiện tham gia": "Có khoản trả góp đang hiệu lực + đang có việc làm"
+      "Sự kiện được chi trả": "Mất việc không tự nguyện"
+      "Mức chi trả": "Trả thay kỳ góp, tối đa 1,5 triệu/kỳ"
+      "Thời gian chi trả tối đa": "6 kỳ"
+      "Tổng quyền lợi tối đa": "6 kỳ góp, tối đa 9 triệu (tính lại theo khoản góp của khách)"
+      "Thời gian chờ": "30 ngày"
+      "Loại trừ chính": "Tự nghỉ, không đạt thử việc, bị sa thải do kỷ luật, khoản vay đã quá hạn trước khi mất việc"
+      "Linh hoạt": "Tự kết thúc khi trả hết khoản vay"
+      "Quyền lợi bổ sung": "Không"
+      "Bồi thường": "Qua đơn vị cho vay, 7 ngày"
+    source: { type: fictional_demo, collected_at: "2026-09-26" }
+
+  - id: bm_vieclam
+    is_fictional: true
+    is_reference: false
+    insurer: "Bình Minh Insurance"
+    product_name: "Việc Làm Vững"
+    insurance_type: unemployment
+    legal_category: non_life
+    product_line: income_protection_job_loss
+    buyer_type: individual
+    distribution: [agent, online]
+    investment_linked: false
+    eligibility: { entry_age_min: 18, entry_age_max: 45, requires_employment_contract: true, min_contract_months: 1, requires_passed_probation: true, requires_loan: false, underwriting: none }
+    premium: { basis: fixed, amount_vnd: 99000, period: monthly, display: "99.000đ/tháng" }
+    coverage: { waiting_period_days: 60, benefit_form: fixed_monthly, benefit_amount_vnd: 3000000, benefit_max_periods: 3, max_total_benefit_vnd: 9000000, accident_cover_vnd: 100000000 }
+    flexibility: { contract_months: 12, pay: monthly, cash_value: false }
+    claims: { channel: "online hoặc đại lý", days: 10 }
+    personalization_tags:
+      fits_concerns: [job_loss, income_gap]
+      fits_life_stage: [early_career, mid_career]
+      strengths: ["Quyền lợi cao nhất nhóm", "Kèm bảo hiểm tai nạn 100 triệu"]
+      watch_outs: ["Phải qua thử việc mới mua được", "Phí cao hơn các gói khác"]
+    comparison_values:
+      "Phí": "99.000đ/tháng"
+      "Tuổi tham gia": "18–45"
+      "Điều kiện tham gia": "Đã qua thử việc"
+      "Sự kiện được chi trả": "Mất việc không tự nguyện"
+      "Mức chi trả": "3 triệu/tháng"
+      "Thời gian chi trả tối đa": "3 tháng"
+      "Tổng quyền lợi tối đa": "9 triệu + tai nạn 100 triệu"
+      "Thời gian chờ": "60 ngày"
+      "Loại trừ chính": "Tự nghỉ, không đạt thử việc, bị sa thải do kỷ luật, mất việc trong thời gian chờ"
+      "Linh hoạt": "Hợp đồng 12 tháng, đóng theo tháng"
+      "Quyền lợi bổ sung": "Bảo hiểm tai nạn 100 triệu"
+      "Bồi thường": "Online hoặc đại lý, 10 ngày"
+    source: { type: fictional_demo, collected_at: "2026-09-26" }
+
+  # ============ M2 – HƯU TRÍ ============
+  - id: gov_bhxh_tn
+    is_fictional: false
+    is_reference: true
+    insurer: "Nhà nước (BHXH Việt Nam)"
+    product_name: "BHXH tự nguyện – chế độ hưu trí"
+    insurance_type: retirement
+    legal_category: state_scheme
+    eligibility: { entry_age_min: 15, entry_age_max: null, requires_employment_contract: false, requires_loan: false, underwriting: none }
+    premium: { basis: pct_of_chosen_income, pct: 22, display: "22% × mức thu nhập tự chọn (ví dụ 880 nghìn/tháng với mức 4 triệu)", verified: false }
+    personalization_tags:
+      fits_concerns: [retirement_income, not_burden_children, medical_cost]
+      fits_life_stage: [early_career, mid_career]
+      strengths: ["Lương hưu hằng tháng suốt đời", "Kèm thẻ BHYT khi hưởng lương hưu", "Cộng dồn với số năm BHXH bắt buộc đã đóng"]
+      watch_outs: ["Cần đủ 15 năm đóng", "Mức lương hưu phụ thuộc thu nhập làm căn cứ đóng"]
+    comparison_values:
+      "Dòng sản phẩm": "Chế độ hưu trí của Nhà nước"
+      "Tuổi tham gia": "Theo luật định"
+      "Phí": "22% × mức thu nhập tự chọn (ví dụ 880 nghìn/tháng với mức 4 triệu)"
+      "Tuổi bắt đầu nhận": "Tuổi nghỉ hưu theo luật"
+      "Hình thức nhận": "Lương hưu hằng tháng suốt đời + thẻ BHYT"
+      "Lãi suất cam kết tối thiểu": "Do Nhà nước bảo đảm theo quy định"
+      "Lãi suất / kịch bản minh hoạ": "Không áp dụng"
+      "Phí ban đầu": "Không"
+      "Phí quản lý quỹ": "Không"
+      "Giá trị quỹ dự kiến tuổi 60": "Không áp dụng"
+      "Nhận hằng tháng dự kiến": "Tính bằng finance.bhxh_pension_rate × bình quân thu nhập đóng (ước tính sơ bộ)"
+      "Tạm dừng đóng phí": "Được, không bắt buộc đóng liên tục"
+      "Rút trước hạn": "Không khuyến khích rút BHXH một lần (mất thời gian đã đóng)"
+      "Quyền lợi tử vong khi đang tích luỹ": "Trợ cấp tử tuất theo quy định"
+      "Chi trả và hỗ trợ": "Qua cơ quan BHXH"
+      "Ưu đãi thuế": "Không áp dụng"
+      "Thời gian cân nhắc": "Không áp dụng"
+    regulation_refs: [reg_pension_15y, reg_pension_rate_female, reg_pension_rate_male, reg_pension_bhyt, reg_retirement_age, reg_bhxh_tn_contribution]
+    source: { type: regulation, collected_at: "2026-09-26" }
+
+  - id: ta_huu_linhhoat
+    is_fictional: true
+    is_reference: false
+    insurer: "Trường An Life"
+    product_name: "Hưu Trí Linh Hoạt"
+    insurance_type: retirement
+    legal_category: life
+    product_line: retirement_flexible_account
+    buyer_type: individual
+    distribution: [agent, online]
+    investment_linked: false
+    eligibility: { entry_age_min: 18, entry_age_max: 55, requires_employment_contract: false, requires_loan: false, underwriting: simplified }
+    premium: { basis: chosen, min_annual_vnd: 12000000, display: "Tự chọn, tối thiểu 12 triệu/năm" }
+    finance_params: { initial_charge: 0.02, guaranteed_rate: 0.02, illustrated_rate: 0.045, payout_rate: 0.02, fund_fee_included: true }
+    flexibility: { pause_from_year: 2, pause_max_months: 24, partial_withdrawal_from_year: 5, withdrawal_penalty: 0 }
+    death_benefit_accumulation: "Giá trị quỹ + 50 triệu"
+    payout: { start_age_min: 55, start_age_max: 65, modes: ["một lần", "định kỳ 10 năm", "định kỳ 15 năm", "định kỳ 20 năm"] }
+    illustration_sample:
+      profile: "Nữ 44 tuổi, đóng 28,8 triệu/năm trong 16 năm (tổng 460,8 triệu), nhận từ 60 tuổi trong 20 năm"
+      fund_at_60_vnd: { guaranteed: 537000000, illustrated: 670000000 }
+      monthly_payout_vnd: { guaranteed: 2710000, illustrated: 3390000 }
+    personalization_tags:
+      fits_concerns: [retirement_income, not_burden_children]
+      fits_life_stage: [early_career, mid_career]
+      strengths: ["Có cam kết lãi tối thiểu", "Tạm dừng đóng phí từ năm thứ 2", "Rút một phần sau năm 5 không phạt"]
+      watch_outs: ["Lãi cam kết thấp hơn Hưu An Nhàn (2% so với 3%)"]
+    comparison_values:
+      "Dòng sản phẩm": "Hưu trí tài khoản linh hoạt"
+      "Tuổi tham gia": "18–55"
+      "Phí": "Tự chọn, tối thiểu 12 triệu/năm"
+      "Tuổi bắt đầu nhận": "55–65 (tự chọn)"
+      "Hình thức nhận": "Một lần hoặc định kỳ 10/15/20 năm"
+      "Lãi suất cam kết tối thiểu": "2%/năm"
+      "Lãi suất / kịch bản minh hoạ": "4,5%/năm"
+      "Phí ban đầu": "2% phí đóng"
+      "Phí quản lý quỹ": "Đã tính trong lãi"
+      "Giá trị quỹ dự kiến tuổi 60": "Mẫu: 537 triệu (cam kết) – 670 triệu (minh hoạ)"
+      "Nhận hằng tháng dự kiến": "Mẫu: 2,7 – 3,4 triệu (20 năm)"
+      "Tạm dừng đóng phí": "Tối đa 24 tháng, từ năm thứ 2"
+      "Rút trước hạn": "Rút một phần sau năm 5, không phạt"
+      "Quyền lợi tử vong khi đang tích luỹ": "Giá trị quỹ + 50 triệu"
+      "Chi trả và hỗ trợ": "Chuyển khoản tự động, theo dõi quỹ qua app"
+      "Ưu đãi thuế": "Theo quy định hiện hành, cần kiểm tra"
+      "Thời gian cân nhắc": "21 ngày"
+    source: { type: fictional_demo, collected_at: "2026-09-26" }
+
+  - id: ap_huu_annhan
+    is_fictional: true
+    is_reference: false
+    insurer: "An Phúc Life"
+    product_name: "Hưu An Nhàn"
+    insurance_type: retirement
+    legal_category: life
+    product_line: retirement_traditional_guaranteed
+    buyer_type: individual
+    distribution: [agent]
+    investment_linked: false
+    eligibility: { entry_age_min: 18, entry_age_max: 55, requires_employment_contract: false, requires_loan: false, underwriting: simplified }
+    premium: { basis: chosen, min_annual_vnd: 15000000, display: "Tự chọn, tối thiểu 15 triệu/năm" }
+    finance_params: { initial_charge: 0.03, guaranteed_rate: 0.03, illustrated_rate: 0.048, payout_rate: 0.03, fund_fee_included: true }
+    flexibility: { pause_from_year: 3, partial_withdrawal_from_year: 1, withdrawal_penalty_schedule: "10% năm 1–5, giảm dần về 0 sau năm 10" }
+    death_benefit_accumulation: "Giá trị quỹ + 100 triệu"
+    payout: { start_age_min: 55, start_age_max: 65, modes: ["một lần", "định kỳ 10 năm", "định kỳ 20 năm"] }
+    illustration_sample:
+      profile: "Nữ 44 tuổi, đóng 28,8 triệu/năm trong 16 năm (tổng 460,8 triệu), nhận từ 60 tuổi trong 20 năm"
+      fund_at_60_vnd: { guaranteed: 580000000, illustrated: 681000000 }
+      monthly_payout_vnd: { guaranteed: 3220000, illustrated: 3780000 }
+    personalization_tags:
+      fits_concerns: [retirement_income, not_burden_children]
+      fits_life_stage: [early_career, mid_career]
+      strengths: ["Lãi cam kết cao nhất nhóm (3%)", "Quyền lợi tử vong cao (giá trị quỹ + 100 triệu)"]
+      watch_outs: ["Chỉ cho tạm dừng từ năm thứ 3", "Phạt 10% nếu rút trong 5 năm đầu"]
+    comparison_values:
+      "Dòng sản phẩm": "Hưu trí truyền thống, cam kết lãi"
+      "Tuổi tham gia": "18–55"
+      "Phí": "Tự chọn, tối thiểu 15 triệu/năm"
+      "Tuổi bắt đầu nhận": "55–65"
+      "Hình thức nhận": "Một lần hoặc định kỳ 10/20 năm"
+      "Lãi suất cam kết tối thiểu": "3%/năm"
+      "Lãi suất / kịch bản minh hoạ": "4,8%/năm"
+      "Phí ban đầu": "3% phí đóng"
+      "Phí quản lý quỹ": "Đã tính trong lãi"
+      "Giá trị quỹ dự kiến tuổi 60": "Mẫu: 580 triệu (cam kết) – 681 triệu (minh hoạ)"
+      "Nhận hằng tháng dự kiến": "Mẫu: 3,2 – 3,8 triệu (20 năm)"
+      "Tạm dừng đóng phí": "Chỉ từ năm thứ 3"
+      "Rút trước hạn": "Phạt 10% (năm 1–5), giảm dần về 0 sau năm 10"
+      "Quyền lợi tử vong khi đang tích luỹ": "Giá trị quỹ + 100 triệu"
+      "Chi trả và hỗ trợ": "Chuyển khoản, báo cáo quỹ hằng năm"
+      "Ưu đãi thuế": "Theo quy định hiện hành, cần kiểm tra"
+      "Thời gian cân nhắc": "21 ngày"
+    source: { type: fictional_demo, collected_at: "2026-09-26" }
+
+  - id: bm_tuonglai
+    is_fictional: true
+    is_reference: false
+    insurer: "Bình Minh Insurance"
+    product_name: "Tương Lai Vững"
+    insurance_type: retirement
+    legal_category: life
+    product_line: retirement_unit_linked
+    buyer_type: individual
+    distribution: [agent, bank]
+    investment_linked: true
+    eligibility: { entry_age_min: 18, entry_age_max: 60, requires_employment_contract: false, requires_loan: false, underwriting: simplified }
+    premium: { basis: chosen, min_annual_vnd: 10000000, display: "Tự chọn, tối thiểu 10 triệu/năm" }
+    finance_params: { initial_charge: 0.05, fund_management_fee: 0.015, scenarios_net_of_fund_fee: { low: 0.015, mid: 0.045, high: 0.065 }, payout_rate: 0.02, guaranteed_rate: null }
+    flexibility: { pause_rule: "Được, nếu giá trị quỹ đủ khấu trừ phí", partial_withdrawal_from_year: 3, withdrawal_fee: 0.02 }
+    death_benefit_accumulation: "Giá trị quỹ"
+    payout: { start_age_min: 55, start_age_max: 70, modes: ["một lần", "định kỳ"] }
+    illustration_sample:
+      profile: "Nữ 44 tuổi, đóng 28,8 triệu/năm trong 16 năm (tổng 460,8 triệu), nhận từ 60 tuổi trong 20 năm"
+      fund_at_60_vnd: { low: 498000000, mid: 650000000, high: 780000000 }
+      monthly_payout_vnd: { low: 2520000, mid: 3290000, high: 3940000 }
+    personalization_tags:
+      fits_concerns: [retirement_income]
+      fits_life_stage: [early_career, mid_career]
+      strengths: ["Có thể lãi cao hơn ở kịch bản tốt", "Rút một phần từ năm 3"]
+      watch_outs: ["Không cam kết lãi, giá trị quỹ phụ thuộc thị trường", "Phí ban đầu cao (5%)", "Là sản phẩm liên kết đầu tư: tư vấn phải được ghi âm"]
+    comparison_values:
+      "Dòng sản phẩm": "Hưu trí liên kết đơn vị (unit-linked)"
+      "Tuổi tham gia": "18–60"
+      "Phí": "Tự chọn, tối thiểu 10 triệu/năm"
+      "Tuổi bắt đầu nhận": "55–70"
+      "Hình thức nhận": "Một lần hoặc định kỳ"
+      "Lãi suất cam kết tối thiểu": "Không cam kết"
+      "Lãi suất / kịch bản minh hoạ": "1,5% / 4,5% / 6,5% (thấp / vừa / cao, sau phí quản lý quỹ)"
+      "Phí ban đầu": "5% phí đóng"
+      "Phí quản lý quỹ": "1,5%/năm (đã trừ trong kịch bản)"
+      "Giá trị quỹ dự kiến tuổi 60": "Mẫu: 498 / 650 / 780 triệu"
+      "Nhận hằng tháng dự kiến": "Mẫu: 2,5 / 3,3 / 3,9 triệu (20 năm)"
+      "Tạm dừng đóng phí": "Được, nếu giá trị quỹ đủ khấu trừ phí"
+      "Rút trước hạn": "Rút một phần sau năm 3, phí 2%"
+      "Quyền lợi tử vong khi đang tích luỹ": "Giá trị quỹ"
+      "Chi trả và hỗ trợ": "Theo dõi giá trị quỹ hằng ngày qua app"
+      "Ưu đãi thuế": "Theo quy định hiện hành, cần kiểm tra"
+      "Thời gian cân nhắc": "21 ngày"
+    regulation_refs: [reg_tt67_recording, reg_tt67_bank_60days]
+    source: { type: fictional_demo, collected_at: "2026-09-26" }
+
+  # ============ M3 – NHÂN THỌ ============
+  - id: sv_baotin
+    is_fictional: true
+    is_reference: false
+    insurer: "Sao Việt Assurance"
+    product_name: "Bảo Tín Đóng Một Lần"
+    insurance_type: life
+    legal_category: life
+    product_line: single_premium_whole_life
+    buyer_type: individual
+    distribution: [agent, bank]
+    investment_linked: false
+    eligibility: { entry_age_min: 40, entry_age_max: 70, requires_employment_contract: false, requires_loan: false, underwriting: simplified }
+    premium: { basis: fixed_by_profile, terms: [single] }
+    sample_premiums:
+      - { profile: "Nam 60 tuổi, tăng huyết áp kiểm soát tốt, không hút thuốc", premium_vnd: 350000000, period: single, total_premium_vnd: 350000000, sum_assured_vnd: 450000000 }
+    coverage: { coverage_end_age: 90, maturity_benefit: "Nhận số tiền bảo hiểm ở tuổi 90", cash_value_start_year: 1, cash_value_year1_pct_of_premium: 80 }
+    chronic_condition_handling: { hypertension_controlled: "Chấp nhận, phí chuẩn" }
+    riders: []
+    claims: { channel: "online", days: 10 }
+    personalization_tags:
+      fits_concerns: [spouse_protection, legacy, not_burden_children]
+      fits_life_stage: [pre_retirement, retired]
+      strengths: ["Thẩm định rút gọn (5 câu hỏi)", "Đóng một lần, không phải nhớ đóng hằng năm", "Có giá trị hoàn lại ngay từ năm 1"]
+      watch_outs: ["Số tiền bảo hiểm cố định, không tăng theo lạm phát", "Không có quyền lợi bổ trợ sức khoẻ"]
+    comparison_values:
+      "Dòng sản phẩm": "Trọn đời, đóng phí một lần"
+      "Tuổi tham gia tối đa": "70"
+      "Thời hạn bảo vệ": "Đến 90 tuổi"
+      "Phí": "Mẫu nam 60 tuổi: 350 triệu, một lần"
+      "Tổng phí": "350 triệu"
+      "Số tiền bảo hiểm": "450 triệu"
+      "Khi sống đến cuối hợp đồng": "Nhận 450 triệu ở tuổi 90"
+      "Thẩm định sức khoẻ": "Rút gọn (5 câu hỏi)"
+      "Xử lý tăng huyết áp đã kiểm soát": "Chấp nhận, phí chuẩn"
+      "Giá trị hoàn lại": "Có từ năm 1 (khoảng 80% phí), tăng dần"
+      "Quyền lợi bổ sung": "Không"
+      "Người thụ hưởng": "Chỉ định tự do, chia theo tỷ lệ"
+      "Bồi thường": "Hồ sơ online, 10 ngày làm việc"
+      "Thời gian cân nhắc": "21 ngày"
+    source: { type: fictional_demo, collected_at: "2026-09-26" }
+
+  - id: ap_disan
+    is_fictional: true
+    is_reference: false
+    insurer: "An Phúc Life"
+    product_name: "Di Sản Trọn Đời"
+    insurance_type: life
+    legal_category: life
+    product_line: whole_life_limited_pay
+    buyer_type: individual
+    distribution: [agent, online]
+    investment_linked: false
+    eligibility: { entry_age_min: 18, entry_age_max: 65, requires_employment_contract: false, requires_loan: false, underwriting: full }
+    premium: { basis: fixed_by_profile, terms: [10] }
+    sample_premiums:
+      - { profile: "Nam 60 tuổi, sức khoẻ chuẩn, không hút thuốc", premium_vnd: 48000000, period: annual, years: 10, total_premium_vnd: 480000000, sum_assured_vnd: 550000000 }
+    coverage: { coverage_end_age: 99, maturity_benefit: "Nhận số tiền bảo hiểm ở tuổi 99", cash_value_start_year: 3 }
+    chronic_condition_handling: { hypertension_controlled: "Chấp nhận, có thể cộng phụ phí 15–25%" }
+    riders: [{ name: "Bổ trợ bệnh hiểm nghèo", entry_age_max: 65 }]
+    claims: { channel: "đại lý hoặc online", days: 15 }
+    personalization_tags:
+      fits_concerns: [spouse_protection, legacy, medical_cost]
+      fits_life_stage: [mid_career, pre_retirement]
+      strengths: ["Số tiền bảo hiểm cao nhất nhóm (550 triệu)", "Bảo vệ đến 99 tuổi", "Có bổ trợ bệnh hiểm nghèo"]
+      watch_outs: ["Thẩm định đầy đủ", "Có thể bị cộng phụ phí nếu có bệnh mãn tính", "Giá trị hoàn lại từ năm 3"]
+    comparison_values:
+      "Dòng sản phẩm": "Trọn đời, đóng phí 10 năm"
+      "Tuổi tham gia tối đa": "65"
+      "Thời hạn bảo vệ": "Đến 99 tuổi"
+      "Phí": "Mẫu nam 60 tuổi: 48 triệu/năm × 10 năm"
+      "Tổng phí": "480 triệu"
+      "Số tiền bảo hiểm": "550 triệu"
+      "Khi sống đến cuối hợp đồng": "Nhận số tiền bảo hiểm ở tuổi 99"
+      "Thẩm định sức khoẻ": "Đầy đủ"
+      "Xử lý tăng huyết áp đã kiểm soát": "Chấp nhận, có thể cộng phụ phí 15–25%"
+      "Giá trị hoàn lại": "Có từ năm 3"
+      "Quyền lợi bổ sung": "Bệnh hiểm nghèo (tham gia đến 65 tuổi)"
+      "Người thụ hưởng": "Chỉ định tự do, chia theo tỷ lệ"
+      "Bồi thường": "Đại lý hoặc online, 15 ngày"
+      "Thời gian cân nhắc": "21 ngày"
+    source: { type: fictional_demo, collected_at: "2026-09-26" }
+
+  - id: bm_phucloc
+    is_fictional: true
+    is_reference: false
+    insurer: "Bình Minh Insurance"
+    product_name: "Phúc Lộc An Khang"
+    insurance_type: life
+    legal_category: life
+    product_line: endowment
+    buyer_type: individual
+    distribution: [agent]
+    investment_linked: false
+    eligibility: { entry_age_min: 18, entry_age_max: 60, requires_employment_contract: false, requires_loan: false, underwriting: medical_exam }
+    premium: { basis: fixed_by_profile, terms: [10] }
+    sample_premiums:
+      - { profile: "Nam 60 tuổi, sức khoẻ chuẩn, không hút thuốc", premium_vnd: 46000000, period: annual, years: 10, total_premium_vnd: 460000000, sum_assured_vnd: 450000000 }
+    coverage: { coverage_end_age: 80, maturity_benefit: "Nhận 450 triệu + lãi chia (không đảm bảo) ở tuổi 80", cash_value_start_year: 3 }
+    chronic_condition_handling: { hypertension_controlled: "Xét theo kết quả khám" }
+    riders: [{ name: "Hỗ trợ nằm viện" }]
+    claims: { channel: "tại văn phòng", days: 15 }
+    personalization_tags:
+      fits_concerns: [legacy, spouse_protection]
+      fits_life_stage: [mid_career, pre_retirement]
+      strengths: ["Nhận tiền khi đáo hạn ở tuổi 80", "Có bổ trợ nằm viện"]
+      watch_outs: ["Tổng phí (460 triệu) cao hơn số tiền bảo hiểm (450 triệu)", "Phải khám sức khoẻ bắt buộc", "Lãi chia không đảm bảo"]
+    comparison_values:
+      "Dòng sản phẩm": "Hỗn hợp (bảo vệ + đáo hạn)"
+      "Tuổi tham gia tối đa": "60"
+      "Thời hạn bảo vệ": "Đến 80 tuổi"
+      "Phí": "Mẫu nam 60 tuổi: 46 triệu/năm × 10 năm"
+      "Tổng phí": "460 triệu"
+      "Số tiền bảo hiểm": "450 triệu"
+      "Khi sống đến cuối hợp đồng": "Nhận 450 triệu + lãi chia (không đảm bảo) ở tuổi 80"
+      "Thẩm định sức khoẻ": "Khám sức khoẻ bắt buộc"
+      "Xử lý tăng huyết áp đã kiểm soát": "Xét theo kết quả khám"
+      "Giá trị hoàn lại": "Có từ năm 3"
+      "Quyền lợi bổ sung": "Hỗ trợ nằm viện"
+      "Người thụ hưởng": "Chỉ định tự do, chia theo tỷ lệ"
+      "Bồi thường": "Tại văn phòng, 15 ngày"
+      "Thời gian cân nhắc": "21 ngày"
+    source: { type: fictional_demo, collected_at: "2026-09-26" }
+
+  - id: ta_tuky75
+    is_fictional: true
+    is_reference: false
+    insurer: "Trường An Life"
+    product_name: "Tử Kỳ An Tâm 75"
+    insurance_type: life
+    legal_category: life
+    product_line: term_life
+    buyer_type: individual
+    distribution: [online, agent]
+    investment_linked: false
+    eligibility: { entry_age_min: 18, entry_age_max: 60, requires_employment_contract: false, requires_loan: false, underwriting: full }
+    premium: { basis: fixed_by_profile, terms: [15] }
+    sample_premiums:
+      - { profile: "Nam 60 tuổi, sức khoẻ chuẩn, không hút thuốc", premium_vnd: 18000000, period: annual, years: 15, total_premium_vnd: 270000000, sum_assured_vnd: 500000000 }
+    coverage: { coverage_end_age: 75, maturity_benefit: "Không có", cash_value_start_year: null }
+    chronic_condition_handling: { hypertension_controlled: "Chấp nhận, có thể cộng phụ phí" }
+    riders: [{ name: "Bổ trợ tai nạn" }]
+    claims: { channel: "online", days: 10 }
+    personalization_tags:
+      fits_concerns: [spouse_protection, children_education]
+      fits_life_stage: [early_career, mid_career]
+      strengths: ["Phí thấp nhất nhóm", "Số tiền bảo hiểm 500 triệu"]
+      watch_outs: ["Sống qua 75 tuổi thì không nhận gì", "Không có giá trị hoàn lại"]
+    comparison_values:
+      "Dòng sản phẩm": "Tử kỳ"
+      "Tuổi tham gia tối đa": "60"
+      "Thời hạn bảo vệ": "Đến 75 tuổi"
+      "Phí": "Mẫu nam 60 tuổi: 18 triệu/năm × 15 năm"
+      "Tổng phí": "270 triệu"
+      "Số tiền bảo hiểm": "500 triệu"
+      "Khi sống đến cuối hợp đồng": "Không nhận gì"
+      "Thẩm định sức khoẻ": "Tờ khai, có thể xét nghiệm"
+      "Xử lý tăng huyết áp đã kiểm soát": "Chấp nhận, có thể cộng phụ phí"
+      "Giá trị hoàn lại": "Không có"
+      "Quyền lợi bổ sung": "Tai nạn"
+      "Người thụ hưởng": "Chỉ định tự do, chia theo tỷ lệ"
+      "Bồi thường": "Online, 10 ngày"
+      "Thời gian cân nhắc": "21 ngày"
+    source: { type: fictional_demo, collected_at: "2026-09-26" }
+
+  # ============ M4 – SỨC KHOẺ VÀ TAI NẠN (bổ sung) ============
+  - id: gov_bhyt
+    is_fictional: false
+    is_reference: true
+    insurer: "Nhà nước (BHXH Việt Nam)"
+    product_name: "Bảo hiểm y tế"
+    insurance_type: health
+    legal_category: state_scheme
+    eligibility: { entry_age_min: 0, entry_age_max: null, requires_employment_contract: false, requires_loan: false, underwriting: none }
+    premium: { basis: by_group, display: "Theo nhóm đối tượng; người hưởng lương hưu được cấp thẻ" }
+    personalization_tags:
+      fits_concerns: [medical_cost]
+      fits_life_stage: [young_adult, early_career, mid_career, pre_retirement, retired]
+      strengths: ["Nền tảng chi trả chi phí khám chữa bệnh"]
+      watch_outs: ["Chi trả theo phạm vi và mức hưởng quy định, có phần người bệnh tự trả"]
+    comparison_values:
+      "Dòng sản phẩm": "Chế độ Nhà nước"
+      "Tuổi tham gia": "Mọi lứa tuổi"
+      "Phí": "Theo nhóm đối tượng"
+      "Quyền lợi chính": "Chi trả chi phí khám chữa bệnh theo phạm vi và mức hưởng quy định"
+      "Hạn mức": "Theo quy định"
+      "Đồng chi trả": "Có, theo quy định"
+      "Thời gian chờ": "Theo quy định"
+      "Loại trừ chính": "Theo quy định"
+      "Bảo lãnh viện phí": "Dùng thẻ tại cơ sở khám chữa bệnh"
+      "Tái tục tối đa": "Không giới hạn"
+      "Bồi thường": "Thanh toán trực tiếp tại cơ sở khám chữa bệnh"
+    regulation_refs: [reg_pension_bhyt]
+    source: { type: regulation, collected_at: "2026-09-26", verified: partial }
+
+  - id: ap_suckhoe
+    is_fictional: true
+    is_reference: false
+    insurer: "An Phúc Life"
+    product_name: "An Khang Sức Khoẻ"
+    insurance_type: health
+    legal_category: health
+    product_line: health_care
+    buyer_type: individual
+    distribution: [agent, online]
+    investment_linked: false
+    eligibility: { entry_age_min: 18, entry_age_max: 65, renew_age_max: 75, requires_employment_contract: false, requires_loan: false, underwriting: simplified }
+    premium: { basis: fixed_by_profile }
+    sample_premiums:
+      - { profile: "Nam 60 tuổi, tăng huyết áp kiểm soát tốt", premium_vnd: 9500000, period: annual }
+    coverage: { inpatient_limit_vnd: 200000000, coinsurance_age_60_plus_pct: 20, waiting_days_illness: 30, waiting_days_preexisting: 365 }
+    claims: { channel: "bảo lãnh viện phí tại bệnh viện liên kết hoặc hồ sơ online", days: 10 }
+    personalization_tags:
+      fits_concerns: [medical_cost]
+      fits_life_stage: [mid_career, pre_retirement]
+      strengths: ["Bảo lãnh viện phí", "Hạn mức nội trú 200 triệu/năm"]
+      watch_outs: ["Bệnh có sẵn phải chờ 1 năm", "Đồng chi trả 20% từ 60 tuổi", "Tái tục tối đa đến 75 tuổi"]
+    comparison_values:
+      "Dòng sản phẩm": "Chăm sóc sức khoẻ (nội trú, ngoại trú tuỳ chọn)"
+      "Tuổi tham gia": "18–65"
+      "Phí": "Mẫu nam 60 tuổi: 9,5 triệu/năm"
+      "Quyền lợi chính": "Chi phí nằm viện, phẫu thuật; ngoại trú tuỳ chọn"
+      "Hạn mức": "200 triệu/năm (nội trú)"
+      "Đồng chi trả": "20% với người từ 60 tuổi"
+      "Thời gian chờ": "30 ngày bệnh thông thường, 1 năm bệnh có sẵn"
+      "Loại trừ chính": "Bệnh có sẵn trong năm đầu, thẩm mỹ, điều trị thử nghiệm"
+      "Bảo lãnh viện phí": "Có, tại bệnh viện liên kết"
+      "Tái tục tối đa": "Đến 75 tuổi"
+      "Bồi thường": "Bảo lãnh viện phí hoặc hồ sơ online, 10 ngày"
+    source: { type: fictional_demo, collected_at: "2026-09-26" }
+
+  - id: bm_tainan
+    is_fictional: true
+    is_reference: false
+    insurer: "Bình Minh Insurance"
+    product_name: "Tai Nạn 24h"
+    insurance_type: health
+    legal_category: health
+    product_line: personal_accident
+    buyer_type: individual
+    distribution: [online]
+    investment_linked: false
+    eligibility: { entry_age_min: 18, entry_age_max: 65, requires_employment_contract: false, requires_loan: false, underwriting: none }
+    premium: { basis: fixed, amount_vnd: 25000, period: monthly, display: "25.000đ/tháng" }
+    coverage: { death_tpd_vnd: 100000000, hospital_daily_vnd: 200000, hospital_days_max: 30, income_loss_monthly_vnd: 3000000, income_loss_months_max: 3, waiting_days: 0 }
+    claims: { channel: "online", days: 7 }
+    personalization_tags:
+      fits_concerns: [income_gap, medical_cost]
+      fits_life_stage: [young_adult, early_career, mid_career]
+      strengths: ["Phí rất thấp", "Có trợ cấp mất thu nhập do tai nạn", "Không có thời gian chờ"]
+      watch_outs: ["Chỉ chi trả khi do tai nạn, không chi trả khi ốm bệnh hoặc mất việc"]
+    comparison_values:
+      "Dòng sản phẩm": "Tai nạn con người"
+      "Tuổi tham gia": "18–65"
+      "Phí": "25.000đ/tháng"
+      "Quyền lợi chính": "Tử vong/thương tật do tai nạn 100 triệu; nằm viện 200 nghìn/ngày; mất thu nhập do tai nạn 3 triệu/tháng"
+      "Hạn mức": "Nằm viện tối đa 30 ngày/năm; mất thu nhập tối đa 3 tháng"
+      "Đồng chi trả": "Không"
+      "Thời gian chờ": "Không"
+      "Loại trừ chính": "Ốm bệnh, hành vi cố ý, sử dụng rượu bia khi lái xe"
+      "Bảo lãnh viện phí": "Không"
+      "Tái tục tối đa": "Đến 65 tuổi"
+      "Bồi thường": "Online, 7 ngày"
+    source: { type: fictional_demo, collected_at: "2026-09-26" }
+
+# ---------------------------------------------------------------------
+# 7. REGULATIONS – tri thức quy định
+#    verified: true = đã đối chiếu nguồn ghi kèm; partial / false = chỉ nói khái quát
+# ---------------------------------------------------------------------
+regulations:
+  - id: reg_insurance_categories
+    topic: "Loại hình bảo hiểm"
+    segment: all
+    content_vi: "Luật Kinh doanh bảo hiểm 2022 chia thành 3 loại hình: bảo hiểm nhân thọ, bảo hiểm sức khoẻ, bảo hiểm phi nhân thọ. Nghiệp vụ chi tiết do Chính phủ quy định (Nghị định 46/2023/NĐ-CP); nhân thọ gồm trọn đời, sinh kỳ, tử kỳ, hỗn hợp, cùng các nghiệp vụ liên kết đầu tư và hưu trí; phi nhân thọ có nghiệp vụ tín dụng và rủi ro tài chính."
+    legal_basis: "Luật 08/2022/QH15; Nghị định 46/2023/NĐ-CP"
+    source_url: "https://xaydungchinhsach.chinhphu.vn/toan-van-luat-kinh-doanh-bao-hiem-119240130070753445.htm"
+    verified: true
+  - id: reg_bhtn_participants
+    topic: "Đối tượng tham gia BHTN"
+    segment: M1
+    content_vi: "Từ 1/1/2026, người lao động có hợp đồng lao động xác định thời hạn từ 1 tháng trở lên thuộc đối tượng phải tham gia BHTN."
+    legal_basis: "Luật Việc làm 2025, khoản 1 Điều 31"
+    effective_from: "2026-01-01"
+    source_url: "https://hatinh.gov.vn/vi/bai-viet/tu-nam-2026-nguoi-lao-dong-se-duoc-tang-muc-huong-tro-cap-that-nghiep"
+    verified: true
+  - id: reg_bhtn_conditions
+    topic: "Điều kiện hưởng trợ cấp thất nghiệp"
+    segment: M1
+    content_vi: "Chấm dứt HĐ theo quy định (không phải đơn phương chấm dứt trái pháp luật, không phải nghỉ việc khi đủ điều kiện hưởng lương hưu) và đã đóng BHTN đủ 12 tháng trở lên trong 24 tháng trước khi chấm dứt HĐ; cùng các điều kiện khác theo Điều 38."
+    legal_basis: "Luật Việc làm 2025, Điều 38"
+    effective_from: "2026-01-01"
+    source_url: "https://baochinhphu.vn/bon-dieu-kien-huong-tro-cap-that-nghiep-tu-2026-102260116155112955.htm"
+    verified: true
+  - id: reg_bhtn_amount
+    topic: "Mức hưởng trợ cấp thất nghiệp"
+    segment: M1
+    content_vi: "Mức hưởng hằng tháng bằng 60% bình quân tiền lương tháng đóng BHTN của 6 tháng liền kề trước khi thất nghiệp, tối đa không quá 5 lần mức lương tối thiểu vùng."
+    legal_basis: "Luật Việc làm 2025, khoản 1 Điều 39"
+    effective_from: "2026-01-01"
+    source_url: "https://xaydungchinhsach.chinhphu.vn/nhung-thay-doi-quan-trong-ve-cac-che-do-huong-bao-hiem-that-nghiep-tu-1-1-2026-119251205095855316.htm"
+    verified: true
+  - id: reg_bhtn_start
+    topic: "Thời điểm hưởng trợ cấp thất nghiệp"
+    segment: M1
+    content_vi: "Thời điểm hưởng trợ cấp thất nghiệp là ngày làm việc thứ 11 kể từ ngày nộp đủ hồ sơ."
+    legal_basis: "Luật Việc làm 2025"
+    source_url: "https://vneconomy.vn/thay-doi-dieu-kien-huong-tro-cap-that-nghiep-tu-1-1-2026.htm"
+    verified: true
+  - id: reg_bhtn_duration
+    topic: "Thời gian hưởng trợ cấp thất nghiệp"
+    segment: M1
+    content_vi: "Thời gian hưởng tính theo số tháng đã đóng BHTN. Chi tiết cần tra cứu Nghị định 374/2025/NĐ-CP."
+    legal_basis: "Luật Việc làm 2025; Nghị định 374/2025/NĐ-CP"
+    source_url: "https://baohiemxahoi.gov.vn/tintuc/Pages/linh-vuc-bao-hiem-xa-hoi.aspx?ItemID=26068&CateID=168"
+    verified: false
+  - id: reg_pension_15y
+    topic: "Số năm đóng BHXH tối thiểu để hưởng lương hưu"
+    segment: M2
+    content_vi: "Từ 1/7/2025, người lao động đủ tuổi nghỉ hưu và có từ đủ 15 năm đóng BHXH trở lên được hưởng lương hưu hằng tháng (giảm từ 20 năm), áp dụng cả với BHXH tự nguyện."
+    legal_basis: "Luật BHXH 2024 (41/2024/QH15), Điều 64, 98"
+    effective_from: "2025-07-01"
+    source_url: "https://baohiemxahoi.gov.vn/tintuc/Pages/linh-vuc-bao-hiem-xa-hoi.aspx?CateID=168&ItemID=23692"
+    verified: true
+  - id: reg_pension_rate_female
+    topic: "Tỷ lệ hưởng lương hưu – lao động nữ"
+    segment: M2
+    content_vi: "45% mức bình quân thu nhập làm căn cứ đóng BHXH ứng với 15 năm đóng; mỗi năm đóng thêm cộng 2%; tối đa 75%."
+    legal_basis: "Luật BHXH 2024"
+    source_url: "https://xaydungchinhsach.chinhphu.vn/tra-cuu-ty-le-huong-luong-huu-hang-thang-tinh-theo-so-nam-dong-bhxh-tu-1-7-11925040914175139.htm"
+    verified: true
+  - id: reg_pension_rate_male
+    topic: "Tỷ lệ hưởng lương hưu – lao động nam"
+    segment: M2
+    content_vi: "Đóng từ 15 đến dưới 20 năm: 15 năm ứng với 40%, mỗi năm thêm 1%; 20 năm ứng với 45%; sau đó mỗi năm thêm 2%; tối đa 75%."
+    legal_basis: "Luật BHXH 2024"
+    source_url: "https://baohiemxahoi.gov.vn/tintuc/Pages/linh-vuc-bao-hiem-xa-hoi.aspx?CateID=168&ItemID=23692"
+    verified: partial
+    note_vi: "Phần 15–20 năm đã đối chiếu; phần cộng 2% mỗi năm sau 20 năm cần kiểm tra lại."
+  - id: reg_pension_bhyt
+    topic: "BHYT cho người hưởng lương hưu"
+    segment: M2
+    content_vi: "Người hưởng lương hưu hằng tháng được hưởng BHYT trong suốt quá trình hưởng lương hưu."
+    legal_basis: "Luật BHXH 2024"
+    source_url: "https://baohiemxahoi.gov.vn/tintuc/Pages/linh-vuc-bao-hiem-xa-hoi.aspx?CateID=168&ItemID=23692"
+    verified: true
+  - id: reg_retirement_age
+    topic: "Tuổi nghỉ hưu"
+    segment: M2
+    content_vi: "Theo lộ trình Bộ luật Lao động 2019: nam từ 60 tuổi 3 tháng (năm 2021), tăng 3 tháng mỗi năm đến 62 tuổi (năm 2028); nữ từ 55 tuổi 4 tháng (năm 2021), tăng 4 tháng mỗi năm đến 60 tuổi (năm 2035)."
+    legal_basis: "Bộ luật Lao động 2019, Điều 169"
+    source_url: "https://xaydungchinhsach.chinhphu.vn/dieu-kien-huong-luong-huu-theo-luat-bao-hiem-xa-hoi-nam-2024-119250923090733775.htm"
+    verified: partial
+    note_vi: "Lộ trình của nam đã đối chiếu; lộ trình của nữ theo Bộ luật Lao động 2019, cần đối chiếu thêm."
+  - id: reg_bhxh_tn_contribution
+    topic: "Mức đóng BHXH tự nguyện"
+    segment: M2
+    content_vi: "Người tham gia đóng theo tỷ lệ 22% mức thu nhập tháng do mình lựa chọn; Nhà nước có hỗ trợ một phần tiền đóng cho một số nhóm."
+    legal_basis: "Luật BHXH 2024"
+    verified: false
+    note_vi: "Tỷ lệ, mức thu nhập tối thiểu làm căn cứ đóng và mức hỗ trợ cần tra cứu văn bản hiện hành."
+  - id: reg_bhxh_lump_sum
+    topic: "Rút BHXH một lần"
+    segment: M2
+    content_vi: "Khi đã nhận BHXH một lần, thời gian đóng tương ứng không còn được tính để hưởng lương hưu. Nên cân nhắc kỹ trước khi rút."
+    verified: partial
+  - id: reg_survivor_allowance
+    topic: "Chế độ tử tuất"
+    segment: M3
+    content_vi: "Thân nhân của người đang hưởng lương hưu khi người đó mất có thể được hưởng trợ cấp tuất (một lần hoặc hằng tháng) nếu đủ điều kiện."
+    verified: false
+    note_vi: "Điều kiện và mức hưởng cần tra cứu; LUMI chỉ nhắc khách hỏi cơ quan BHXH."
+  - id: reg_retirement_insurance_payout
+    topic: "Quyền lợi của bảo hiểm hưu trí (nghiệp vụ nhân thọ)"
+    segment: M2
+    content_vi: "Quyền lợi hưu trí được chi trả định kỳ theo thoả thuận; trong thời gian đóng phí thường có quyền lợi tử vong hoặc thương tật; có thể kèm quyền lợi bổ sung."
+    source_url: "https://www.manulife.com.vn/vi/kien-thuc/nhung-thong-tin-huu-ich-ve-quyen-loi-bao-hiem-huu-tri.html"
+    verified: partial
+    note_vi: "Nguồn là tài liệu của một doanh nghiệp; cần đối chiếu Nghị định 46/2023/NĐ-CP."
+  - id: reg_tt67_recording
+    topic: "Ghi âm khi tư vấn sản phẩm liên kết đầu tư"
+    segment: M2
+    content_vi: "Việc tư vấn sản phẩm bảo hiểm liên kết đầu tư phải được ghi âm; tài liệu liên quan lưu tối thiểu 5 năm."
+    legal_basis: "Thông tư 67/2023/TT-BTC"
+    effective_from: "2023-11-02"
+    source_url: "https://xaydungchinhsach.chinhphu.vn/nhung-diem-moi-cua-thong-tu-67-2023-tt-btc-ve-kinh-doanh-bao-hiem-119231112092640447.htm"
+    verified: true
+  - id: reg_tt67_bank_60days
+    topic: "Hạn chế tư vấn qua ngân hàng"
+    segment: M2
+    content_vi: "Tổ chức tín dụng làm đại lý bảo hiểm không được tư vấn sản phẩm liên kết đầu tư trong vòng 60 ngày trước và sau khi giải ngân khoản vay cho khách."
+    legal_basis: "Thông tư 67/2023/TT-BTC"
+    source_url: "https://xaydungchinhsach.chinhphu.vn/nhung-diem-moi-cua-thong-tu-67-2023-tt-btc-ve-kinh-doanh-bao-hiem-119231112092640447.htm"
+    verified: true
+  - id: reg_tt67_waiting_caps
+    topic: "Giới hạn thời gian chờ"
+    segment: M4
+    content_vi: "Thời gian chờ tối đa: 90 ngày với bệnh thông thường, 1 năm với bệnh có sẵn, 270 ngày với thai sản."
+    legal_basis: "Thông tư 67/2023/TT-BTC"
+    source_url: "https://luatvietnam.vn/bao-hiem/diem-moi-cua-thong-tu-67-2023-tt-btc-ve-kinh-doanh-bao-hiem-563-96146-article.html"
+    verified: true
+  - id: reg_tt67_buyer_age
+    topic: "Tuổi của bên mua bảo hiểm"
+    segment: all
+    content_vi: "Cá nhân mua bảo hiểm nhân thọ, sức khoẻ tại Việt Nam phải từ đủ 18 tuổi."
+    legal_basis: "Thông tư 67/2023/TT-BTC"
+    source_url: "https://luatvietnam.vn/bao-hiem/diem-moi-cua-thong-tu-67-2023-tt-btc-ve-kinh-doanh-bao-hiem-563-96146-article.html"
+    verified: true
+  - id: reg_free_look
+    topic: "Thời gian cân nhắc"
+    segment: all
+    content_vi: "Hợp đồng bảo hiểm nhân thọ và sức khoẻ dài hạn thường có thời gian cân nhắc (khoảng 21 ngày) để khách đọc lại và có thể huỷ hợp đồng theo quy định."
+    verified: false
+    note_vi: "Kiểm tra số ngày và điều kiện hoàn phí trong quy tắc điều khoản của từng sản phẩm."
+  - id: reg_microinsurance
+    topic: "Bảo hiểm vi mô"
+    segment: all
+    content_vi: "Bảo hiểm vi mô dành cho cá nhân, hộ gia đình có thu nhập thấp, bảo vệ trước rủi ro về tính mạng, sức khoẻ, tài sản."
+    legal_basis: "Luật 08/2022/QH15"
+    source_url: "https://xaydungchinhsach.chinhphu.vn/toan-van-luat-kinh-doanh-bao-hiem-119240130070753445.htm"
+    verified: true
+  - id: reg_job_loss_market
+    topic: "Thực tế thị trường bảo hiểm mất việc"
+    segment: M1
+    content_vi: "Quyền lợi mất việc thương mại thường gắn với khoản vay, thẻ tín dụng hoặc gói đi kèm dịch vụ ngân hàng. Ví dụ năm 2025 có gói đi kèm dịch vụ trả lương chi trả khi người lao động mất việc do doanh nghiệp phá sản hoặc cắt giảm nhân sự."
+    source_url: "https://danviet.vn/nguoi-lao-dong-nhan-tro-cap-mat-viec-tu-goi-bao-hiem-vpbank-d1366464.html"
+    verified: true
+
+# ---------------------------------------------------------------------
+# 8. FINANCE – công thức (code dùng, A4 chỉ đọc kết quả)
+# ---------------------------------------------------------------------
+finance:
+  fund_accumulation:
+    description_vi: "Giá trị quỹ sau n năm, đóng đầu năm, trừ phí ban đầu, lãi kép hằng năm."
+    formula: "fv = 0; for each year: fv = (fv + premium_annual * (1 - initial_charge)) * (1 + rate)"
+    rate_source: "guaranteed_rate | illustrated_rate | scenarios_net_of_fund_fee"
+  annuity_payout:
+    description_vi: "Số tiền nhận đều hằng tháng trong n tháng từ giá trị quỹ."
+    formula: "monthly = fv * r / (1 - (1 + r) ** -months), r = payout_rate / 12"
+    default_months: 240
+  bhxh_pension_rate:
+    description_vi: "Tỷ lệ hưởng lương hưu theo số năm đóng (xem reg_pension_rate_female, reg_pension_rate_male)."
+    female: "rate = min(75, 45 + 2 * (years - 15)) if years >= 15 else 0"
+    male: "rate = 0 if years < 15 else (40 + (years - 15) if years < 20 else min(75, 45 + 2 * (years - 20)))"
+    note_vi: "Lương hưu ≈ rate% × bình quân thu nhập làm căn cứ đóng (đã điều chỉnh). Luôn gọi là ước tính sơ bộ."
+  pension_gap:
+    formula: "missing_years = max(0, 15 - (bhxh_years + years_to_retirement_if_continue))"
+    note_vi: "Nếu khách không đóng tiếp, missing_years = max(0, 15 - bhxh_years)."
+  unemployment_gap:
+    formula: "months_to_eligibility = max(0, 12 - bhtn_months)"
+  installment_cover:
+    formula: "cover = min(remaining_installments, benefit_max_periods) * min(installment, benefit_cap_per_period_vnd)"
+  premium_to_income_ratio:
+    formula: "ratio = monthly_premium / monthly_income"
+  worked_examples:
+    - name: "Vương – bị cắt giảm ở tháng 4"
+      inputs: { installment_vnd: 1200000, remaining_installments_at_loss: 5, genz_months_paid: 2, premiums_paid_months: 4, monthly_premium_total_vnd: 94000 }
+      outputs: { genz_benefit_vnd: 4000000, tragop_cover_vnd: 6000000, total_support_vnd: 10000000, premiums_paid_vnd: 376000, bhtn_benefit_vnd: 0 }
+    - name: "Chị Mai – BHXH tự nguyện + Hưu Trí Linh Hoạt"
+      inputs: { bhxh_years_total: 24, avg_income_basis_vnd: 4000000, premium_annual_vnd: 28800000, years: 16 }
+      outputs: { pension_rate_pct: 63, bhxh_pension_vnd: 2520000, product_monthly_vnd: { guaranteed: 2710000, illustrated: 3390000 }, total_monthly_vnd: { low: 5230000, high: 5910000 } }
+    - name: "Ông Đức – bà nhận được gì"
+      inputs: { expected_pension_vnd: 10000000 }
+      outputs: { baotin_death_benefit_vnd: 450000000, months_of_pension_equivalent: 45, tuky75_if_death_after_75_vnd: 0, baotin_cash_value_year1_vnd: 280000000 }
+
+# ---------------------------------------------------------------------
+# 9. GLOSSARY – thuật ngữ
+# ---------------------------------------------------------------------
+glossary:
+  - { term: "Số tiền bảo hiểm", explain_vi: "Số tiền công ty bảo hiểm cam kết chi trả khi xảy ra sự kiện được bảo hiểm.", example_vi: "Hợp đồng có số tiền bảo hiểm 450 triệu thì người thụ hưởng nhận 450 triệu khi người được bảo hiểm mất." }
+  - { term: "Phí bảo hiểm", explain_vi: "Số tiền khách phải đóng để hợp đồng có hiệu lực.", example_vi: "59.000đ mỗi tháng." }
+  - { term: "Bên mua bảo hiểm", explain_vi: "Người ký hợp đồng và đóng phí.", example_vi: "Ông Đức mua bảo hiểm cho chính mình." }
+  - { term: "Người được bảo hiểm", explain_vi: "Người mà sức khoẻ, tính mạng được bảo hiểm.", example_vi: "Ông Đức là người được bảo hiểm." }
+  - { term: "Người thụ hưởng", explain_vi: "Người nhận tiền bảo hiểm khi sự kiện xảy ra.", example_vi: "Bà nhà được chỉ định là người thụ hưởng chính." }
+  - { term: "Thời gian chờ", explain_vi: "Khoảng thời gian từ khi mua đến khi một quyền lợi bắt đầu được chi trả.", example_vi: "Thời gian chờ 90 ngày: mất việc trong 90 ngày đầu sẽ không được chi trả." }
+  - { term: "Điều khoản loại trừ", explain_vi: "Các trường hợp công ty bảo hiểm không chi trả.", example_vi: "Tự nghỉ việc thường bị loại trừ trong bảo hiểm mất việc." }
+  - { term: "Thời gian cân nhắc", explain_vi: "Khoảng thời gian sau khi nhận hợp đồng để khách đọc lại và có thể huỷ theo quy định.", example_vi: "Thường khoảng 21 ngày với hợp đồng nhân thọ." }
+  - { term: "Giá trị hoàn lại", explain_vi: "Số tiền khách nhận lại nếu huỷ hợp đồng trước hạn.", example_vi: "Năm đầu có thể nhận lại khoảng 80% phí đã đóng." }
+  - { term: "Đáo hạn", explain_vi: "Thời điểm hợp đồng kết thúc theo thời hạn; một số sản phẩm chi trả quyền lợi khi đáo hạn.", example_vi: "Hợp đồng hỗn hợp đáo hạn ở tuổi 80." }
+  - { term: "Sản phẩm bổ trợ", explain_vi: "Quyền lợi mua thêm kèm hợp đồng chính.", example_vi: "Bổ trợ bệnh hiểm nghèo." }
+  - { term: "Thẩm định sức khoẻ", explain_vi: "Quá trình công ty bảo hiểm đánh giá sức khoẻ để quyết định nhận bảo hiểm và mức phí.", example_vi: "Rút gọn (vài câu hỏi) hoặc đầy đủ (có thể phải khám)." }
+  - { term: "Phụ phí", explain_vi: "Phần phí cộng thêm khi người được bảo hiểm có rủi ro sức khoẻ cao hơn chuẩn.", example_vi: "Cộng 15–25% phí nếu có tăng huyết áp." }
+  - { term: "Bảo hiểm tử kỳ", explain_vi: "Chi trả nếu người được bảo hiểm mất trong thời hạn hợp đồng; hết hạn mà vẫn sống thì không nhận gì.", example_vi: "Tử kỳ đến 75 tuổi." }
+  - { term: "Bảo hiểm trọn đời", explain_vi: "Bảo vệ đến rất cao tuổi (ví dụ 99), chắc chắn chi trả một khoản.", example_vi: "Dùng để để lại tài sản cho gia đình." }
+  - { term: "Bảo hiểm hỗn hợp", explain_vi: "Vừa chi trả khi mất trong thời hạn, vừa chi trả khi sống đến đáo hạn.", example_vi: "Nhận số tiền bảo hiểm khi đến 80 tuổi." }
+  - { term: "Bảo hiểm sinh kỳ", explain_vi: "Chi trả nếu người được bảo hiểm còn sống đến một thời điểm nhất định.", example_vi: "Nhận tiền khi đủ 60 tuổi." }
+  - { term: "Bảo hiểm liên kết chung", explain_vi: "Bảo hiểm kèm tài khoản tích luỹ có lãi suất cam kết tối thiểu.", example_vi: "Lãi thực tế có thể cao hơn nhưng không thấp hơn mức cam kết." }
+  - { term: "Bảo hiểm liên kết đơn vị", explain_vi: "Bảo hiểm kèm đầu tư vào quỹ; giá trị phụ thuộc thị trường, không cam kết.", example_vi: "Kịch bản 1,5% / 4,5% / 6,5% chỉ là minh hoạ." }
+  - { term: "Lãi suất cam kết", explain_vi: "Mức lãi tối thiểu công ty bảo đảm trả.", example_vi: "Cam kết 2%/năm." }
+  - { term: "Lãi suất minh hoạ", explain_vi: "Mức lãi giả định để minh hoạ, không phải cam kết.", example_vi: "Minh hoạ 4,5%/năm." }
+  - { term: "Phí ban đầu", explain_vi: "Phần trăm phí bị khấu trừ trước khi đưa vào tài khoản tích luỹ.", example_vi: "Phí ban đầu 3% nghĩa là đóng 100 thì 97 vào quỹ." }
+  - { term: "Phí quản lý quỹ", explain_vi: "Phí trừ hằng năm trên giá trị quỹ đầu tư.", example_vi: "1,5%/năm." }
+  - { term: "Tạm dừng đóng phí", explain_vi: "Quyền ngưng đóng phí một thời gian mà hợp đồng vẫn duy trì theo điều kiện sản phẩm.", example_vi: "Tối đa 24 tháng từ năm thứ 2." }
+  - { term: "Rút một phần", explain_vi: "Rút bớt tiền từ tài khoản tích luỹ khi hợp đồng còn hiệu lực.", example_vi: "Rút sau năm 5 không bị phạt." }
+  - { term: "Thương tật toàn bộ vĩnh viễn (TTTBVV)", explain_vi: "Mất khả năng lao động vĩnh viễn ở mức nặng theo định nghĩa của hợp đồng.", example_vi: "Thường được chi trả như trường hợp tử vong." }
+  - { term: "Đồng chi trả", explain_vi: "Phần chi phí y tế khách tự trả theo tỷ lệ.", example_vi: "Đồng chi trả 20%: hoá đơn 10 triệu thì khách trả 2 triệu." }
+  - { term: "Bảo lãnh viện phí", explain_vi: "Công ty bảo hiểm thanh toán trực tiếp cho bệnh viện liên kết.", example_vi: "Khách không phải ứng tiền trước." }
+  - { term: "Bệnh có sẵn", explain_vi: "Bệnh đã có trước khi mua bảo hiểm.", example_vi: "Thường phải chờ đến 1 năm mới được chi trả." }
+  - { term: "BHXH bắt buộc", explain_vi: "Bảo hiểm xã hội người lao động có hợp đồng phải tham gia.", example_vi: "Chị Mai có 8 năm khi làm công nhân may." }
+  - { term: "BHXH tự nguyện", explain_vi: "Bảo hiểm xã hội người không thuộc diện bắt buộc tự đóng để hưởng lương hưu.", example_vi: "Người kinh doanh tự do đóng tiếp để đủ 15 năm." }
+  - { term: "BHXH một lần", explain_vi: "Nhận một khoản tiền thay cho việc tiếp tục tích luỹ thời gian đóng.", example_vi: "Rút rồi thì thời gian đóng tương ứng không còn được tính cho lương hưu." }
+  - { term: "Bảo hiểm thất nghiệp (BHTN)", explain_vi: "Chế độ Nhà nước chi trả trợ cấp khi người lao động mất việc và đủ điều kiện.", example_vi: "Cần đủ 12 tháng đóng trong 24 tháng." }
+  - { term: "Bảo hiểm y tế (BHYT)", explain_vi: "Chế độ Nhà nước chi trả một phần chi phí khám chữa bệnh.", example_vi: "Người hưởng lương hưu được cấp thẻ." }
+  - { term: "Bảng minh hoạ quyền lợi", explain_vi: "Tài liệu công ty phát hành để minh hoạ quyền lợi theo từng năm cho một hồ sơ mẫu.", example_vi: "Dùng để lấy số liệu giá trị hoàn lại, giá trị quỹ." }
+  - { term: "Quy tắc, điều khoản", explain_vi: "Tài liệu pháp lý quy định đầy đủ quyền lợi, loại trừ của sản phẩm.", example_vi: "Nguồn chính xác nhất để kiểm tra loại trừ." }
+  - { term: "Bảo hiểm vi mô", explain_vi: "Bảo hiểm phí thấp dành cho người thu nhập thấp.", example_vi: "Phù hợp khi ngân sách rất hạn chế." }
+
+# ---------------------------------------------------------------------
+# 10. FAQ – câu hỏi thường gặp theo mảng
+# ---------------------------------------------------------------------
+faq:
+  M1:
+    - q: "Chưa đi làm thì mua bảo hiểm mất việc được không?"
+      a: "Hầu hết quyền lợi mất việc yêu cầu đang có hợp đồng lao động, nên thời điểm hợp lý là ngay sau khi ký hợp đồng. Khi có hợp đồng từ 1 tháng trở lên, bạn cũng tự động tham gia BHTN của Nhà nước."
+      refs: [reg_bhtn_participants]
+    - q: "Bị cắt giảm sau vài tháng đi làm có được trợ cấp thất nghiệp không?"
+      a: "BHTN của Nhà nước yêu cầu đã đóng đủ 12 tháng trong 24 tháng trước khi nghỉ, nên nếu mới đi làm vài tháng thì chưa được hưởng."
+      refs: [reg_bhtn_conditions]
+    - q: "Tự nghỉ việc có được chi trả không?"
+      a: "Với BHTN của Nhà nước, trường hợp đơn phương chấm dứt hợp đồng trái pháp luật thì không được hưởng; nghỉ đúng quy định vẫn có thể được hưởng nếu đủ các điều kiện khác. Các gói thương mại trong catalog đều loại trừ trường hợp tự nghỉ."
+      refs: [reg_bhtn_conditions]
+    - q: "Bao lâu thì nhận được trợ cấp thất nghiệp?"
+      a: "Thời điểm hưởng là ngày làm việc thứ 11 kể từ ngày nộp đủ hồ sơ."
+      refs: [reg_bhtn_start]
+  M2:
+    - q: "Đã nghỉ đóng BHXH nhiều năm thì những năm cũ còn tính không?"
+      a: "Nếu chưa rút BHXH một lần thì thời gian đã đóng vẫn được cộng dồn. Chỉ cần đủ 15 năm và đủ tuổi là được hưởng lương hưu hằng tháng."
+      refs: [reg_pension_15y, reg_bhxh_lump_sum]
+    - q: "BHXH tự nguyện khác bảo hiểm hưu trí của công ty bảo hiểm thế nào?"
+      a: "BHXH tự nguyện là chế độ Nhà nước, cho lương hưu hằng tháng suốt đời kèm thẻ BHYT. Bảo hiểm hưu trí là sản phẩm thương mại, dùng để bổ sung thêm thu nhập, quyền lợi theo hợp đồng."
+      refs: [reg_pension_15y, reg_pension_bhyt, reg_retirement_insurance_payout]
+    - q: "Lãi suất minh hoạ có chắc chắn không?"
+      a: "Không. Chỉ lãi suất cam kết tối thiểu là được bảo đảm; lãi minh hoạ là giả định."
+      refs: []
+    - q: "Sản phẩm liên kết đơn vị có rủi ro gì?"
+      a: "Giá trị quỹ phụ thuộc kết quả đầu tư nên có thể thấp hơn kỳ vọng, và không có lãi cam kết. Khi tư vấn loại sản phẩm này, việc tư vấn phải được ghi âm theo quy định."
+      refs: [reg_tt67_recording]
+  M3:
+    - q: "Bệnh huyết áp có bị từ chối bảo hiểm không?"
+      a: "Tăng huyết áp đã kiểm soát tốt thường không bị từ chối ngay, nhưng mỗi công ty xử lý khác nhau: chấp nhận bình thường, cộng phụ phí hoặc yêu cầu khám. Quan trọng nhất là khai báo đúng."
+      refs: []
+    - q: "Tổng phí gần bằng số tiền bảo hiểm thì mua để làm gì?"
+      a: "Ở tuổi cao, giá trị chính của bảo hiểm nhân thọ là một khoản tiền chắc chắn đến tay người thụ hưởng được chỉ định, không phải để sinh lời."
+      refs: []
+    - q: "Tử kỳ và trọn đời khác nhau thế nào?"
+      a: "Tử kỳ chỉ chi trả nếu mất trong thời hạn, phí thấp. Trọn đời bảo vệ đến rất cao tuổi nên chắc chắn chi trả, phí cao hơn."
+      refs: []
+    - q: "Mua rồi đổi ý thì sao?"
+      a: "Hợp đồng dài hạn thường có thời gian cân nhắc (khoảng 21 ngày) để đọc lại và có thể huỷ theo quy định. Nên kiểm tra trong quy tắc điều khoản."
+      refs: [reg_free_look]
+  M4:
+    - q: "Đã có BHYT thì có cần bảo hiểm sức khoẻ không?"
+      a: "BHYT chi trả theo phạm vi và mức hưởng quy định, vẫn có phần phải tự trả. Bảo hiểm sức khoẻ thương mại giúp giảm phần tự trả và có thể bảo lãnh viện phí."
+      refs: []
+    - q: "Vì sao phải chờ mới được chi trả?"
+      a: "Thời gian chờ giúp tránh trường hợp mua khi đã biết mình sắp điều trị. Quy định giới hạn tối đa 90 ngày với bệnh thông thường, 1 năm với bệnh có sẵn."
+      refs: [reg_tt67_waiting_caps]
+
+# ---------------------------------------------------------------------
+# 11. WRITING RULES – quy tắc bắt buộc cho A4 (và A3 khi trả lời)
+# ---------------------------------------------------------------------
+writing_rules:
+  - "Chỉ dùng con số có trong file này hoặc do finance tính ra; số do finance tính phải gọi là ước tính."
+  - "Sản phẩm is_fictional: true không được giới thiệu như sản phẩm có thật; giao diện luôn hiển thị nhãn dữ liệu minh hoạ."
+  - "Quy định verified: false hoặc partial chỉ nói ở mức khái quát và khuyên khách kiểm tra với cơ quan BHXH hoặc tư vấn viên."
+  - "Sản phẩm investment_linked: true phải nêu rõ không cam kết lãi và giá trị quỹ phụ thuộc thị trường."
+  - "Luôn nêu điểm bất lợi (watch_outs) cùng với điểm mạnh (strengths); không hứa hẹn lợi nhuận."
+  - "Lý do đề xuất phải gắn với thuộc tính hoặc câu nói cụ thể của khách."
+  - "Xưng hô theo enums.address_styles; giữ giọng văn phù hợp với từng khách."
+  - "Kết thúc tư vấn bằng lưu ý: thông tin chỉ mang tính tham khảo, nên làm việc với tư vấn viên có chứng chỉ trước khi mua."
+  - "Không khẳng định một sản phẩm chắc chắn nhận hoặc từ chối khách có bệnh mãn tính; hướng dẫn khách khai báo trung thực."
+
+# ---------------------------------------------------------------------
+# 12. PROFILE SCHEMA – các trường thông tin về khách
+#     level: core = cần cho Bước 1 với mọi khách
+#            type = cần cho Bước 2 khi loại trong required_for đang dẫn đầu
+#            optional = giúp cá nhân hoá, không chặn đề xuất
+#            derived = code tự tính, không hỏi
+#            inferred = Decision Agent (D2) suy ra từ câu trích, không hỏi trực tiếp
+# ---------------------------------------------------------------------
+profile_schema:
+  conventions:
+    confidence_min: 0.7
+    money: "VND, lưu số nguyên hoặc {min, max}"
+    extraction_rules_vi:
+      - "Chỉ ghi điều khách nói rõ hoặc suy ra trực tiếp; mỗi trường kèm evidence là câu trích ngắn và turn_id."
+      - "Chuẩn hoá tiền: '3tr' → 3000000; '1 tỷ 2' → 1200000000; '100-150k' → {min: 100000, max: 150000}; 'tầm 11tr' → 11000000."
+      - "Khách phủ định một nỗi lo ('cái đó tôi không lo') thì ghi vào denied_concerns, không thêm vào primary_concerns."
+      - "Khách sửa thông tin cũ thì ghi đè và giữ lịch sử."
+      - "Không suy ra bệnh từ triệu chứng; chỉ ghi bệnh khách nói ra."
+      - "Suy ra gender từ cách khách tự xưng nếu rõ ràng (chị, cô, bà → female; anh, chú, ông → male); không chắc thì để trống."
+    one_of_groups:
+      income: [monthly_income, income_stability]
+      budget: [budget_monthly, budget_annual, budget_single]
+
+  fields:
+    # --- A. Cơ bản
+    - { key: name, label_vi: "Tên", type: text, level: optional, topic: opening, feeds: [writer] }
+    - { key: age, label_vi: "Tuổi", type: int, level: core, blocking: true, topic: basics, feeds: [D3, hard_filter, life_stage, address_style, finance], questions: [Q_AGE] }
+    - { key: gender, label_vi: "Giới tính", type: "enum[male,female]", level: type, required_for: [retirement, life], topic: basics, infer_from: "cách tự xưng", feeds: [finance, sample_premium], questions: [Q_GENDER] }
+    - { key: location, label_vi: "Nơi sống", type: text, level: optional, topic: basics, feeds: [writer] }
+    - { key: marital_status, label_vi: "Tình trạng hôn nhân", type: "enum[single,married,widowed,divorced]", level: optional, topic: dependents_family, feeds: [D3], questions: [Q_FAMILY] }
+    # --- B. Công việc và thu nhập
+    - { key: employment_status, label_vi: "Tình trạng việc làm", type: "enum:employment_status", level: core, blocking: true, topic: job_income, feeds: [D3, hard_filter, D1], questions: [Q_JOB] }
+    - { key: occupation, label_vi: "Công việc", type: text, level: optional, topic: job_income, feeds: [writer], questions: [Q_JOB] }
+    - { key: job_prospect, label_vi: "Triển vọng việc làm", type: text, level: type, required_for: [unemployment], ask_if: "employment_status in ['job_seeking','student']", topic: job_income, feeds: [D3, writer], questions: [Q_JOB_PROSPECT] }
+    - { key: expected_income, label_vi: "Thu nhập dự kiến", type: money, level: optional, topic: job_income, feeds: [premium_to_income_ratio], questions: [Q_JOB_PROSPECT] }
+    - { key: has_employment_contract, label_vi: "Có HĐLĐ", type: bool, level: type, required_for: [unemployment], topic: job_income, feeds: [hard_filter], questions: [Q_CONTRACT, Q_BHXH] }
+    - { key: months_in_current_job, label_vi: "Số tháng làm công việc hiện tại", type: int, level: optional, topic: job_income, feeds: [D3], questions: [Q_CONTRACT] }
+    - { key: monthly_income, label_vi: "Thu nhập hằng tháng", type: money, level: core, group: income, topic: job_income, feeds: [premium_to_income_ratio, weights], questions: [Q_JOB, Q_CURRENT_SUPPORT] }
+    - { key: income_sources, label_vi: "Nguồn thu nhập", type: list, level: optional, topic: job_income, feeds: [writer], questions: [Q_CURRENT_SUPPORT] }
+    - { key: income_stability, label_vi: "Mức ổn định thu nhập", type: "enum:income_stability", level: core, group: income, topic: job_income, feeds: [D3, weights], questions: [Q_INCOME_STABILITY, Q_CURRENT_SUPPORT] }
+    - { key: retirement_timing, label_vi: "Thời điểm nghỉ hưu", type: text, level: optional, ask_if: "age >= 55", topic: social_insurance, feeds: [years_to_retirement], questions: [Q_RETIRE] }
+    - { key: expected_pension, label_vi: "Lương hưu dự kiến", type: money, level: type, required_for: [life], ask_if: "employment_status in ['near_retirement','retired'] or (age is not None and age >= 55)", topic: social_insurance, feeds: [D3, finance], questions: [Q_RETIRE] }
+    # --- C. Gia đình
+    - { key: dependents, label_vi: "Người phụ thuộc", type: "list[{relation, age, financially_dependent}]", level: core, topic: dependents_family, feeds: [D3, D6], questions: [Q_FAMILY] }
+    - { key: spouse_income, label_vi: "Thu nhập/lương hưu của vợ hoặc chồng", type: money, level: optional, ask_if: "marital_status == 'married' and top_type in ['life','retirement']", topic: dependents_family, feeds: [D6], questions: [Q_SPOUSE] }
+    # --- D. Tài chính
+    - { key: monthly_expenses, label_vi: "Chi tiêu hằng tháng", type: money, level: optional, topic: debts_expenses, feeds: [insight, finance], questions: [Q_EXPENSES, Q_CURRENT_SUPPORT] }
+    - { key: savings, label_vi: "Tiết kiệm", type: "{amount, earmark}", level: type, required_for: [life], topic: debts_expenses, feeds: [D3, affordability], questions: [Q_SAVINGS] }
+    - { key: assets, label_vi: "Tài sản", type: list, level: optional, topic: debts_expenses, feeds: [writer], questions: [Q_SAVINGS] }
+    - { key: debts, label_vi: "Khoản nợ / trả góp", type: "list[{type, monthly, remaining_months}]", level: type, required_for: [unemployment], topic: debts_expenses, feeds: [D3, hard_filter, finance], questions: [Q_DEBT] }
+    - { key: upcoming_expenses, label_vi: "Khoản chi lớn sắp tới", type: list, level: type, required_for: [retirement], topic: debts_expenses, feeds: [D2.need_flexibility, D6, weights], questions: [Q_UPCOMING] }
+    # --- E. An sinh và bảo hiểm hiện có
+    - { key: bhxh_years, label_vi: "Số năm đã đóng BHXH", type: number, level: type, required_for: [retirement], topic: social_insurance, feeds: [D3, pension_gap, finance], questions: [Q_BHXH] }
+    - { key: bhxh_withdrawn, label_vi: "Đã rút BHXH một lần", type: bool, level: type, required_for: [retirement], ask_if: "bhxh_years is not None and bhxh_years > 0", topic: social_insurance, feeds: [pension_gap], questions: [Q_BHXH_WITHDRAWN] }
+    - { key: bhtn_months, label_vi: "Số tháng đã đóng BHTN", type: int, level: type, required_for: [unemployment], topic: social_insurance, feeds: [D3, unemployment_gap], questions: [Q_BHXH] }
+    - { key: existing_insurance, label_vi: "Bảo hiểm đang có", type: list, level: type, required_for: [life, health], topic: existing_coverage, feeds: [D3, writer], questions: [Q_EXISTING] }
+    # --- F. Sức khoẻ (tự khai, nhạy cảm)
+    - { key: health_status, label_vi: "Tình trạng sức khoẻ", type: "enum[good,fair,poor]", level: type, required_for: [life, health], sensitive: true, topic: health, feeds: [D3, hard_filter], questions: [Q_HEALTH, Q_HEALTH_LIGHT] }
+    - { key: chronic_conditions, label_vi: "Bệnh mãn tính", type: list, level: type, required_for: [life, health], sensitive: true, topic: health, feeds: [D3, D5, weights, hard_filter], questions: [Q_HEALTH] }
+    - { key: condition_controlled, label_vi: "Bệnh đã được kiểm soát", type: bool, level: optional, sensitive: true, ask_if: "chronic_conditions", topic: health, feeds: [D5], questions: [Q_CONDITION_CONTROL] }
+    - { key: smoker, label_vi: "Hút thuốc", type: bool, level: type, required_for: [life], sensitive: true, topic: health, feeds: [sample_premium], questions: [Q_HEALTH] }
+    # --- G. Nhu cầu và thái độ
+    - { key: primary_concerns, label_vi: "Nỗi lo chính", type: "list[enum:concerns]", level: core, blocking: true, topic: goals_concerns, feeds: [D3, D5, writer], questions: [Q_OPEN, Q_CONCERN] }
+    - { key: denied_concerns, label_vi: "Điều khách nói là không lo", type: "list[enum:concerns]", level: optional, topic: goals_concerns, feeds: [D3], questions: [Q_DISAMBIG] }
+    - { key: goals, label_vi: "Mong muốn", type: text, level: optional, topic: goals_concerns, feeds: [writer], questions: [Q_GOAL] }
+    - { key: risk_tolerance, label_vi: "Khẩu vị rủi ro", type: "enum:attitude_levels.risk_tolerance", level: inferred, required_for: [retirement], topic: risk_attitude, feeds: [weights], questions: [Q_RISK] }
+    - { key: need_flexibility, label_vi: "Nhu cầu linh hoạt", type: "enum:attitude_levels.need_flexibility", level: inferred, topic: debts_expenses, feeds: [weights], questions: [Q_UPCOMING] }
+    - { key: trust_concern, label_vi: "Lo ngại việc chi trả", type: "enum:attitude_levels.trust_concern", level: inferred, topic: goals_concerns, feeds: [weights], questions: [] }
+    - { key: budget_monthly, label_vi: "Ngân sách hằng tháng", type: money, level: core, group: budget, topic: budget_payment, feeds: [hard_filter, weights], questions: [Q_BUDGET] }
+    - { key: budget_annual, label_vi: "Ngân sách hằng năm", type: money, level: core, group: budget, topic: budget_payment, feeds: [hard_filter], questions: [Q_BUDGET_LIFE] }
+    - { key: budget_single, label_vi: "Ngân sách đóng một lần", type: money, level: core, group: budget, topic: budget_payment, feeds: [hard_filter], questions: [Q_BUDGET_LIFE] }
+    - { key: payment_preference, label_vi: "Cách đóng phí mong muốn", type: "enum[monthly,annual,single]", level: type, required_for: [life], topic: budget_payment, feeds: [hard_filter, D5], questions: [Q_BUDGET_LIFE] }
+    - { key: beneficiaries, label_vi: "Người thụ hưởng mong muốn", type: list, level: type, required_for: [life], topic: beneficiaries, feeds: [writer], questions: [Q_BENEFICIARY] }
+
+  derived_fields:
+    - { key: life_stage, from: [age], rule: "enums.life_stage" }
+    - { key: address_style, from: [age, cách tự xưng], rule: "enums.address_styles" }
+    - { key: years_to_retirement, from: [age, gender, retirement_timing], rule: "regulations.reg_retirement_age; ưu tiên retirement_timing nếu khách nói rõ" }
+    - { key: pension_gap, from: [bhxh_years, bhxh_withdrawn, age, gender], rule: "finance.pension_gap" }
+    - { key: unemployment_gap_months, from: [bhtn_months], rule: "finance.unemployment_gap" }
+    - { key: premium_to_income_ratio, from: [budget_monthly, monthly_income, expected_income], rule: "finance.premium_to_income_ratio" }
+    - { key: has_large_expense_2y, from: [upcoming_expenses], rule: "upcoming_expenses không rỗng hoặc Decision Agent D6.large_expense_2y > 0.7" }
+    - { key: has_chronic_condition, from: [chronic_conditions], rule: "len(chronic_conditions) > 0" }
+    - { key: completeness, from: ["*"], rule: "readiness.step1 và readiness.step2" }
+
+  readiness:
+    step1_recommend_type:
+      blocking: [age, employment_status, primary_concerns]
+      core: [age, employment_status, "one_of:income", dependents, primary_concerns, "one_of:budget"]
+      completeness_formula: "số trường đã có (core + type của loại đang dẫn đầu) / tổng số trường đó; trường thuộc one_of chỉ cần 1 trong nhóm"
+      rule_vi: "Đủ mọi trường blocking VÀ (độ đầy đủ ≥ 0,85 HOẶC Decision Agent D1 chọn ready_to_recommend) HOẶC đã hỏi 8 câu."
+    step2_compare_products:
+      unemployment: [age, employment_status, has_employment_contract, bhtn_months, debts, "one_of:budget"]
+      retirement: [age, gender, bhxh_years, bhxh_withdrawn, risk_tolerance, upcoming_expenses, "one_of:budget"]
+      life: [age, gender, chronic_conditions, smoker, existing_insurance, beneficiaries, payment_preference, "one_of:budget"]
+      health: [age, chronic_conditions, existing_insurance, "one_of:budget"]
+      rule_vi: "Trường nào còn thiếu thì sản phẩm phụ thuộc trường đó được gắn nhãn «cần xác nhận» thay vì bị loại, và A4 nêu rõ giả định."
+    defaults_when_missing:
+      gender: { value: null, note_vi: "Dùng phí mẫu chung, nói rõ phí thực tế phụ thuộc giới tính" }
+      smoker: { value: false, note_vi: "Giả định không hút thuốc khi dùng phí mẫu, phải nói rõ giả định" }
+      risk_tolerance: { value: "Low", note_vi: "Mặc định thận trọng" }
+      upcoming_expenses: { value: [], note_vi: "Không cộng trọng số linh hoạt" }
+      bhxh_withdrawn: { value: null, note_vi: "Nêu cả hai trường hợp: đã rút và chưa rút" }
+
+# ---------------------------------------------------------------------
+# 13. QUESTION BANK – bộ câu hỏi định sẵn
+#     Placeholder: {bot} cách LUMI tự xưng; {Bot} viết hoa đầu câu;
+#                  {kh} cách gọi khách; {Kh} viết hoa đầu câu; {a} = "ạ" với mid/senior, "" với young
+# ---------------------------------------------------------------------
+question_bank:
+  rules:
+    max_questions: 8
+    max_targets_per_message: 2
+    max_words_per_message: 45
+    selection_flow_vi:
+      - "1. Còn thiếu trường blocking (age, employment_status, primary_concerns) → hỏi ngay câu tương ứng, không cần Decision Agent."
+      - "2. Nếu không, Decision Agent D1 chọn topic."
+      - "3. Trong topic đó, chọn câu đầu tiên có ask_if đúng và còn target chưa có; câu follow_up vừa được kích hoạt được ưu tiên."
+      - "4. Có thể ghép thêm 1 câu (cùng topic hoặc topic kế tiếp theo fallback_order) nếu tổng target không vượt max_targets_per_message."
+      - "5. A3 viết lại câu theo address_style và ngữ cảnh; nếu A3 lỗi hoặc đang ở chế độ offline thì dùng nguyên template."
+      - "6. Nếu Decision Agent D3 có độ tin cậy dưới ngưỡng ở Bước 1 → dùng câu trong disambiguation theo cặp loại dẫn đầu."
+    composition_vi:
+      - "Không hỏi lại trường đã có với độ tin cậy ≥ 0,7."
+      - "Nếu khách vừa bày tỏ lo lắng, mở đầu bằng một câu đồng cảm ngắn."
+      - "Câu hỏi có sensitive: true phải kèm lý do hỏi (why_ask_vi)."
+      - "Có thể nhắc lại chi tiết khách vừa nói để câu hỏi tự nhiên hơn."
+      - "Trong giai đoạn DISCOVERY không nhắc tên sản phẩm hay loại bảo hiểm cụ thể."
+      - "A3 được đổi cách diễn đạt, nhưng không được bỏ target hay thêm target ngoài danh sách."
+    address_fill:
+      young:  { bot: "mình", Bot: "Mình", kh: "bạn", Kh: "Bạn", a: "" }
+      mid:    { bot: "em", Bot: "Em", kh: "anh/chị", Kh: "Anh/chị", a: " ạ" }
+      senior: { bot: "cháu", Bot: "Cháu", kh: "bác", Kh: "Bác", a: " ạ" }
+      note_vi: "Khi đã biết tên hoặc giới tính, thay kh bằng tên (young) hoặc anh/chị, bác trai/bác gái cho đúng."
+
+  opening:
+    id: Q_OPEN
+    targets: [primary_concerns, name, age]
+    template: "Xin chào! Tôi là LUMI, trợ lý tư vấn bảo hiểm. Tôi sẽ hỏi một vài câu để hiểu hoàn cảnh của bạn, sau đó gợi ý loại bảo hiểm phù hợp. Thông tin chỉ dùng cho buổi tư vấn này. Bạn đang quan tâm hoặc lo lắng điều gì?"
+    note_vi: "Giống nhau cho mọi khách; xưng hô chỉ đổi từ câu thứ 2."
+
+  questions:
+    # --- basics
+    - id: Q_AGE
+      topic: basics
+      targets: [age]
+      ask_if: "age is None"
+      template: "Cho {bot} hỏi {kh} năm nay bao nhiêu tuổi{a}?"
+    - id: Q_GENDER
+      topic: basics
+      targets: [gender]
+      ask_if: "gender is None and top_type in ['retirement','life']"
+      priority: low
+      why_ask_vi: "Tuổi nghỉ hưu và phí bảo hiểm khác nhau giữa nam và nữ."
+      template: "Để tính tuổi nghỉ hưu và phí cho chính xác, {bot} xin phép hỏi {kh} là nam hay nữ{a}?"
+    # --- goals_concerns
+    - id: Q_CONCERN
+      topic: goals_concerns
+      targets: [primary_concerns]
+      ask_if: "not primary_concerns"
+      template: "Điều {kh} lo lắng nhất về tài chính lúc này là gì{a}?"
+    - id: Q_GOAL
+      topic: goals_concerns
+      targets: [goals]
+      ask_if: "primary_concerns and not goals"
+      template: "Nếu chuyện đó xảy ra, {kh} mong bảo hiểm giúp được điều gì nhất{a}?"
+      variants:
+        young: "Điều {kh} muốn được bảo vệ nhất là gì?"
+    # --- job_income
+    - id: Q_JOB
+      topic: job_income
+      targets: [employment_status, monthly_income]
+      ask_if: "employment_status is None"
+      template: "{Kh} đang làm công việc gì, và thu nhập hằng tháng khoảng bao nhiêu{a}?"
+      example: { answer: "Chị bán quần áo, có một cửa hàng nhỏ... tháng nào đều thì được 20 triệu", extract: { employment_status: self_employed, occupation: "bán quần áo", monthly_income: 20000000 } }
+    - id: Q_JOB_PROSPECT
+      topic: job_income
+      targets: [job_prospect, expected_income]
+      ask_if: "employment_status in ['job_seeking','student'] and job_prospect is None"
+      template: "{Kh} đang tìm việc ngành gì, và đã có cơ hội nào triển vọng chưa{a}?"
+      example: { answer: "có 1 startup fintech hẹn phỏng vấn vòng cuối tuần sau, lương tầm 11tr", extract: { job_prospect: "phỏng vấn vòng cuối, startup fintech", expected_income: 11000000 } }
+    - id: Q_CURRENT_SUPPORT
+      topic: job_income
+      targets: [income_sources, income_stability]
+      ask_if: "employment_status in ['job_seeking','student'] and income_stability is None"
+      template: "Hiện giờ {kh} đang trang trải chi phí sinh hoạt bằng nguồn nào{a}?"
+      example: { answer: "bố mẹ gửi cho 3tr/tháng, mình nhận thêm job freelance, tháng nhiều thì 4tr, tháng ít thì chẳng có đồng nào", extract: { income_sources: ["gia đình 3tr", "freelance 0–4tr"], income_stability: low } }
+    - id: Q_INCOME_STABILITY
+      topic: job_income
+      targets: [income_stability]
+      ask_if: "monthly_income is not None and income_stability is None"
+      template: "Thu nhập này có đều đặn hằng tháng không, hay lúc nhiều lúc ít{a}?"
+    - id: Q_CONTRACT
+      topic: job_income
+      targets: [has_employment_contract, months_in_current_job]
+      ask_if: "employment_status in ['employed','probation'] and top_type == 'unemployment'"
+      template: "{Kh} làm ở chỗ hiện tại được bao lâu rồi, và có hợp đồng lao động không{a}?"
+    # --- dependents_family
+    - id: Q_FAMILY
+      topic: dependents_family
+      targets: [dependents, marital_status]
+      ask_if: "dependents is None"
+      template: "Hiện có ai đang phụ thuộc vào thu nhập của {kh} không, như vợ/chồng, con nhỏ hay bố mẹ{a}?"
+      variants:
+        senior: "Gia đình mình hiện thế nào{a}? Có ai đang trông vào thu nhập của {kh} không{a}?"
+        mid: "{Kh} cho em hỏi về gia đình: mình có mấy cháu, và có ai đang trông vào thu nhập của {kh} không{a}?"
+    - id: Q_SPOUSE
+      topic: dependents_family
+      targets: [spouse_income]
+      ask_if: "marital_status == 'married' and spouse_income is None and top_type in ['life','retirement']"
+      template: "Vợ hoặc chồng của {kh} có thu nhập hay lương hưu riêng không{a}?"
+      variants:
+        mid: "Anh/chị nhà có thu nhập hay đóng bảo hiểm gì không{a}?"
+        senior: "Bác trai/bác gái nhà mình có thu nhập hay lương hưu riêng không{a}?"
+    # --- debts_expenses
+    - id: Q_DEBT
+      topic: debts_expenses
+      targets: [debts]
+      ask_if: "debts is None and (top_type == 'unemployment' or life_stage in ['young_adult','early_career'])"
+      template: "{Kh} có khoản vay hay trả góp nào phải trả hằng tháng không{a}?"
+      example: { answer: "có trả góp cái laptop 1tr2/tháng, còn 10 tháng nữa", extract: { debts: [{ type: "trả góp laptop", monthly: 1200000, remaining_months: 10 }] } }
+    - id: Q_EXPENSES
+      topic: debts_expenses
+      targets: [monthly_expenses]
+      ask_if: "monthly_expenses is None"
+      priority: low
+      template: "Chi tiêu hằng tháng của {kh} (hoặc cả nhà) khoảng bao nhiêu{a}?"
+    - id: Q_UPCOMING
+      topic: debts_expenses
+      targets: [upcoming_expenses]
+      ask_if: "upcoming_expenses is None and top_type == 'retirement'"
+      template: "Trong 1–2 năm tới, {kh} có khoản chi lớn nào đã tính trước không, như con vào đại học, sửa nhà hay cưới hỏi{a}?"
+      example: { answer: "năm sau đứa lớn vào đại học, có khi có tháng chị phải bớt lại", extract: { upcoming_expenses: ["con vào đại học năm sau"] }, decision_d2: { need_flexibility: High } }
+    - id: Q_SAVINGS
+      topic: debts_expenses
+      targets: [savings, assets]
+      ask_if: "savings is None and top_type in ['life','retirement']"
+      template: "{Kh} đã có khoản tiết kiệm nào chưa, và khoản đó đang dành cho việc gì{a}?"
+    # --- social_insurance
+    - id: Q_BHXH
+      topic: social_insurance
+      targets: [bhxh_years, bhtn_months]
+      ask_if: "bhxh_years is None"
+      template: "{Kh} đã từng đi làm có hợp đồng và đóng bảo hiểm xã hội chưa, được khoảng bao lâu{a}?"
+    - id: Q_BHXH_WITHDRAWN
+      topic: social_insurance
+      targets: [bhxh_withdrawn]
+      ask_if: "bhxh_years is not None and bhxh_years > 0 and bhxh_withdrawn is None and employment_status != 'employed'"
+      why_ask_vi: "Nếu chưa rút, thời gian đã đóng vẫn được cộng dồn để tính lương hưu."
+      template: "{Bot} hỏi thêm một điều khá quan trọng: khoảng thời gian đóng bảo hiểm xã hội đó {kh} đã rút một lần chưa{a}?"
+      example: { answer: "Chưa em, chị vẫn để đấy, cũng không biết để làm gì.", extract: { bhxh_withdrawn: false } }
+    - id: Q_RETIRE
+      topic: social_insurance
+      targets: [retirement_timing, expected_pension]
+      ask_if: "age is not None and age >= 55 and expected_pension is None"
+      template: "{Kh} dự kiến nghỉ hưu khi nào, và lương hưu khoảng bao nhiêu{a}?"
+    # --- health (nhạy cảm)
+    - id: Q_HEALTH
+      topic: health
+      targets: [chronic_conditions, smoker]
+      ask_if: "chronic_conditions is None and (top_type in ['life','health'] or (age is not None and age >= 45))"
+      sensitive: true
+      why_ask_vi: "Công ty bảo hiểm sẽ yêu cầu khai báo sức khoẻ; khai đúng thì sau này mới chắc chắn được chi trả."
+      template: "{Bot} cần hỏi về sức khoẻ vì công ty bảo hiểm sẽ yêu cầu khai báo, khai đúng thì sau này mới chắc chắn được chi trả. {Kh} có bệnh gì cần theo dõi thường xuyên không, và có hút thuốc không{a}?"
+      example: { answer: "Tôi bị huyết áp cao, uống thuốc đều 5 năm nay, đo lần nào cũng ổn. Thuốc lá thì bỏ được 10 năm rồi.", extract: { chronic_conditions: ["tăng huyết áp"], condition_controlled: true, smoker: false, health_status: fair } }
+    - id: Q_HEALTH_LIGHT
+      topic: health
+      targets: [health_status]
+      ask_if: "health_status is None and top_type in ['unemployment','retirement']"
+      priority: low
+      template: "Sức khoẻ của {kh} hiện thế nào{a}?"
+    - id: Q_CONDITION_CONTROL
+      topic: health
+      targets: [condition_controlled]
+      ask_if: "chronic_conditions and condition_controlled is None"
+      sensitive: true
+      why_ask_vi: "Bệnh đã kiểm soát ổn định thì khả năng được nhận bảo hiểm cao hơn."
+      template: "Tình trạng đó hiện đã được kiểm soát ổn định chưa{a}?"
+    # --- risk_attitude
+    - id: Q_RISK
+      topic: risk_attitude
+      targets: [risk_tolerance]
+      ask_if: "top_type == 'retirement' and risk_tolerance is None"
+      template: "Khi tích luỹ cho tương lai, {kh} thích kiểu an toàn, được cam kết, hay chấp nhận rủi ro để có thể lãi nhiều hơn{a}?"
+      note_vi: "Câu trả lời được gửi cho Decision Agent D2 để chấm risk_tolerance; A1 chỉ lưu câu trích."
+      example: { answer: "Rủi ro thì chị sợ lắm, chị từng mất tiền vì chơi hụi rồi.", decision_d2: { risk_tolerance: "Very low" } }
+    # --- existing_coverage
+    - id: Q_EXISTING
+      topic: existing_coverage
+      targets: [existing_insurance]
+      ask_if: "existing_insurance is None and top_type in ['life','health','retirement']"
+      template: "{Kh} đã có hợp đồng bảo hiểm nào chưa, ngoài bảo hiểm y tế{a}?"
+    # --- beneficiaries
+    - id: Q_BENEFICIARY
+      topic: beneficiaries
+      targets: [beneficiaries]
+      ask_if: "top_type == 'life' and not beneficiaries"
+      template: "Nếu có một khoản tiền bảo hiểm, {kh} muốn ai là người nhận{a}?"
+    # --- budget_payment
+    - id: Q_BUDGET
+      topic: budget_payment
+      targets: [budget_monthly]
+      ask_if: "top_type != 'life' and budget_monthly is None"
+      template: "Mỗi tháng {kh} có thể dành khoảng bao nhiêu cho việc này mà không bị áp lực{a}?"
+      example: { answer: "chắc 100-150k thôi", extract: { budget_monthly: { min: 100000, max: 150000 } } }
+    - id: Q_BUDGET_LIFE
+      topic: budget_payment
+      targets: [payment_preference, budget_single]
+      ask_if: "top_type == 'life' and payment_preference is None"
+      template: "{Kh} dự định đóng dần hằng năm hay đóng một lần, và khoảng bao nhiêu thì thoải mái{a}?"
+      example: { answer: "Tôi có thể trích ra 300 đến 400 triệu, hoặc mỗi năm đóng khoảng 50 triệu trong 10 năm", extract: { budget_single: { min: 300000000, max: 400000000 }, budget_annual: 50000000, payment_preference: null } }
+
+  follow_ups:
+    - { when: "employment_status in ['job_seeking','student']", ask: [Q_JOB_PROSPECT, Q_CURRENT_SUPPORT] }
+    - { when: "monthly_income is not None and income_stability is None", ask: [Q_INCOME_STABILITY] }
+    - { when: "bhxh_years is not None and bhxh_years > 0 and employment_status != 'employed'", ask: [Q_BHXH_WITHDRAWN] }
+    - { when: "marital_status == 'married' and top_type in ['life','retirement']", ask: [Q_SPOUSE] }
+    - { when: "'spouse_protection' in primary_concerns or 'legacy' in primary_concerns", ask: [Q_BENEFICIARY] }
+    - { when: "chronic_conditions", ask: [Q_CONDITION_CONTROL] }
+
+  topic_questions:
+    basics: [Q_AGE, Q_GENDER]
+    goals_concerns: [Q_CONCERN, Q_GOAL]
+    job_income: [Q_JOB, Q_JOB_PROSPECT, Q_CURRENT_SUPPORT, Q_INCOME_STABILITY, Q_CONTRACT]
+    dependents_family: [Q_FAMILY, Q_SPOUSE]
+    debts_expenses: [Q_DEBT, Q_UPCOMING, Q_SAVINGS, Q_EXPENSES]
+    social_insurance: [Q_BHXH, Q_BHXH_WITHDRAWN, Q_RETIRE]
+    health: [Q_HEALTH, Q_CONDITION_CONTROL, Q_HEALTH_LIGHT]
+    risk_attitude: [Q_RISK]
+    existing_coverage: [Q_EXISTING]
+    beneficiaries: [Q_BENEFICIARY]
+    budget_payment: [Q_BUDGET, Q_BUDGET_LIFE]
+
+  disambiguation:
+    id: Q_DISAMBIG
+    use_when_vi: "Decision Agent D3 có độ tin cậy dưới 0,6 ở thời điểm đề xuất; chọn câu theo cặp 2 loại có xác suất cao nhất."
+    targets: [primary_concerns, denied_concerns]
+    by_pair:
+      "unemployment|health": "Lúc này {kh} lo hơn về việc mất thu nhập khi mất việc, hay chi phí khi ốm đau{a}?"
+      "unemployment|retirement": "Lúc này {kh} lo về thu nhập trước mắt hay thu nhập khi về già hơn{a}?"
+      "unemployment|life": "{Kh} lo cho thu nhập của chính mình khi mất việc, hay lo cho gia đình nếu mình không may{a}?"
+      "retirement|life": "{Kh} muốn ưu tiên có thu nhập cho chính mình khi về già, hay một khoản để lại cho gia đình nếu mình không may{a}?"
+      "retirement|health": "Khi về già, {kh} lo nhất là không có thu nhập đều đặn hay chi phí chữa bệnh{a}?"
+      "life|health": "Còn chi phí khám chữa bệnh thì {kh} có lo không, hay điều {kh} lo nhất là cuộc sống của gia đình nếu mình không còn{a}?"
+    example: { answer: "Có bảo hiểm y tế với tiền tiết kiệm rồi, cái đó tôi không lo lắm. Cái tôi lo là bà nhà tôi.", extract: { denied_concerns: [medical_cost], primary_concerns: [spouse_protection] } }

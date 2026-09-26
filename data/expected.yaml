@@ -1,0 +1,12 @@
+vuong:
+  insurance_type: unemployment
+  top_product_id: ta_genz
+  required_profile_fields: [age, employment_status, bhtn_months, primary_concerns, budget_monthly]
+mai:
+  insurance_type: retirement
+  top_product_id: ta_huu_linhhoat
+  required_profile_fields: [age, employment_status, bhxh_years, bhxh_withdrawn, risk_tolerance, budget_monthly]
+duc:
+  insurance_type: life
+  top_product_id: sv_baotin
+  required_profile_fields: [age, dependents, savings, chronic_conditions, budget_single]
