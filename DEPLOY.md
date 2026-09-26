@@ -74,6 +74,9 @@ test trên môi trường 3.12 nếu muốn chắc chắn.
 | `MODEL_WRITER` | `gpt-5.6-luna` | Có |
 | `DECISION_ENGINE` | `openai` | Có |
 | `LUMI_APP_PASSWORD` | Mật khẩu bạn tự đặt | **Có** khi deploy công khai |
+| `LUMI_VOICE` | `on` hoặc `off` | Không, mặc định `on` |
+| `MODEL_STT` | `gpt-4o-transcribe` | Không, có mặc định |
+| `MODEL_TTS` | `gpt-4o-mini-tts` | Không, có mặc định |
 
 `PORT` do Railway tự cấp, đừng đặt tay.
 
@@ -90,6 +93,16 @@ hết hạn mức API của bạn, nhưng không chống được người cố 
 
 Nếu không đặt biến này, trang mở công khai — khi đó **bất kỳ ai có link đều tiêu
 tiền API của bạn**.
+
+## Giọng nói và chi phí
+
+Mỗi lượt dùng giọng nói tốn thêm một lần phiên âm và một lần tổng hợp giọng,
+ngoài các lời gọi vốn có. Nếu muốn mở link cho nhiều người mà vẫn giữ chi phí
+thấp, đặt `LUMI_VOICE=off`; phần gõ phím hoạt động y nguyên.
+
+Hai model audio là ngoại lệ có chủ đích với quy tắc một model duy nhất trong
+build plan: model hội thoại không phiên âm và không đọc được. Mọi agent suy nghĩ
+và viết vẫn dùng đúng `gpt-5.6-luna`.
 
 ## Việc phải làm ở phía OpenAI
 

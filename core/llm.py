@@ -18,6 +18,13 @@ from openai import APIConnectionError, APIStatusError, OpenAI, RateLimitError
 from pydantic import BaseModel
 
 LUMI_MODEL = "gpt-5.6-luna"
+
+# Speech is the one deliberate exception to the single-model rule in the build
+# plan: transcription and speech synthesis cannot be done by the conversation
+# model. Every agent that thinks or writes still uses LUMI_MODEL alone.
+DEFAULT_STT_MODEL = "gpt-4o-transcribe"
+DEFAULT_TTS_MODEL = "gpt-4o-mini-tts"
+
 ReasoningEffort = Literal["none", "low", "medium"]
 SchemaT = TypeVar("SchemaT", bound=BaseModel)
 
@@ -32,6 +39,20 @@ class LLMSettings:
     model: str
     writer_model: str
     decision_engine: Literal["openai", "rule"]
+    stt_model: str = DEFAULT_STT_MODEL
+    tts_model: str = DEFAULT_TTS_MODEL
+    voice_enabled: bool = True
+
+
+def _flag(name: str, default: bool) -> bool:
+    raw = os.getenv(name, "").strip().lower()
+    if not raw:
+        return default
+    if raw in {"1", "true", "on", "yes"}:
+        return True
+    if raw in {"0", "false", "off", "no"}:
+        return False
+    raise ModelConfigurationError(f"{name} must be on or off.")
 
 
 def load_settings(env_path: Path | None = None) -> LLMSettings:
@@ -60,6 +81,11 @@ def load_settings(env_path: Path | None = None) -> LLMSettings:
         model=model,
         writer_model=writer_model,
         decision_engine=decision_engine,  # type: ignore[arg-type]
+        stt_model=os.getenv("MODEL_STT", "").strip() or DEFAULT_STT_MODEL,
+        tts_model=os.getenv("MODEL_TTS", "").strip() or DEFAULT_TTS_MODEL,
+        # A public deployment carries a real key, so voice must be switchable
+        # off without touching code.
+        voice_enabled=_flag("LUMI_VOICE", default=True),
     )
 
 

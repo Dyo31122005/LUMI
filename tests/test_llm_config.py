@@ -94,3 +94,66 @@ def test_structured_response_locks_model_reasoning_and_schema() -> None:
     assert request["reasoning"] == {"effort": "low"}
     assert request["store"] is False
     assert request["text"]["format"]["type"] == "json_schema"  # type: ignore[index]
+
+
+# ------------------------------------------------- audio models (VOICE-00)
+
+
+def _base_env(monkeypatch) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setenv("MODEL", LUMI_MODEL)
+    monkeypatch.setenv("MODEL_WRITER", LUMI_MODEL)
+    monkeypatch.setenv("DECISION_ENGINE", "openai")
+    for name in ("MODEL_STT", "MODEL_TTS", "LUMI_VOICE"):
+        monkeypatch.delenv(name, raising=False)
+
+
+def test_audio_models_default_without_configuration(monkeypatch, tmp_path) -> None:
+    from core.llm import DEFAULT_STT_MODEL, DEFAULT_TTS_MODEL
+
+    _base_env(monkeypatch)
+    settings = load_settings(tmp_path / "absent.env")
+
+    assert settings.stt_model == DEFAULT_STT_MODEL
+    assert settings.tts_model == DEFAULT_TTS_MODEL
+    assert settings.voice_enabled is True
+
+
+def test_audio_models_are_overridable(monkeypatch, tmp_path) -> None:
+    _base_env(monkeypatch)
+    monkeypatch.setenv("MODEL_STT", "whisper-1")
+    monkeypatch.setenv("MODEL_TTS", "tts-1-hd")
+
+    settings = load_settings(tmp_path / "absent.env")
+
+    assert settings.stt_model == "whisper-1"
+    assert settings.tts_model == "tts-1-hd"
+    # The single-model rule still holds for everything that thinks or writes.
+    assert settings.model == LUMI_MODEL
+    assert settings.writer_model == LUMI_MODEL
+
+
+def test_voice_can_be_disabled_by_environment(monkeypatch, tmp_path) -> None:
+    _base_env(monkeypatch)
+    for value in ("off", "0", "false", "no"):
+        monkeypatch.setenv("LUMI_VOICE", value)
+        assert load_settings(tmp_path / "absent.env").voice_enabled is False
+    for value in ("on", "1", "true", "yes"):
+        monkeypatch.setenv("LUMI_VOICE", value)
+        assert load_settings(tmp_path / "absent.env").voice_enabled is True
+
+
+def test_a_meaningless_voice_flag_is_rejected(monkeypatch, tmp_path) -> None:
+    _base_env(monkeypatch)
+    monkeypatch.setenv("LUMI_VOICE", "maybe")
+
+    with pytest.raises(ModelConfigurationError):
+        load_settings(tmp_path / "absent.env")
+
+
+def test_audio_settings_do_not_relax_the_chat_model_rule(monkeypatch, tmp_path) -> None:
+    _base_env(monkeypatch)
+    monkeypatch.setenv("MODEL_WRITER", "gpt-4o")
+
+    with pytest.raises(ModelConfigurationError):
+        load_settings(tmp_path / "absent.env")
