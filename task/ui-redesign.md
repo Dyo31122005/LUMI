@@ -1,7 +1,7 @@
 # Nâng cấp toàn diện UI/UX LUMI
 
 - Bắt đầu: 2026-09-27
-- Trạng thái: Đang làm
+- Trạng thái: Xong
 
 ## Mục tiêu
 
@@ -16,7 +16,7 @@ Thiết kế lại trải nghiệm LUMI theo hướng sáng, chuyên nghiệp, �
 - [x] UI-05 — Chuẩn hoá thẻ hồ sơ, trạng thái, đề xuất, bảng so sánh và phản hồi lỗi.
 - [x] UI-06 — Thiết kế lại trang Báo cáo và 3 hành trình theo cùng hệ thống giao diện.
 - [x] UI-07 — Kiểm tra accessibility, responsive, AppTest và toàn bộ test hiện có.
-- [ ] UI-08 — Review production, commit, push và xác nhận Railway deployment.
+- [x] UI-08 — Review production, commit, push và xác nhận Railway deployment.
 
 ## Nhật ký
 
@@ -24,7 +24,8 @@ Thiết kế lại trải nghiệm LUMI theo hướng sáng, chuyên nghiệp, �
 - 2026-09-27: Chốt design system Minimal/Swiss, palette xanh tin cậy, motion nhẹ và density chuẩn; lưu tại `design-system/lumi/MASTER.md`. Sao chép mascot gốc vào `assets/mascot.png`.
 - 2026-09-27: Ẩn sidebar kỹ thuật, thêm header theo nhiệm vụ và thiết kế lại toàn bộ Landing, màn bắt đầu, hội thoại, hồ sơ, Báo cáo và Hành trình mẫu. Gợi ý mở đầu nay được gửi thật vào phiên thay vì chỉ đổi màn.
 - 2026-09-27: AppTest giao diện đạt 18/18. Sau khi rebase lên ba thay đổi hội thoại mới nhất của `main`, toàn bộ dự án đạt 120/120 test; pyflakes sạch; server local khởi động và trả HTTP 200. Không sửa `core/`, `agents/`, scoring hoặc knowledge base.
+- 2026-09-27: Push commit UI `e7dd11d` lên `main`. Railway deployment `4d7a4df4-d639-4d01-8d06-e0fe43a732e2` đạt `SUCCESS`; endpoint production trả HTTP 200 và log xác nhận container Streamlit khởi động trên cổng 8080.
 
 ## Việc tiếp theo
 
-Tích hợp commit mới nhất từ `main`, commit thay đổi UI, push và xác nhận Railway production.
+Task đã hoàn thành. Theo dõi phản hồi sử dụng thực tế để tinh chỉnh nội dung hoặc nhịp tương tác nếu cần.
