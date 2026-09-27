@@ -151,6 +151,21 @@ def test_a_meaningless_voice_flag_is_rejected(monkeypatch, tmp_path) -> None:
         load_settings(tmp_path / "absent.env")
 
 
+def test_whatif_api_limit_is_configurable(monkeypatch, tmp_path) -> None:
+    _base_env(monkeypatch)
+    monkeypatch.setenv("LUMI_WHATIF_MAX_ACTIONS", "5")
+
+    assert load_settings(tmp_path / "absent.env").whatif_max_actions == 5
+
+
+def test_whatif_api_limit_rejects_invalid_values(monkeypatch, tmp_path) -> None:
+    _base_env(monkeypatch)
+    monkeypatch.setenv("LUMI_WHATIF_MAX_ACTIONS", "many")
+
+    with pytest.raises(ModelConfigurationError):
+        load_settings(tmp_path / "absent.env")
+
+
 def test_audio_settings_do_not_relax_the_chat_model_rule(monkeypatch, tmp_path) -> None:
     _base_env(monkeypatch)
     monkeypatch.setenv("MODEL_WRITER", "gpt-4o")

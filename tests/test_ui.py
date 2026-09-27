@@ -68,6 +68,51 @@ def test_replay_labels_fictional_data() -> None:
     assert "hư cấu" in rendered
 
 
+def _open_mai_whatif() -> AppTest:
+    app = run("consult.py", lumi_mode="replay", lumi_persona="mai")
+    next(button for button in app.button if button.label == "Thử thay đổi thông tin").click().run()
+    return app
+
+
+def test_replay_whatif_shows_a_contextual_suggestion() -> None:
+    app = _open_mai_whatif()
+
+    assert not app.exception
+    assert any(button.label == "Thử bỏ khoản chi lớn sắp tới" for button in app.button)
+
+
+def test_replay_whatif_applies_and_undoes_without_touching_the_profile() -> None:
+    app = _open_mai_whatif()
+    next(button for button in app.button if button.label == "Thử bỏ khoản chi lớn sắp tới").click().run()
+
+    assert not app.exception
+    rendered = " ".join(str(item.value) for item in app.get("html"))
+    assert "Bản thử" in rendered
+    assert "Hưu An Nhàn từ hạng 2 lên hạng 1" in rendered
+    assert app.session_state["lumi_whatif_result"].after.profile.upcoming_expenses is None
+
+    next(button for button in app.button if button.label == "Hoàn tác").click().run()
+    assert "lumi_whatif_result" not in app.session_state
+    assert app.session_state.get("lumi_replay_override") is None
+
+
+def test_keep_whatif_change_records_manual_provenance() -> None:
+    app = _open_mai_whatif()
+    next(button for button in app.button if button.label == "Thử bỏ khoản chi lớn sắp tới").click().run()
+    next(button for button in app.button if button.label == "Giữ thay đổi").click().run()
+
+    assert not app.exception
+    updated = app.session_state["lumi_replay_override"]
+    assert updated["profile"]["upcoming_expenses"] is None
+    assert updated["profile"]["provenance"]["upcoming_expenses"]["quote"] == "Bạn tự sửa trong What-if"
+    notices = " ".join(str(item.value) for item in app.success)
+    assert "thay thế đề xuất cũ" in notices
+    rendered = " ".join(str(item.value) for item in app.get("html"))
+    assert "lumi-old-value" in rendered
+    assert "Con lớn năm sau vào đại học" in rendered
+    assert "Không có" in rendered
+
+
 def test_senior_mode_is_on_by_default_for_older_customers() -> None:
     app = run("consult.py", lumi_mode="replay", lumi_persona="duc")
     assert app.session_state.get("lumi_senior_mode") is True

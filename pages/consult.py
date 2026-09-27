@@ -3,14 +3,24 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from pathlib import Path
 from typing import Any
 
 import streamlit as st
 
 from core.kb import KnowledgeBase
+from core.decision import RuleEngine
 from core.schemas import Profile
 from core.session_io import Recording
+from core.whatif import (
+    EditableField,
+    WhatIfResult,
+    editable_fields,
+    keep_changes,
+    recompute,
+    snapshot_data,
+)
 from ui import components as ui
 from ui.landing_sections import PERSONAS
 
@@ -157,6 +167,9 @@ def reset_session() -> None:
         "lumi_speech", "lumi_draft", "lumi_last_clip", "lumi_voice_error",
         "lumi_audio_cache", "lumi_play", "lumi_play_armed", "lumi_autoplayed",
         "lumi_voice_used",
+        "lumi_whatif_open", "lumi_whatif_result", "lumi_whatif_used",
+        "lumi_whatif_error", "lumi_replay_override", "lumi_manual_changes",
+        "lumi_whatif_committed",
     ):
         st.session_state.pop(key, None)
 
@@ -171,7 +184,11 @@ def profile_panel(data: dict[str, Any]) -> None:
     st.subheader(f"Hồ sơ của {name}")
     completeness = (data.get("derived") or {}).get("completeness", 0)
     ui.render(st, ui.completeness_bar(completeness))
-    ui.render(st, ui.profile_chips(profile, field_labels()))
+    ui.render(st, ui.profile_chips(
+        profile,
+        field_labels(),
+        manual_changes=st.session_state.get("lumi_manual_changes", {}),
+    ))
 
     insights = data.get("insights") or []
     if insights:
@@ -204,7 +221,18 @@ def transcript(data: dict[str, Any]) -> None:
                 ui.render(st, ui.why_ask(explanation))
 
 
-def results(data: dict[str, Any]) -> None:
+def results(
+    data: dict[str, Any],
+    whatif_result: WhatIfResult | None = None,
+    changed_label: str = "",
+) -> None:
+    if whatif_result:
+        ui.render(st, ui.whatif_banner(whatif_result.diff, changed_label))
+    elif st.session_state.get("lumi_whatif_committed"):
+        st.success(
+            "Thay đổi đã được giữ trong hồ sơ. Kết quả bên dưới thay thế đề xuất cũ trong hội thoại.",
+            icon=":material/check_circle:",
+        )
     decision = data.get("type_decision")
     if not decision:
         st.info("Phiên này chưa đi tới phần đề xuất.")
@@ -230,13 +258,21 @@ def results(data: dict[str, Any]) -> None:
     }
     priority = [criteria_names.get(key, key) for key in data.get("priority_criteria", [])]
 
+    changed_products = {
+        item.product_id for item in whatif_result.diff.rank_changes
+    } if whatif_result else set()
+    changed_cells = whatif_result.diff.changed_cells if whatif_result else ()
+
     ui.render(st, ui.card(
         ui.priority_chips(priority, data.get("weight_reasons", []), profile_name)
-        + ui.ranking_cards(ranking, profile_name),
+        + ui.ranking_cards(ranking, profile_name, changed_products),
         eyebrow=f"Bước 2 · So sánh{' cho ' + profile_name if profile_name else ''}",
     ))
 
-    ui.render(st, ui.card(ui.heatmap(ranking, data.get("priority_criteria", [])), title="Bản đồ nhiệt 6 tiêu chí"))
+    ui.render(st, ui.card(
+        ui.heatmap(ranking, data.get("priority_criteria", []), changed_cells),
+        title="Bản đồ nhiệt 6 tiêu chí",
+    ))
 
     rows = list(knowledge_base().section("comparison_rows")[decision["insurance_type"]])
     priority_rows = _priority_rows(decision["insurance_type"], data.get("priority_criteria", []))
@@ -253,6 +289,241 @@ def _priority_rows(insurance_type: str, priority_criteria: list[str]) -> list[st
     for criterion in priority_criteria:
         rows.extend(str(item) for item in mapping.get(criterion, ()))
     return rows
+
+
+# ------------------------------------------------------------------ what-if
+
+
+def _whatif_limit(engine: Any) -> int:
+    settings = getattr(getattr(engine, "client", None), "settings", None)
+    return int(getattr(settings, "whatif_max_actions", 8))
+
+
+def _whatif_is_paid(engine: Any, field: EditableField, reconsider_type: bool) -> bool:
+    return not isinstance(engine, RuleEngine) and (
+        "D5" in field.feeds or (reconsider_type and "D3" in field.feeds)
+    )
+
+
+def _whatif_remaining(engine: Any) -> int:
+    return max(0, _whatif_limit(engine) - int(st.session_state.get("lumi_whatif_used", 0)))
+
+
+def _field_label(result: WhatIfResult | None) -> str:
+    if not result or not result.changed_fields:
+        return ""
+    labels = field_labels()
+    return labels.get(result.changed_fields[0], result.changed_fields[0])
+
+
+def _whatif_value(field: EditableField) -> Any:
+    """Draw one editor from the type declared in the knowledge base."""
+
+    key = f"lumi_whatif_value_{field.key}"
+    if field.widget == "toggle":
+        return st.toggle(field.label, value=bool(field.value), key=key)
+
+    if field.widget == "select":
+        options = list(field.options)
+        if field.value not in (None, "") and field.value not in options:
+            options.append(str(field.value))
+        index = options.index(field.value) if field.value in options else 0
+        return st.selectbox(
+            field.label,
+            options,
+            index=index,
+            format_func=lambda value: field.option_labels.get(str(value), str(value)),
+            key=key,
+        )
+
+    if field.widget == "number":
+        step = 100_000.0 if field.value_type == "money" else 1.0
+        value = float(field.value or 0)
+        entered = st.number_input(field.label, min_value=0.0, value=value, step=step, key=key)
+        return int(entered) if field.value_type == "int" else entered
+
+    if field.widget == "list" and "enum:" in field.value_type:
+        return st.multiselect(
+            field.label,
+            list(field.options),
+            default=list(field.value or ()),
+            format_func=lambda value: field.option_labels.get(str(value), str(value)),
+            key=key,
+        ) or None
+
+    if field.widget == "list" and "{" not in field.value_type:
+        initial = "\n".join(str(item) for item in (field.value or ()))
+        text = st.text_area(
+            field.label,
+            value=initial,
+            key=key,
+            help="Mỗi dòng là một mục. Để trống nếu muốn bỏ thông tin này.",
+        )
+        return [line.strip() for line in text.splitlines() if line.strip()] or None
+
+    if "{" in field.value_type:
+        initial = json.dumps(field.value, ensure_ascii=False, indent=2) if field.value else ""
+        text = st.text_area(
+            field.label,
+            value=initial,
+            key=key,
+            help="Trường có cấu trúc. Nhập JSON đúng dạng hoặc để trống để bỏ.",
+        ).strip()
+        if not text:
+            return None
+        return json.loads(text)
+
+    return st.text_input(field.label, value=str(field.value or ""), key=key).strip() or None
+
+
+def _apply_whatif(
+    data: dict[str, Any],
+    engine: Any,
+    field: EditableField,
+    value: Any,
+    reconsider_type: bool,
+) -> None:
+    if value == field.value:
+        st.session_state["lumi_whatif_error"] = "Hãy chọn một giá trị khác hồ sơ hiện tại."
+        return
+
+    paid = _whatif_is_paid(engine, field, reconsider_type)
+    if paid:
+        # D5 can make one call per eligible product. Reserve the full amount
+        # before calling so a visitor can never cross the configured ceiling.
+        estimated = len(data.get("ranking") or ()) + (1 if reconsider_type and "D3" in field.feeds else 0)
+        if _whatif_remaining(engine) < max(1, estimated):
+            st.session_state["lumi_whatif_error"] = (
+                "Bạn đã dùng hết lượt thử có gọi AI. Các trường tính bằng code như ngân sách "
+                "hoặc khẩu vị rủi ro vẫn thử được."
+            )
+            return
+
+    try:
+        with st.spinner("Đang tính lại trọng số và thứ hạng…"):
+            result = recompute(
+                data,
+                {field.key: value},
+                kb=knowledge_base(),
+                engine=engine,
+                reconsider_type=reconsider_type,
+            )
+        st.session_state["lumi_whatif_result"] = result
+        if result.api_actions:
+            st.session_state["lumi_whatif_used"] = int(st.session_state.get("lumi_whatif_used", 0)) + result.api_actions
+        st.session_state.pop("lumi_whatif_error", None)
+        st.session_state.pop("lumi_whatif_committed", None)
+    except Exception as error:
+        st.session_state["lumi_whatif_error"] = str(error)
+
+
+def whatif_panel(data: dict[str, Any], engine: Any, commit_target: Any, *, replay: bool) -> None:
+    """One-field experiment drawer shared by live and replay modes."""
+
+    if not data.get("ranking"):
+        return
+    insurance_type = str(data.get("insurance_type") or data["type_decision"]["insurance_type"])
+    profile = Profile.model_validate(data["profile"])
+    fields = editable_fields(profile, insurance_type, knowledge_base())
+    if not fields:
+        return
+
+    st.divider()
+    if not st.session_state.get("lumi_whatif_open"):
+        if st.button(
+            "Thử thay đổi thông tin",
+            icon=":material/experiment:",
+            use_container_width=True,
+            key=f"lumi_whatif_open_{'replay' if replay else 'live'}",
+        ):
+            st.session_state["lumi_whatif_open"] = True
+            st.rerun()
+        st.caption("Xem đề xuất đổi ra sao mà chưa sửa hồ sơ thật.")
+        return
+
+    st.html(
+        '<div class="lumi-whatif-panel"><div class="lumi-eyebrow">Phòng thử What-if</div>'
+        '<p>Mỗi lần đổi một thông tin. Kết quả thử được giữ riêng cho đến khi bạn chọn Giữ thay đổi.</p></div>'
+    )
+
+    result: WhatIfResult | None = st.session_state.get("lumi_whatif_result")
+    if result:
+        st.success(result.diff.summary, icon=":material/experiment:")
+        undo, keep = st.columns(2)
+        with undo:
+            if st.button("Hoàn tác", icon=":material/undo:", use_container_width=True):
+                st.session_state.pop("lumi_whatif_result", None)
+                st.session_state.pop("lumi_whatif_error", None)
+                st.rerun()
+        with keep:
+            if st.button(
+                "Giữ thay đổi",
+                type="primary",
+                icon=":material/check:",
+                use_container_width=True,
+            ):
+                old_values = result.before.profile.model_dump(exclude={"provenance"})
+                new_values = result.after.profile.model_dump(exclude={"provenance"})
+                manual = dict(st.session_state.get("lumi_manual_changes", {}))
+                for key in result.changed_fields:
+                    manual[key] = (old_values.get(key), new_values.get(key))
+                st.session_state["lumi_manual_changes"] = manual
+                updated = keep_changes(commit_target, result)
+                if replay and updated is not None:
+                    st.session_state["lumi_replay_override"] = updated
+                st.session_state.pop("lumi_whatif_result", None)
+                st.session_state["lumi_whatif_committed"] = True
+                st.rerun()
+        return
+
+    # One contextual shortcut, then the general editor.
+    by_key = {item.key: item for item in fields}
+    if profile.upcoming_expenses and "upcoming_expenses" in by_key:
+        st.caption("Gợi ý theo hoàn cảnh: khoản chi sắp tới đang làm tính linh hoạt được ưu tiên cao.")
+        if st.button(
+            "Thử bỏ khoản chi lớn sắp tới",
+            icon=":material/lightbulb:",
+            use_container_width=True,
+        ):
+            _apply_whatif(data, engine, by_key["upcoming_expenses"], None, False)
+            st.rerun()
+
+    labels = {item.key: item.label for item in fields}
+    selected_key = st.selectbox(
+        "Thông tin muốn thay đổi",
+        list(labels),
+        format_func=lambda key: labels[key],
+        key="lumi_whatif_field",
+    )
+    selected = by_key[selected_key]
+    value = _whatif_value(selected)
+    reconsider = False
+    if "D3" in selected.feeds:
+        reconsider = st.checkbox(
+            "Tính lại cả loại bảo hiểm phù hợp",
+            value=False,
+            help="Có thể thay đổi lớn kết quả Bước 1. Chỉ bật khi bạn muốn xem lại loại bảo hiểm.",
+        )
+
+    if _whatif_is_paid(engine, selected, reconsider):
+        st.caption(f"Thao tác này có gọi AI · còn {_whatif_remaining(engine)} lượt trong phiên.")
+    else:
+        st.caption("Tính tức thời bằng bộ luật · không dùng API · không giới hạn lượt thử.")
+
+    error = st.session_state.get("lumi_whatif_error")
+    if error:
+        st.warning(error, icon=":material/info:")
+
+    apply_col, close_col = st.columns(2)
+    with apply_col:
+        if st.button("Áp dụng", type="primary", icon=":material/refresh:", use_container_width=True):
+            _apply_whatif(data, engine, selected, value, reconsider)
+            st.rerun()
+    with close_col:
+        if st.button("Đóng", icon=":material/close:", use_container_width=True):
+            st.session_state.pop("lumi_whatif_open", None)
+            st.session_state.pop("lumi_whatif_error", None)
+            st.rerun()
 
 
 # ------------------------------------------------------------------- manual
@@ -351,6 +622,13 @@ def manual_mode() -> None:
     chat_column, panel_column = st.columns([62, 38], gap="large")
 
     arm_autoplay_for_large_text(session)
+    official_data = live_session_data(session)
+    trial_result: WhatIfResult | None = st.session_state.get("lumi_whatif_result")
+    display_data = (
+        snapshot_data(trial_result.after, official_data)
+        if trial_result
+        else official_data
+    )
 
     with chat_column:
         st.html(
@@ -369,7 +647,7 @@ def manual_mode() -> None:
 
             if session.type_decision:
                 st.divider()
-                results(live_session_data(session))
+                results(display_data, trial_result, _field_label(trial_result))
 
         voice_input()
 
@@ -385,7 +663,11 @@ def manual_mode() -> None:
                 )
             else:
                 ui.render(st, ui.completeness_bar((session.derived or {}).get("completeness", 0)))
-                ui.render(st, ui.profile_chips(session.profile, field_labels()))
+                ui.render(st, ui.profile_chips(
+                    session.profile,
+                    field_labels(),
+                    manual_changes=st.session_state.get("lumi_manual_changes", {}),
+                ))
                 ui.render(st, ui.insight_cards(session.insights))
 
             if session.turn_decisions:
@@ -394,6 +676,7 @@ def manual_mode() -> None:
                 ui.render(st, ui.hypothesis_bars(latest.type_probabilities.model_dump(), latest.confidence))
 
             if has_profile:
+                whatif_panel(official_data, orchestrator.engine, session, replay=False)
                 st.divider()
                 if st.button("Xoá hồ sơ", icon=":material/delete:", use_container_width=True):
                     reset_session()
@@ -637,6 +920,7 @@ else:
             st.rerun()
     else:
         persona = PERSONA_BY_ID.get(persona_id, {})
+        data = st.session_state.get("lumi_replay_override", data)
         profile_age = (data.get("profile") or {}).get("age")
         if profile_age and profile_age >= 55:
             st.session_state.setdefault("lumi_senior_mode", True)
@@ -649,6 +933,8 @@ else:
         )
 
         chat_column, panel_column = st.columns([62, 38], gap="large")
+        trial_result: WhatIfResult | None = st.session_state.get("lumi_whatif_result")
+        display_data = snapshot_data(trial_result.after, data) if trial_result else data
         with chat_column:
             st.html(
                 '<div class="lumi-chat-heading"><div><div class="lumi-eyebrow">Phiên mẫu đã hoàn thành</div>'
@@ -658,10 +944,11 @@ else:
             with st.container(key="lumi_chat_panel"):
                 transcript(data)
                 st.divider()
-                results(data)
+                results(display_data, trial_result, _field_label(trial_result))
         with panel_column:
             with st.container(height=720, border=False, key="lumi_profile_panel"):
                 profile_panel(data)
+                whatif_panel(data, RuleEngine(knowledge_base()), data, replay=True)
                 st.divider()
                 if st.button("Chọn nhân vật khác", icon=":material/switch_account:", use_container_width=True):
                     reset_session()

@@ -14,9 +14,10 @@
 |---|---|---|
 | 0:00–0:30 | Landing | LUMI hỏi để hiểu từng người rồi mới đề xuất. Chỉ vào ba thẻ nhân vật. |
 | 0:30–2:00 | Bấm thẻ **Vương** | Chỉ vào chip hồ sơ có câu trích, thanh giả thuyết nghiêng về “Thất nghiệp”, và dòng “Vì sao LUMI hỏi câu này”. |
-| 2:00–3:30 | Bấm thẻ **Chị Mai**, cuộn tới Bước 2 | Chip ưu tiên hiện “Khả năng chi trả · Mức cam kết”. Trong heatmap, ô “Linh hoạt” của Hưu An Nhàn là màu cam vì chị chỉ tạm dừng được từ năm thứ 3. |
-| 3:30–4:30 | Bấm thẻ **Ông Đức** | Giao diện tự bật chữ lớn. Ưu tiên đổi sang “Đáp ứng nhu cầu · Điều kiện tham gia” vì ông có bệnh mãn tính. Mở thẻ “Nếu… thì…”: bà nhận được gì. |
-| 4:30–5:00 | Mở trang **3 hành trình** | Cùng một lời chào, ba hồ sơ, ba đề xuất khác nhau. |
+| 2:00–3:10 | Bấm thẻ **Chị Mai**, cuộn tới Bước 2 | Chip ưu tiên hiện “Khả năng chi trả · Mức cam kết”. Trong heatmap, ô “Linh hoạt” của Hưu An Nhàn là màu cam vì chị chỉ tạm dừng được từ năm thứ 3. |
+| 3:10–3:50 | Trong hồ sơ chị Mai, bấm **Thử thay đổi thông tin** → **Thử bỏ khoản chi lớn sắp tới** | Banner ghi rõ đây là bản thử. Hưu An Nhàn đi từ hạng 2 lên hạng 1, bảng nhiệt và thẻ tài chính đổi theo. Bấm **Hoàn tác** để trở về hồ sơ gốc. Toàn bộ nhịp này chạy offline. |
+| 3:50–4:35 | Bấm thẻ **Ông Đức** | Giao diện tự bật chữ lớn. Ưu tiên đổi sang “Đáp ứng nhu cầu · Điều kiện tham gia” vì ông có bệnh mãn tính. Mở thẻ “Nếu… thì…”: bà nhận được gì. |
+| 4:35–5:00 | Mở trang **3 hành trình** | Cùng một lời chào, ba hồ sơ, ba đề xuất khác nhau. |
 
 ## Nếu bị hỏi kỹ thuật
 
@@ -26,6 +27,7 @@
 Dẫn chứng nhanh nếu cần:
 
 - `core/scoring.py` — lọc cứng, trọng số C1–C6, điểm phù hợp.
+- `core/whatif.py` — tạo bản thử riêng, chỉ tính lại phần bị ảnh hưởng và mô tả chênh lệch.
 - `core/guards.py` — loại bỏ câu chứa số không có trong dữ liệu.
 - `tests/test_finance.py` — công thức tài chính đối chiếu `finance.worked_examples`.
 - `tests/test_scoring.py::test_ranking_follows_the_profile_rather_than_a_fixed_answer`

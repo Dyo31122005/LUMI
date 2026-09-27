@@ -223,6 +223,7 @@ a { color: var(--brand-700); }
 .lumi-chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 999px; padding: 6px 11px; margin: 0 6px 7px 0; background: var(--surface); font-size: 13px; line-height: 1.35; min-height: 32px; }
 .lumi-chip b { font-weight: 650; color: var(--brand-950); }
 .lumi-chip-new { border-color: var(--gold-500); background: var(--warn-bg); animation: lumi-glow 1s ease-out; }
+.lumi-old-value { color: var(--text-muted); text-decoration: line-through; margin-right: 2px; }
 .lumi-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
 .lumi-dot-high { background: var(--good); }
 .lumi-dot-mid { background: var(--gold-500); }
@@ -237,6 +238,7 @@ a { color: var(--brand-700); }
 .lumi-why { font-size: 12px; color: var(--text-muted); border-left: 2px solid #a9d7eb; padding: 3px 0 3px 10px; margin: 7px 0 2px; }
 .lumi-rank { border: 1px solid var(--border); border-radius: 13px; padding: 15px 16px; margin-bottom: 10px; background: var(--surface); }
 .lumi-rank-top { border: 2px solid var(--brand-700); background: linear-gradient(135deg, var(--surface), var(--brand-50)); }
+.lumi-rank.lumi-changed { outline: 2px dashed var(--gold-500); outline-offset: -5px; }
 .lumi-rank-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .lumi-rank-name { font-weight: 700; color: var(--brand-950); font-size: 16px; }
 .lumi-rank-name .lumi-icon { color: var(--brand-700); }
@@ -256,6 +258,22 @@ table.lumi-table td.row-head { background: #f8fbfc; font-weight: 650; white-spac
 td.cell-good { background: var(--good-bg); color: var(--good); }
 td.cell-warn { background: var(--warn-bg); color: var(--warn); }
 td.cell-bad { background: var(--bad-bg); color: var(--bad); }
+td.lumi-cell-changed { position: relative; outline: 3px dashed #a86508; outline-offset: -4px; }
+td.lumi-cell-changed::after { content: "Đã đổi"; display: block; margin-top: 5px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+.lumi-whatif-banner {
+  display: grid; grid-template-columns: 46px 1fr; gap: 14px; align-items: start;
+  margin: 0 0 18px; padding: 18px 20px; border: 2px solid #c77a0a; border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #fffaf0, var(--warn-bg)); box-shadow: var(--shadow-sm);
+}
+.lumi-whatif-banner h3 { margin: 3px 0 5px; font-size: 18px; }
+.lumi-whatif-banner p { margin: 0; color: var(--brand-950); }
+.lumi-whatif-banner ul { margin: 9px 0 5px; padding-left: 20px; }
+.lumi-whatif-icon {
+  width: 42px; height: 42px; border-radius: 13px; display: inline-flex; align-items: center;
+  justify-content: center; color: #7d4c08; background: #fff; border: 1px solid #e7c378;
+}
+.lumi-whatif-panel { padding: 14px 0 4px; }
+.lumi-whatif-panel p { color: var(--text-muted); font-size: 13px; margin: 4px 0 12px; }
 .lumi-scenario-row { display: grid; grid-template-columns: 1fr 150px; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 14px; }
 .lumi-scenario-row:last-child { border-bottom: none; }
 .lumi-scenario-value { text-align: right; font-variant-numeric: tabular-nums; font-weight: 650; }

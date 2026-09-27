@@ -25,6 +25,7 @@ LUMI_MODEL = "gpt-5.6-luna"
 DEFAULT_STT_MODEL = "gpt-4o-transcribe"
 DEFAULT_TTS_MODEL = "gpt-4o-mini-tts"
 DEFAULT_VOICE_MAX_ACTIONS = 20
+DEFAULT_WHATIF_MAX_ACTIONS = 8
 
 ReasoningEffort = Literal["none", "low", "medium"]
 SchemaT = TypeVar("SchemaT", bound=BaseModel)
@@ -47,6 +48,9 @@ class LLMSettings:
     # public deployment. Spending limits at OpenAI are the last line, not
     # the first.
     voice_max_actions: int = DEFAULT_VOICE_MAX_ACTIONS
+    # Only D3/D5 experiments spend this allowance. Deterministic experiments
+    # stay unlimited because they never leave the process.
+    whatif_max_actions: int = DEFAULT_WHATIF_MAX_ACTIONS
 
 
 def _flag(name: str, default: bool) -> bool:
@@ -105,6 +109,7 @@ def load_settings(env_path: Path | None = None) -> LLMSettings:
         # off without touching code.
         voice_enabled=_flag("LUMI_VOICE", default=True),
         voice_max_actions=_positive_int("LUMI_VOICE_MAX_ACTIONS", DEFAULT_VOICE_MAX_ACTIONS),
+        whatif_max_actions=_positive_int("LUMI_WHATIF_MAX_ACTIONS", DEFAULT_WHATIF_MAX_ACTIONS),
     )
 
 

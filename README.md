@@ -45,6 +45,7 @@ OPENAI_API_KEY=sk-...
 MODEL=gpt-5.6-luna
 MODEL_WRITER=gpt-5.6-luna
 DECISION_ENGINE=openai        # hoặc rule để chạy offline
+LUMI_WHATIF_MAX_ACTIONS=8     # trần mỗi phiên cho phép thử có gọi AI
 ```
 
 `.env` đã nằm trong `.gitignore`; không commit key.
@@ -61,6 +62,10 @@ Gồm 4 trang: Trang chủ, Tư vấn, Báo cáo và Hành trình mẫu. Giao di
 điều hướng gọn ở đầu trang, mascot LUMI và một luồng chính từ tìm hiểu sản phẩm
 đến bắt đầu tư vấn, xem đề xuất rồi mở báo cáo. Chế độ **Phát lại** đọc các phiên
 trong `data/recordings/` nên **chạy được khi không có mạng và không cần API key**.
+Sau khi có kết quả Bước 2, nút **Thử thay đổi thông tin** cho phép đổi một thuộc
+tính rồi xem lại trọng số, thứ hạng, heatmap và kịch bản tài chính. Bản thử không
+ghi đè hồ sơ cho tới khi bấm **Giữ thay đổi**; **Hoàn tác** trả lại toàn bộ kết quả
+gốc. Các phép thử bằng bộ luật chạy miễn phí và không giới hạn, kể cả trong Phát lại.
 
 **Chạy một phiên trong terminal:**
 
@@ -105,6 +110,7 @@ lumi/
 │   ├── decision.py         # OpenAIEngine | RuleEngine (D1–D6)
 │   ├── orchestrator.py     # máy trạng thái
 │   ├── scoring.py          # trường suy diễn, lọc cứng, trọng số, xếp hạng
+│   ├── whatif.py           # bản thử tách biệt, tính lại có chọn lọc và diff
 │   ├── finance.py          # công thức tiền cho thẻ "Nếu… thì…"
 │   ├── guards.py           # number guard
 │   └── session_io.py       # ghi/đọc phiên để phát lại
@@ -142,7 +148,8 @@ spending limit trong tài khoản OpenAI.
   chưa có hiệu ứng chữ chạy như bản thiết kế mô tả.
 - Xác suất là **ước lượng của mô hình**, không được hiệu chỉnh; giao diện luôn ghi rõ.
 - Quy định Nhà nước có `verified: false` hoặc `partial` chỉ được nói ở mức khái quát.
-- Chưa có What-if.
+- What-if chỉ sửa một trường mỗi lần; phần sửa nhiều trường và dò ngược điều kiện
+  để đưa một sản phẩm lên hạng nhất chưa nằm trong bản hiện tại.
 - Cổng mật khẩu (`core/gate.py`) là rào nhẹ dùng chung, không phải xác thực thật:
   không có tài khoản, không giới hạn số lần thử.
 

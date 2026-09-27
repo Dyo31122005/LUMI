@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import html
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Mapping
 
 CSS_PATH = Path(__file__).resolve().parent / "theme.css"
 ASSET_DIR = Path(__file__).resolve().parents[1] / "assets"
@@ -176,15 +176,21 @@ def page_intro(kicker: str, title: str, description: str) -> str:
 # ------------------------------------------------------------------- profile
 
 
-def profile_chips(profile: Any, labels: dict[str, str], new_keys: Iterable[str] = ()) -> str:
+def profile_chips(
+    profile: Any,
+    labels: dict[str, str],
+    new_keys: Iterable[str] = (),
+    manual_changes: Mapping[str, tuple[Any, Any]] | None = None,
+) -> str:
     """One chip per known field, each carrying its quote and confidence."""
 
     known = profile.model_dump(exclude={"provenance"})
     new_keys = set(new_keys)
+    manual_changes = manual_changes or {}
     chips: list[str] = []
 
     for key, value in known.items():
-        if value in (None, [], {}):
+        if value in (None, [], {}) and key not in manual_changes:
             continue
         evidence = profile.provenance.get(key)
         classes = ["lumi-chip"]
@@ -195,14 +201,23 @@ def profile_chips(profile: Any, labels: dict[str, str], new_keys: Iterable[str] 
             level = "lumi-dot-high" if evidence.confidence >= 0.85 else "lumi-dot-mid"
             dot = f'<span class="lumi-dot {level}"></span>'
         tooltip = f"«{evidence.quote}» · độ tin cậy {evidence.confidence:.2f}" if evidence else "Suy ra từ hội thoại"
+        display_value = f"<b>{esc(_short(value))}</b>"
+        if key in manual_changes:
+            old_value, new_value = manual_changes[key]
+            display_value = (
+                f'<span class="lumi-old-value">{esc(_short(old_value))}</span>'
+                f'<b>{esc(_short(new_value))}</b>'
+            )
         chips.append(
             f'<span class="{" ".join(classes)}" title="{esc(tooltip)}">{dot}'
-            f'{esc(labels.get(key, key))}: <b>{esc(_short(value))}</b></span>'
+            f'{esc(labels.get(key, key))}: {display_value}</span>'
         )
     return "".join(chips) or '<span class="lumi-caption">Chưa có thông tin nào.</span>'
 
 
 def _short(value: Any) -> str:
+    if value is None or value == [] or value == {}:
+        return "Không có"
     if isinstance(value, bool):
         return "Có" if value else "Không"
     if isinstance(value, (int, float)) and value >= 1000:
@@ -300,11 +315,18 @@ def priority_chips(criteria: list[str], reasons: list[str], name: str | None) ->
     return f'<div class="lumi-eyebrow">Quan trọng{esc(who)}</div>{chips}{note}'
 
 
-def ranking_cards(ranking: list[dict[str, Any]], name: str | None) -> str:
+def ranking_cards(
+    ranking: list[dict[str, Any]],
+    name: str | None,
+    changed_products: Iterable[str] = (),
+) -> str:
+    changed_products = set(changed_products)
     blocks: list[str] = []
     for item in ranking:
         top = item["rank"] == 1
         classes = "lumi-rank lumi-rank-top" if top else "lumi-rank"
+        if item.get("product_id") in changed_products:
+            classes += " lumi-changed"
         tags = [
             f'<span class="lumi-tag lumi-tag-good">{esc(text)}</span>'
             for text in item.get("strengths", [])[:2]
@@ -332,9 +354,14 @@ def ranking_cards(ranking: list[dict[str, Any]], name: str | None) -> str:
     return "".join(blocks)
 
 
-def heatmap(ranking: list[dict[str, Any]], priority: list[str]) -> str:
+def heatmap(
+    ranking: list[dict[str, Any]],
+    priority: list[str],
+    changed_cells: Iterable[tuple[str, str]] = (),
+) -> str:
     """Six-criterion grid; every colour also carries a symbol and a label."""
 
+    changed_cells = set(changed_cells)
     header = "".join(
         f'<th class="{"lumi-priority" if key in priority else ""}">{esc(CRITERION_LABELS[key])}</th>'
         for key in CRITERION_LABELS
@@ -346,8 +373,10 @@ def heatmap(ranking: list[dict[str, Any]], priority: list[str]) -> str:
             level = item["scores"][key]
             tone, symbol, label = LEVEL_TONE[level]
             note = (item.get("notes") or {}).get(key, "")
+            changed = " lumi-cell-changed" if (str(item.get("product_id")), key) in changed_cells else ""
+            changed_label = " Giá trị đã đổi trong bản thử." if changed else ""
             cells.append(
-                f'<td class="cell-{tone}" title="{esc(f"{label}. {note}")}">{symbol}'
+                f'<td class="cell-{tone}{changed}" title="{esc(f"{label}. {note}{changed_label}")}">{symbol}'
                 f'<div class="lumi-caption" style="color:inherit">{esc(label)}</div></td>'
             )
         rows.append(f'<tr><td class="row-head">{esc(item["product_name"])}</td>{"".join(cells)}</tr>')
@@ -393,3 +422,45 @@ def scenario_card(scenario: dict[str, Any] | None) -> str:
 
 def data_footer() -> str:
     return f'<div class="lumi-footer-note">{esc(FICTION_NOTE)}<br>{esc(ESTIMATE_NOTE)}</div>'
+
+
+def whatif_banner(diff: Any, changed_label: str) -> str:
+    """Prominent, non-colour-only marker for a hypothetical result."""
+
+    rank_changes = [
+        item for item in diff.rank_changes
+        if item.before_rank != item.after_rank
+    ]
+    detail = ""
+    if getattr(diff, "type_changed", False):
+        # A category switch makes rank rows meaningless: the two lists are
+        # different catalogs. Say what happened instead of listing movements.
+        detail = (
+            f'<p class="lumi-caption">Đây không còn là so sánh trong nhóm '
+            f'«{esc(diff.type_before)}». Toàn bộ danh sách sản phẩm đã đổi sang '
+            f'nhóm «{esc(diff.type_after)}».</p>'
+        )
+    elif rank_changes:
+        rows = "".join(
+            f"<li><b>{esc(item.product_name)}</b>: "
+            f"hạng {item.before_rank or '—'} → {item.after_rank or '—'}</li>"
+            for item in rank_changes
+        )
+        detail = f"<ul>{rows}</ul>"
+
+    if diff.newly_excluded:
+        names = ", ".join(esc(name) for name in diff.newly_excluded)
+        detail += f'<p class="lumi-caption">Không còn phù hợp: {names}.</p>'
+    if diff.newly_eligible:
+        names = ", ".join(esc(name) for name in diff.newly_eligible)
+        detail += f'<p class="lumi-caption">Trở lại danh sách: {names}.</p>'
+
+    return (
+        '<div class="lumi-whatif-banner" role="status">'
+        f'<div class="lumi-whatif-icon">{material_icon("experiment", label="Kết quả giả định")}</div>'
+        '<div><div class="lumi-eyebrow">Bản thử · chưa ghi vào hồ sơ</div>'
+        f'<h3>Bạn vừa đổi 1 thông tin · {esc(changed_label)}</h3>'
+        f'<p>{esc(diff.summary)}</p>{detail}'
+        '<div class="lumi-caption">Các ô có viền nét đứt là phần đã thay đổi.</div>'
+        '</div></div>'
+    )
